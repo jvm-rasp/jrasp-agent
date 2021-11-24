@@ -1,0 +1,28 @@
+## for IDEA
+.idea
+*.iml
+
+## for maven
+jrasp-api/target/
+jrasp-jose4j/target/
+jrasp-common-api/target/
+jrasp-core/target/
+jrasp-provider-api/target/
+jrasp-spy/target/
+jrasp-launcher/target/
+jrasp-system-module/target/
+jrasp-system-provider/target/
+jrasp-module-starter/target/
+target/
+
+## for eclipse and vscode
+.classpath
+.project
+.settings
+.factorypath
+
+## for vim
+*.swp
+*.swo
+*.swn
+

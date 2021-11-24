@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<configuration scan="true" scanPeriod="10000">
+
+    <appender name="RASP-FILE-APPENDER" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <!-- log.base 在com.jrasp.core.util.LogbackUtils中设置 -->
+        <file>${log.base}/jrasp-agent.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <FileNamePattern>${log.base}/jrasp-agent.log.%d{yyyy-MM-dd}</FileNamePattern>
+            <MaxHistory>30</MaxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss} %JRASP_NAMESPACE %-5level %msg%n</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <root level="info">
+        <appender-ref ref="RASP-FILE-APPENDER"/>
+    </root>
+
+</configuration>

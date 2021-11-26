@@ -14,8 +14,11 @@ jrasp-agent 基于Java Agent技术对Java字节码进行修改，增加安全检
 - 检测逻辑低延时
 - 插件热更新
 
-## 环境依赖
+## 运行环境依赖
 + jdk6～11
+
+## 编译环境
++ jdk8
 
 ## 快速安装
 
@@ -23,7 +26,7 @@ jrasp-agent 基于Java Agent技术对Java字节码进行修改，增加安全检
 
   ```shell
   # 1.下载最新版本的jrasp 
-  
+  git clone https://github.com/jvm-rasp/jrasp-agent.git
   
   # 2.进入到bin目录下 
   cd jrasp-agent/bin
@@ -31,7 +34,10 @@ jrasp-agent 基于Java Agent技术对Java字节码进行修改，增加安全检
   # 3.编译打包
   ./jrasp-packages.sh
   
-  # 4.安装包解压
+  # 4.打包后的安装包位置，复制安装包到指定位置
+  jrasp-agent/target/jrasp-agent-1.0-bin.zip
+  
+  # 5.安装包解压
   unzip jrasp-agent-1.0-bin.zip
   ```
 - **2.对Java进程开启防护**
@@ -57,14 +63,8 @@ jrasp-agent 基于Java Agent技术对Java字节码进行修改，增加安全检
   {"code":200,"message":"shutdown success"}
   ```
 
-## 官方网站
-
- [JRASP官网](http://www.jrasp.com)
-
 ## 联系我们
-
-[飞书技术交流群](https://applink.feishu.cn/client/chat/chatter/add_by_link?link_token=e35l9ee2-a000-45ba-8863-75b5ca2cdbe6)
-
+![image](https://github.com/jvm-rasp/assets/blob/master/1.png)
 
 ## 贡献者
 

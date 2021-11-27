@@ -758,7 +758,7 @@ public class DefaultCoreModuleManager implements CoreModuleManager {
 
             // 4. 加载必装模块
             for (final File jarFile : appendJarFiles1) {
-                new ModuleLibLoader(jarFile, new File(cfg.getRuntimeSystemModulePath()), cfg.getLaunchMode())
+                new ModuleLibLoader(jarFile, new File(cfg.getRuntimeRequiredModulePath()), cfg.getLaunchMode())
                         .load(new InnerModuleJarLoadCallback(), new InnerModuleLoadCallback());
             }
 

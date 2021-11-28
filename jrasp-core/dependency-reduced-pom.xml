@@ -67,6 +67,12 @@
       <artifactId>maven-jdk-tools-wrapper</artifactId>
       <version>0.1</version>
       <scope>provided</scope>
+      <exclusions>
+        <exclusion>
+          <artifactId>jdk.tools</artifactId>
+          <groupId>jdk.tools</groupId>
+        </exclusion>
+      </exclusions>
       <optional>true</optional>
     </dependency>
     <dependency>

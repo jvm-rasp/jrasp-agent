@@ -60,6 +60,13 @@ public class CoreLauncher {
                 vmObj.loadAgent(agentJarPath, cfg);
             }
 
+        } catch (Exception e) {
+            if (e.getMessage() != null && e.getMessage().contains("Non-numeric value found")) {
+                // 日志不打印了
+                // System.out.println("It seems to use the lower version of JDK to attach the higher version of JDK.");
+            } else {
+                throw e;
+            }
         } finally {
             if (null != vmObj) {
                 vmObj.detach();

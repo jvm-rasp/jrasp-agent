@@ -11,7 +11,9 @@ import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.lang.instrument.Instrumentation;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class JvmRasp {
@@ -49,7 +51,9 @@ public class JvmRasp {
 
     private void init() {
         // 输出技术支持链接，方便业务排查问题
-        System.out.println("开启RASP安全防护,技术支持:" + cfg.getSupportURL());
+        System.out.println(String.format("%s [jrasp] %s %s",
+                new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.sss").format(new Date()),
+                "开启RASP安全防护，技术支持:", cfg.getSupportURL()));
 
         initPidRunDir();
 

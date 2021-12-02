@@ -1,6 +1,7 @@
 package com.jrasp.system.module;
 
 import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.jrasp.api.Information;
 import com.jrasp.api.Module;
 import com.jrasp.api.ModuleException;
@@ -76,7 +77,7 @@ public class ModuleMgrModule implements Module {
             }
 
         }
-        writer.println(JSONObject.toJSONString(RestResultUtils.success("module list success", moduleInfoList)));
+        writer.println(JSONObject.toJSONString(RestResultUtils.success("module list success", moduleInfoList), SerializerFeature.PrettyFormat));
     }
 
     @Command("flush")
@@ -85,13 +86,13 @@ public class ModuleMgrModule implements Module {
         final String isForceString = getParamWithDefault(param, "force", EMPTY);
         final boolean isForce = BooleanUtils.toBoolean(isForceString);
         moduleManager.flush(isForce);
-        writer.println(JSONObject.toJSONString(RestResultUtils.success("modules flush finished")));
+        writer.println(JSONObject.toJSONString(RestResultUtils.success("modules flush finished"), SerializerFeature.PrettyFormat));
     }
 
     @Command("reset")
     public void reset(final PrintWriter writer) throws ModuleException {
         moduleManager.reset();
-        writer.println(JSONObject.toJSONString(RestResultUtils.success("modules reset finished")));
+        writer.println(JSONObject.toJSONString(RestResultUtils.success("modules reset finished"), SerializerFeature.PrettyFormat));
     }
 
     @Command("unload")
@@ -108,7 +109,7 @@ public class ModuleMgrModule implements Module {
                 logger.warn("unload module[id={};] occur error={}.", me.getUniqueId(), me.getErrorCode(), me);
             }
         }
-        writer.println(JSONObject.toJSONString(RestResultUtils.success("modules unload finished",total)));
+        writer.println(JSONObject.toJSONString(RestResultUtils.success("modules unload finished", total), SerializerFeature.PrettyFormat));
     }
 
     @Command("active")
@@ -130,7 +131,7 @@ public class ModuleMgrModule implements Module {
                 total++;
             }
         }// for
-        writer.println(JSONObject.toJSONString(RestResultUtils.success("modules activate finished",total)));
+        writer.println(JSONObject.toJSONString(RestResultUtils.success("modules activate finished", total), SerializerFeature.PrettyFormat));
     }
 
     @Command("frozen")
@@ -153,7 +154,7 @@ public class ModuleMgrModule implements Module {
             }
 
         }
-        writer.println(JSONObject.toJSONString(RestResultUtils.success("modules frozen finished",total)));
+        writer.println(JSONObject.toJSONString(RestResultUtils.success("modules frozen finished", total), SerializerFeature.PrettyFormat));
     }
 
     @Command("detail")
@@ -161,13 +162,13 @@ public class ModuleMgrModule implements Module {
                        final PrintWriter writer) throws ModuleException {
         final String uniqueId = param.get("id");
         if (StringUtils.isBlank(uniqueId)) {
-            writer.println(JSONObject.toJSONString(RestResultUtils.failed(CLIENT_ERROR,"id parameter was required.")));
+            writer.println(JSONObject.toJSONString(RestResultUtils.failed(CLIENT_ERROR, "id parameter was required."), SerializerFeature.PrettyFormat));
             return;
         }
 
         final Module module = moduleManager.get(uniqueId);
         if (null == module) {
-            writer.println(JSONObject.toJSONString(RestResultUtils.failed(CLIENT_ERROR,String.format("module[id=%s] is not existed.", uniqueId))));
+            writer.println(JSONObject.toJSONString(RestResultUtils.failed(CLIENT_ERROR, String.format("module[id=%s] is not existed.", uniqueId)), SerializerFeature.PrettyFormat));
             return;
         }
         final Information info = module.getClass().getAnnotation(Information.class);
@@ -177,9 +178,9 @@ public class ModuleMgrModule implements Module {
         final boolean isLoaded = moduleManager.isLoaded(id);
         final int cCnt = moduleManager.cCnt(id);
         final int mCnt = moduleManager.mCnt(id);
-        final  String version=info.version();
-        ModuleInfo moduleInfo = new ModuleInfo(id, isActivated, isLoaded, cCnt, mCnt,version);
-        writer.println(JSONObject.toJSONString(RestResultUtils.success("get module detail success",moduleInfo)));
+        final String version = info.version();
+        ModuleInfo moduleInfo = new ModuleInfo(id, isActivated, isLoaded, cCnt, mCnt, version);
+        writer.println(JSONObject.toJSONString(RestResultUtils.success("get module detail success", moduleInfo), SerializerFeature.PrettyFormat));
     }
 
 }

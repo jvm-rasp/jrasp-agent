@@ -27,6 +27,7 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.*;
 
+import static com.alibaba.fastjson.serializer.SerializerFeature.PrettyFormat;
 import static com.jrasp.api.model.ResultCodeEnum.*;
 import static com.jrasp.api.util.GaStringUtils.matching;
 
@@ -70,7 +71,7 @@ public class ModuleHttpServlet extends HttpServlet {
         if (cfg.getEnableAuth() && !NO_LOGIN_PATHS.contains(path)) {
             boolean authentication = JwtTokenServiceImpl.instance.verifyToken(req.getHeader("Authentication"));
             if (!authentication) {
-                writer.println(JSONObject.toJSONString(RestResultUtils.failed(AUTH_ERROR)));
+                writer.println(JSONObject.toJSONString(RestResultUtils.failed(AUTH_ERROR),PrettyFormat));
                 return;
             }
         }
@@ -79,7 +80,7 @@ public class ModuleHttpServlet extends HttpServlet {
         final String uniqueId = parseUniqueId(path);
         if (StringUtils.isBlank(uniqueId)) {
             logger.warn("path={} is not matched any module.", path);
-            writer.println(JSONObject.toJSONString(RestResultUtils.failed(NOT_FOUND,"path=%s is not matched any module",path)));
+            writer.println(JSONObject.toJSONString(RestResultUtils.failed(NOT_FOUND,"path=%s is not matched any module",path),PrettyFormat));
             return;
         }
 
@@ -87,7 +88,7 @@ public class ModuleHttpServlet extends HttpServlet {
         final CoreModule coreModule = coreModuleManager.get(uniqueId);
         if (null == coreModule) {
             logger.warn("path={} is matched module {}, but not existed.", path, uniqueId);
-            writer.println(JSONObject.toJSONString(RestResultUtils.failed(NOT_FOUND,"path=%s is matched module %s, but not existed.",path,uniqueId)));
+            writer.println(JSONObject.toJSONString(RestResultUtils.failed(NOT_FOUND,"path=%s is matched module %s, but not existed.",path,uniqueId),PrettyFormat));
             return;
         }
 
@@ -100,7 +101,7 @@ public class ModuleHttpServlet extends HttpServlet {
         );
         if (null == method) {
             logger.warn("path={} is not matched any method in module {}", path, uniqueId);
-            writer.println(JSONObject.toJSONString(RestResultUtils.failed(NOT_FOUND,"path=%s is not matched any method in module %s", path, uniqueId)));
+            writer.println(JSONObject.toJSONString(RestResultUtils.failed(NOT_FOUND,"path=%s is not matched any method in module %s", path, uniqueId),PrettyFormat));
             return;
         } else {
             logger.debug("path={} is matched method {} in module {}", path, method.getName(), uniqueId);

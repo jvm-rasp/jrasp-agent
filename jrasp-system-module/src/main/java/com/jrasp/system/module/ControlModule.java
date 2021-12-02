@@ -1,6 +1,7 @@
 package com.jrasp.system.module;
 
 import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.jrasp.api.ConfigInfo;
 import com.jrasp.api.Information;
 import com.jrasp.api.Module;
@@ -53,7 +54,7 @@ public class ControlModule implements Module {
         shutdownJvmRaspHook.setDaemon(true);
 
         // 在卸载自己之前，先向这个世界发出最后的呐喊吧！
-        writer.println(JSONObject.toJSONString(RestResultUtils.success("shutdown success", null)));
+        writer.println(JSONObject.toJSONString(RestResultUtils.success("shutdown success", null), SerializerFeature.PrettyFormat));
         writer.flush();
         writer.close();
 

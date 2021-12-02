@@ -65,7 +65,7 @@ public class HeartbeatModule extends ModuleLifecycleAdapter implements Module {
 
     // 心跳消息写入本地
     private void work() {
-        logger.info("time: {},  ip: {}, pid: {}, port: {}, version: {}",
+        logger.info("time: {}, ip: {}, pid: {}, port: {}, version: {}",
                 new Date(), configInfo.getServerAddress().getHostName(), pid, configInfo.getServerAddress().getPort(), configInfo.getVersion());
     }
 

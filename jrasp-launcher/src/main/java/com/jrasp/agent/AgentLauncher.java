@@ -35,7 +35,7 @@ public class AgentLauncher {
 
     // agent方式配置的KEY和默认值
     private static final String KEY_LAUNCH_MODE = "mode";
-    private static String LAUNCH_MODE;  // 启动默认
+    private static String LAUNCH_MODE;  // 启动模式
     private static final String LAUNCH_MODE_AGENT = "agent"; // agent方式加载
     private static final String LAUNCH_MODE_ATTACH = "attach"; // 启动模式: attach方式加载
 

@@ -1,12 +1,28 @@
 package com.jrasp.api.model;
 
+import com.alibaba.fastjson.annotation.JSONField;
+
 public class ModuleInfo {
+
+    @JSONField(ordinal=1,name = "name")
     private String id;
-    private boolean isActivated;
+
+    @JSONField(ordinal=2)
     private boolean isLoaded;
+
+    @JSONField(ordinal=3)
+    private boolean isActivated;
+
+    @JSONField(ordinal=4)
     private int classCnt;
+
+    @JSONField(ordinal=5)
     private int methodCnt;
+
+    @JSONField(ordinal=6)
     private String version;
+
+    @JSONField(ordinal=7)
     private String author;
 
     public String getId() {

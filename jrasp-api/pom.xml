@@ -16,6 +16,10 @@
             <groupId>com.jrasp</groupId>
             <artifactId>jrasp-common-api</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>fastjson</artifactId>
+        </dependency>
     </dependencies>
 
 </project>

@@ -1,6 +1,7 @@
 package com.jrasp.system.module;
 
 import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.jrasp.api.ConfigInfo;
 import com.jrasp.api.Information;
 import com.jrasp.api.Module;
@@ -51,9 +52,9 @@ public class LoginModule implements Module {
             }
             restResult = RestResultUtils.success("login success", token);
         } else {
-            restResult = RestResultUtils.failed(ResultCodeEnum.CLIENT_ERROR,"用户名或者密码错误");
+            restResult = RestResultUtils.failed(ResultCodeEnum.CLIENT_ERROR, "用户名或者密码错误");
         }
-        writer.println(JSONObject.toJSONString(restResult));
+        writer.println(JSONObject.toJSONString(restResult, SerializerFeature.PrettyFormat));
         writer.flush();
     }
 
@@ -68,9 +69,9 @@ public class LoginModule implements Module {
             configInfo.setPassword(newPassword);
             restResult = RestResultUtils.success("update password success");
         } else {
-            restResult = RestResultUtils.failed(ResultCodeEnum.CLIENT_ERROR,"用户名或者密码错误");
+            restResult = RestResultUtils.failed(ResultCodeEnum.CLIENT_ERROR, "用户名或者密码错误");
         }
-        writer.println(JSONObject.toJSONString(restResult));
+        writer.println(JSONObject.toJSONString(restResult, SerializerFeature.PrettyFormat));
         writer.flush();
     }
 }

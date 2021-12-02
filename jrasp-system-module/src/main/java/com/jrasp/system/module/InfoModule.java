@@ -1,6 +1,7 @@
 package com.jrasp.system.module;
 
 import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.jrasp.api.*;
 import com.jrasp.api.Module;
 import com.jrasp.api.annotation.Command;
@@ -25,7 +26,7 @@ public class InfoModule implements Module {
         infoMap.put("version",configInfo.getVersion());
         infoMap.put("mode",configInfo.getMode());
         infoMap.put("raspHome",configInfo.getRaspHome());
-        writer.println(JSONObject.toJSONString(RestResultUtils.success(infoMap)));
+        writer.println(JSONObject.toJSONString(RestResultUtils.success(infoMap),SerializerFeature.PrettyFormat));
         writer.flush();
     }
 }

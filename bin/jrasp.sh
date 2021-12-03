@@ -149,6 +149,12 @@ usage: ${0} [h] [<p:> [vlFfu:a:A:d:m:I:P:C:X]]
          EXAMPLE:
              ${0} -C -I 192.168.0.1 -P 3658 -m debug
 
+    -s : shutdown jrasp-agent
+         Shutdown jrasp-agent && http-server
+
+        EXAMPLE:
+              ${0} -p 3658 -s
+
     -d : data
          Send the command & data to module's command handle method.
          <MODULE-ID>/<COMMAND-NAME>[?<PARAM1=VALUE1>[&PARAM2=VALUE2]]
@@ -398,7 +404,7 @@ function main() {
   [[ -n ${OP_MODULE_DETAIL} ]] &&
     rasp_curl_with_exit "module/detail" "&id=${ARG_MODULE_DETAIL}"
 
-  # -S shutdown
+  # -s shutdown
   [[ -n ${OP_SHUTDOWN} ]] &&
     rasp_curl_with_exit "control/shutdown"
 

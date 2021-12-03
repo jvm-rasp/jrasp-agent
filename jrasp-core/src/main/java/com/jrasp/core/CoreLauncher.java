@@ -61,9 +61,12 @@ public class CoreLauncher {
             }
 
         } catch (Exception e) {
-            if (e.getMessage() != null && e.getMessage().contains("Non-numeric value found")) {
-                // 日志不打印了
-                // System.out.println("It seems to use the lower version of JDK to attach the higher version of JDK.");
+            String message = e.getMessage();
+            if (message != null) {
+                if (message.contains("Non-numeric value found") ||message.contains("0")) {
+                    // https://stackoverflow.com/questions/54340438/virtualmachine-attach-throws-com-sun-tools-attach-agentloadexception-0-when-usi
+                    System.out.println("[info] It seems to use the lower version of JDK to attach the higher version of JDK.");
+                }
             } else {
                 throw e;
             }

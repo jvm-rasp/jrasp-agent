@@ -59,7 +59,7 @@ exit_on_err() {
 # display usage
 function usage() {
   echo "
-usage: ${0} [h] [<p:> [vlFfu:a:A:d:m:I:P:C:X]]
+usage: ${0} [h] [<p:> [vslFfu:a:A:d:m:I:P:C:X]]
 
     -h : help
          Prints the ${0} help
@@ -153,7 +153,7 @@ usage: ${0} [h] [<p:> [vlFfu:a:A:d:m:I:P:C:X]]
          Shutdown jrasp-agent && http-server
 
         EXAMPLE:
-              ${0} -p 3658 -s
+              ${0} -p <PID> -s
 
     -d : data
          Send the command & data to module's command handle method.

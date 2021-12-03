@@ -38,7 +38,7 @@ public class AlgorithmAvailability
             }
         }
 
-        log.info(algorithm + " is NOT available for " + serviceName +
+        log.debug(algorithm + " is NOT available for " + serviceName +
                     ". Algorithms available from underlying JCE: " + algorithms);
         return false;
     }

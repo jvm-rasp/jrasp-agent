@@ -63,9 +63,9 @@ public class AlgorithmFactory<A extends Algorithm> {
 		String algId = algorithm.getAlgorithmIdentifier();
 		if (algorithm.isAvailable()) {
 			algorithms.put(algId, algorithm);
-			log.info(algorithm + " registered for " + parameterName + " algorithm " + algId);
+			log.debug(algorithm + " registered for " + parameterName + " algorithm " + algId);
 		} else {
-			log.info(algId + " is unavailable so will not be registered for " + parameterName + " algorithms.");
+			log.debug(algId + " is unavailable so will not be registered for " + parameterName + " algorithms.");
 		}
 	}
 

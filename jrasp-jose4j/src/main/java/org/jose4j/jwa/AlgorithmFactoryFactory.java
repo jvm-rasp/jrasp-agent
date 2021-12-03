@@ -60,7 +60,7 @@ public class AlgorithmFactoryFactory {
 	}
 
 	void reinitialize() {
-		log.info("Reinitializing jose4j...");
+		log.debug("Reinitializing jose4j...");
 		initialize();
 	}
 
@@ -69,7 +69,7 @@ public class AlgorithmFactoryFactory {
 		String vendor = System.getProperty("java.vendor");
 		String home = System.getProperty("java.home");
 		String providers = Arrays.toString(Security.getProviders());
-		log.info("Initializing jose4j (running with Java " + version + " from " + vendor + " at " + home + " with " + providers
+		log.debug("Initializing jose4j (running with Java " + version + " from " + vendor + " at " + home + " with " + providers
 				+ " security providers installed)...");
 		long startTime = System.currentTimeMillis();
 		jwsAlgorithmFactory = new AlgorithmFactory<JsonWebSignatureAlgorithm>(HeaderParameterNames.ALGORITHM,
@@ -88,7 +88,7 @@ public class AlgorithmFactoryFactory {
 		jwsAlgorithmFactory.registerAlgorithm(new RsaUsingShaAlgorithm.RsaPssSha384());
 		jwsAlgorithmFactory.registerAlgorithm(new RsaUsingShaAlgorithm.RsaPssSha512());
 
-		log.info("JWS signature algorithms: " + jwsAlgorithmFactory.getSupportedAlgorithms());
+		log.debug("JWS signature algorithms: " + jwsAlgorithmFactory.getSupportedAlgorithms());
 
 		jweKeyMgmtModeAlgorithmFactory = new AlgorithmFactory<KeyManagementAlgorithm>(HeaderParameterNames.ALGORITHM,
 				KeyManagementAlgorithm.class);
@@ -110,7 +110,7 @@ public class AlgorithmFactoryFactory {
 		jweKeyMgmtModeAlgorithmFactory.registerAlgorithm(new Pbes2HmacShaWithAesKeyWrapAlgorithm.HmacSha384Aes192());
 		jweKeyMgmtModeAlgorithmFactory.registerAlgorithm(new Pbes2HmacShaWithAesKeyWrapAlgorithm.HmacSha512Aes256());
 
-		log.info("JWE key management algorithms: " + jweKeyMgmtModeAlgorithmFactory.getSupportedAlgorithms());
+		log.debug("JWE key management algorithms: " + jweKeyMgmtModeAlgorithmFactory.getSupportedAlgorithms());
 
 		jweContentEncryptionAlgorithmFactory = new AlgorithmFactory<ContentEncryptionAlgorithm>(HeaderParameterNames.ENCRYPTION_METHOD,
 				ContentEncryptionAlgorithm.class);
@@ -118,13 +118,13 @@ public class AlgorithmFactoryFactory {
 		jweContentEncryptionAlgorithmFactory.registerAlgorithm(new AesCbcHmacSha2ContentEncryptionAlgorithm.Aes192CbcHmacSha384());
 		jweContentEncryptionAlgorithmFactory.registerAlgorithm(new AesCbcHmacSha2ContentEncryptionAlgorithm.Aes256CbcHmacSha512());
 
-		log.info("JWE content encryption algorithms: " + jweContentEncryptionAlgorithmFactory.getSupportedAlgorithms());
+		log.debug("JWE content encryption algorithms: " + jweContentEncryptionAlgorithmFactory.getSupportedAlgorithms());
 
 		compressionAlgorithmFactory = new AlgorithmFactory<CompressionAlgorithm>(HeaderParameterNames.ZIP, CompressionAlgorithm.class);
 		compressionAlgorithmFactory.registerAlgorithm(new DeflateRFC1951CompressionAlgorithm());
 
-		log.info("JWE compression algorithms: " + compressionAlgorithmFactory.getSupportedAlgorithms());
-		log.info("Initialized jose4j in " + (System.currentTimeMillis() - startTime) + "ms");
+		log.debug("JWE compression algorithms: " + compressionAlgorithmFactory.getSupportedAlgorithms());
+		log.debug("Initialized jose4j in " + (System.currentTimeMillis() - startTime) + "ms");
 	}
 
 	public static AlgorithmFactoryFactory getInstance() {

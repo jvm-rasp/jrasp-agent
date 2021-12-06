@@ -7,7 +7,7 @@ import org.objectweb.asm.Type;
 import java.io.IOException;
 import java.io.InputStream;
 
-public class RASPStringUtils {
+public class RaspStringUtils {
 
     public static String toInternalClassName(String javaClassName) {
         if (StringUtils.isEmpty(javaClassName)) {
@@ -60,7 +60,7 @@ public class RASPStringUtils {
 
     public static String getLogo() {
         try {
-            final InputStream logoIs = RASPStringUtils.class.getResourceAsStream("/logo");
+            final InputStream logoIs = RaspStringUtils.class.getResourceAsStream("/logo");
             final String logo = IOUtils.toString(logoIs);
             IOUtils.closeQuietly(logoIs);
             return logo;

@@ -17,8 +17,8 @@ import java.io.InputStream;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static com.jrasp.core.util.RASPStringUtils.toInternalClassName;
-import static com.jrasp.core.util.RASPStringUtils.toJavaClassName;
+import static com.jrasp.core.util.RaspStringUtils.toInternalClassName;
+import static com.jrasp.core.util.RaspStringUtils.toJavaClassName;
 import static com.jrasp.core.util.matcher.structure.PrimitiveClassStructure.mappingPrimitiveByJavaClassName;
 import static org.objectweb.asm.ClassReader.*;
 import static org.objectweb.asm.Opcodes.*;

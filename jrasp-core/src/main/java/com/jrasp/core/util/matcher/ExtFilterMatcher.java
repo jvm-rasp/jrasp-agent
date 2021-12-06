@@ -15,7 +15,7 @@ import java.util.Collection;
 import java.util.List;
 
 import static com.jrasp.api.filter.AccessFlags.*;
-import static com.jrasp.core.util.RASPStringUtils.toInternalClassName;
+import static com.jrasp.core.util.RaspStringUtils.toInternalClassName;
 
 public class ExtFilterMatcher implements Matcher {
 

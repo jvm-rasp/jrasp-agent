@@ -3,7 +3,7 @@ package com.jrasp.core.manager.impl;
 import com.jrasp.api.filter.Filter;
 import com.jrasp.core.manager.CoreLoadedClassDataSource;
 import com.jrasp.core.util.RaspProtector;
-import com.jrasp.core.util.RASPStringUtils;
+import com.jrasp.core.util.RaspStringUtils;
 import com.jrasp.core.util.matcher.ExtFilterMatcher;
 import com.jrasp.core.util.matcher.Matcher;
 import com.jrasp.core.util.matcher.UnsupportedMatcher;
@@ -84,7 +84,7 @@ public class DefaultCoreLoadedClassDataSource implements CoreLoadedClassDataSour
                 final Class<?> clazz = itForLoaded.next();
 
                 // 过滤掉rasp自带的类
-                if (isComeFromRaspFamily(RASPStringUtils.toInternalClassName(clazz.getName()), clazz.getClassLoader())) {
+                if (isComeFromRaspFamily(RaspStringUtils.toInternalClassName(clazz.getName()), clazz.getClassLoader())) {
                     continue;
                 }
 

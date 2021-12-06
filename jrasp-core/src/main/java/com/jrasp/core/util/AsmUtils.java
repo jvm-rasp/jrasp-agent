@@ -6,7 +6,7 @@ import org.apache.commons.io.IOUtils;
 
 import java.io.InputStream;
 
-import static com.jrasp.core.util.RASPStringUtils.toInternalClassName;
+import static com.jrasp.core.util.RaspStringUtils.toInternalClassName;
 
 public class AsmUtils {
 

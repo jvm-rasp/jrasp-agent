@@ -40,7 +40,7 @@ public class LogbackUtils {
             initLogDir(logPath);
             initNamespaceConvert(namespace);
             configurator.doConfigure(is);
-            logger.info(RASPStringUtils.getLogo());
+            logger.info(RaspStringUtils.getLogo());
             logger.info("initializing logback success. file={};", configureFile);
         } catch (Throwable cause) {
             logger.warn("initialize logback failed. file={};", configureFile, cause);

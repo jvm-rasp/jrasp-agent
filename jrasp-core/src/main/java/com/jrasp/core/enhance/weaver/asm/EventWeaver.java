@@ -12,7 +12,7 @@ import java.com.jrasp.spy.Spy;
 import java.util.ArrayList;
 import java.util.Set;
 
-import static com.jrasp.core.util.RASPStringUtils.toJavaClassName;
+import static com.jrasp.core.util.RaspStringUtils.toJavaClassName;
 import static org.apache.commons.lang3.ArrayUtils.contains;
 import static org.apache.commons.lang3.StringUtils.join;
 

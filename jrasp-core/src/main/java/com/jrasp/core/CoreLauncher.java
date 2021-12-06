@@ -3,7 +3,7 @@ package com.jrasp.core;
 import com.sun.tools.attach.VirtualMachine;
 import org.apache.commons.lang3.StringUtils;
 
-import static com.jrasp.core.util.RASPStringUtils.getCauseMessage;
+import static com.jrasp.core.util.RaspStringUtils.getCauseMessage;
 
 /**
  * 沙箱内核启动器

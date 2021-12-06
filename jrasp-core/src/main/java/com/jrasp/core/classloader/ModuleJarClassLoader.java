@@ -22,7 +22,7 @@ import java.util.Set;
 import java.util.jar.JarFile;
 
 import static com.jrasp.api.util.GaStringUtils.getJavaClassName;
-import static com.jrasp.core.util.RASPReflectUtils.*;
+import static com.jrasp.core.util.RaspReflectUtils.*;
 
 /**
  * 模块类加载器

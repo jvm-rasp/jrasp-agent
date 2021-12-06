@@ -4,7 +4,7 @@ import com.jrasp.api.event.Event;
 import com.jrasp.api.listener.EventListener;
 import com.jrasp.api.listener.ext.AdviceAdapterListener;
 import com.jrasp.core.enhance.annotation.Interrupted;
-import com.jrasp.core.util.RASPReflectUtils;
+import com.jrasp.core.util.RaspReflectUtils;
 import com.jrasp.core.util.collection.GaStack;
 import com.jrasp.core.util.collection.ThreadUnsafeGaStack;
 import org.slf4j.Logger;
@@ -17,7 +17,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static com.jrasp.core.util.RASPReflectUtils.isInterruptEventHandler;
+import static com.jrasp.core.util.RaspReflectUtils.isInterruptEventHandler;
 
 /**
  * 事件处理器
@@ -266,14 +266,14 @@ class EventProcessor {
             Set<Thread> threads = threadSet.keySet();
             for(Thread thread : threads){
                 //反射调用 ThreadLocal.ThreadLocalMap.remove(ThreadLocal)
-                Object o = RASPReflectUtils.unCaughtGetClassDeclaredJavaFieldValue(Thread.class,"threadLocals",thread);
+                Object o = RaspReflectUtils.unCaughtGetClassDeclaredJavaFieldValue(Thread.class,"threadLocals",thread);
                 if(null != o){
-                    Method method = RASPReflectUtils.unCaughtGetClassDeclaredJavaMethod(o.getClass(),"remove",ThreadLocal.class);
-                    RASPReflectUtils.unCaughtInvokeMethod(method,o,this.processRef);
+                    Method method = RaspReflectUtils.unCaughtGetClassDeclaredJavaMethod(o.getClass(),"remove",ThreadLocal.class);
+                    RaspReflectUtils.unCaughtInvokeMethod(method,o,this.processRef);
                     //AdviceAdapterListener中的opStackRef也需要释放
                     if(this.listener instanceof AdviceAdapterListener){
-                        Object opStackRef = RASPReflectUtils.unCaughtGetClassDeclaredJavaFieldValue(AdviceAdapterListener.class,"opStackRef",this.listener);
-                        RASPReflectUtils.unCaughtInvokeMethod(method,o,opStackRef);
+                        Object opStackRef = RaspReflectUtils.unCaughtGetClassDeclaredJavaFieldValue(AdviceAdapterListener.class,"opStackRef",this.listener);
+                        RaspReflectUtils.unCaughtInvokeMethod(method,o,opStackRef);
                     }
                 }
             }

@@ -4,7 +4,7 @@ import com.jrasp.api.event.*;
 import com.jrasp.core.util.UnsafeUtils;
 import sun.misc.Unsafe;
 
-import static com.jrasp.core.util.RASPReflectUtils.unCaughtSetClassDeclaredJavaFieldValue;
+import static com.jrasp.core.util.RaspReflectUtils.unCaughtSetClassDeclaredJavaFieldValue;
 
 class SingleEventFactory {
 

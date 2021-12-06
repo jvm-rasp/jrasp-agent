@@ -5,7 +5,7 @@ import org.objectweb.asm.commons.Method;
 import java.com.jrasp.spy.Spy;
 
 import static com.jrasp.core.enhance.weaver.asm.AsmMethods.InnerHelper.getAsmMethod;
-import static com.jrasp.core.util.RASPReflectUtils.unCaughtGetClassDeclaredJavaMethod;
+import static com.jrasp.core.util.RaspReflectUtils.unCaughtGetClassDeclaredJavaMethod;
 
 public interface AsmMethods {
 

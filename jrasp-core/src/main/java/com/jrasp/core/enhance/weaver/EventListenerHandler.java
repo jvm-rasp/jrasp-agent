@@ -20,7 +20,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.jrasp.api.event.Event.Type.IMMEDIATELY_RETURN;
 import static com.jrasp.api.event.Event.Type.IMMEDIATELY_THROWS;
-import static com.jrasp.core.util.RASPReflectUtils.isInterruptEventHandler;
+import static com.jrasp.core.util.RaspReflectUtils.isInterruptEventHandler;
 import static java.com.jrasp.spy.Spy.Ret.newInstanceForNone;
 import static java.com.jrasp.spy.Spy.Ret.newInstanceForThrows;
 

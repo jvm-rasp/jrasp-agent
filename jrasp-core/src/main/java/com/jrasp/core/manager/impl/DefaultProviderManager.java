@@ -3,16 +3,16 @@ package com.jrasp.core.manager.impl;
 import com.jrasp.api.ConfigInfo;
 import com.jrasp.api.Module;
 import com.jrasp.api.Resource;
+import com.jrasp.api.log.Log;
 import com.jrasp.core.CoreConfigure;
 import com.jrasp.core.classloader.ProviderClassLoader;
+import com.jrasp.core.log.LogFactory;
 import com.jrasp.core.manager.ProviderManager;
 import com.jrasp.provider.api.ModuleJarLoadingChain;
 import com.jrasp.provider.api.ModuleLoadingChain;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -23,7 +23,7 @@ import java.util.ServiceLoader;
 
 public class DefaultProviderManager implements ProviderManager {
 
-    private final Logger logger = LoggerFactory.getLogger(getClass());
+    private final Log logger = LogFactory.getLog(getClass());
     private final Collection<ModuleJarLoadingChain> moduleJarLoadingChains = new ArrayList<ModuleJarLoadingChain>();
     private final Collection<ModuleLoadingChain> moduleLoadingChains = new ArrayList<ModuleLoadingChain>();
     private final CoreConfigure cfg;

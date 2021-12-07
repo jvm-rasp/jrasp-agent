@@ -1,9 +1,9 @@
 package com.jrasp.core.manager.impl;
 
 import com.jrasp.api.Information;
+import com.jrasp.api.log.Log;
+import com.jrasp.core.log.LogFactory;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.Arrays;
@@ -18,7 +18,7 @@ import static org.apache.commons.lang3.StringUtils.join;
  */
 public class ModuleLibLoader {
 
-    private final Logger logger = LoggerFactory.getLogger(getClass());
+    private final Log logger = LogFactory.getLog(getClass());
 
     // 模块加载目录
     private final File moduleLibDir;

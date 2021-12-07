@@ -10,7 +10,7 @@ import java.util.jar.JarFile;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-// RASPAgent启动器
+// RaspAgent启动器
 public class AgentLauncher {
 
     // rasp安装目录配置的KEY和默认值

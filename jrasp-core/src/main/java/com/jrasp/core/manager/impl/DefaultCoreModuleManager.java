@@ -4,12 +4,14 @@ import com.jrasp.api.*;
 import com.jrasp.api.Module;
 import com.jrasp.api.authentication.JwtTokenService;
 import com.jrasp.api.event.Event;
+import com.jrasp.api.log.Log;
 import com.jrasp.api.resource.*;
 import com.jrasp.core.CoreConfigure;
 import com.jrasp.core.CoreModule;
 import com.jrasp.core.CoreModule.ReleaseResource;
 import com.jrasp.core.classloader.ModuleJarClassLoader;
 import com.jrasp.core.enhance.weaver.EventListenerHandler;
+import com.jrasp.core.log.LogFactory;
 import com.jrasp.core.manager.CoreLoadedClassDataSource;
 import com.jrasp.core.manager.CoreModuleManager;
 import com.jrasp.core.manager.ProviderManager;
@@ -17,8 +19,6 @@ import com.jrasp.core.manager.impl.ModuleLibLoader.ModuleJarLoadCallback;
 import com.jrasp.core.util.RaspProtector;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -37,7 +37,7 @@ import static org.apache.commons.lang3.reflect.FieldUtils.writeField;
 
 public class DefaultCoreModuleManager implements CoreModuleManager {
 
-    private final Logger logger = LoggerFactory.getLogger(getClass());
+    private final Log logger = LogFactory.getLog(getClass());
 
     private final CoreConfigure cfg;
     private final Instrumentation inst;
@@ -283,6 +283,16 @@ public class DefaultCoreModuleManager implements CoreModuleManager {
                             resourceField,
                             module,
                             new DefaultConfigInfo(cfg),
+                            true
+                    );
+                }
+
+                // log 注入
+                else if (Log.class.isAssignableFrom(fieldType)) {
+                    writeField(
+                            resourceField,
+                            module,
+                            LogFactory.getLog(module.getClass()),
                             true
                     );
                 }

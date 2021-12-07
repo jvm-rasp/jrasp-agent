@@ -40,7 +40,7 @@ cp ../jrasp-core/target/jrasp-core-${JRASP_VERSION}.jar ${JRASP_TARGET_DIR}/lib/
  && cp jrasp.sh ${JRASP_TARGET_DIR}/bin/jrasp.sh
 
 # cppy system-jar
-cp ../jrasp-system-module/target/jrasp-system-module-*-jar-with-dependencies.jar ${JRASP_TARGET_DIR}/system-module/jrasp-system-module.jar \
+cp ../jrasp-module-admin/target/jrasp-module-admin-*-jar-with-dependencies.jar ${JRASP_TARGET_DIR}/system-module/jrasp-module-admin.jar \
     && cp ../jrasp-system-provider/target/jrasp-system-provider-*-jar-with-dependencies.jar ${JRASP_TARGET_DIR}/provider/jrasp-system-provider.jar
 
 # make it execute able

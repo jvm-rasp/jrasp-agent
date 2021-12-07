@@ -2,10 +2,12 @@ package com.jrasp.core.server.jetty.servlet;
 
 import com.alibaba.fastjson.JSONObject;
 import com.jrasp.api.annotation.Command;
+import com.jrasp.api.log.Log;
 import com.jrasp.api.model.RestResultUtils;
 import com.jrasp.core.CoreConfigure;
 import com.jrasp.core.CoreModule;
 import com.jrasp.core.CoreModule.ReleaseResource;
+import com.jrasp.core.log.LogFactory;
 import com.jrasp.core.manager.CoreModuleManager;
 import com.jrasp.core.manager.impl.JwtTokenServiceImpl;
 import org.apache.commons.collections.CollectionUtils;
@@ -13,8 +15,6 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.MethodUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -37,7 +37,7 @@ public class ModuleHttpServlet extends HttpServlet {
     private static final List<String> NO_LOGIN_PATHS = Arrays.asList("/user/login", "/user/update", "/info/version", "/module/list");
 
     private static final String SLASH = "/";
-    private final Logger logger = LoggerFactory.getLogger(getClass());
+    private final Log logger = LogFactory.getLog(getClass());
 
     private final CoreConfigure cfg;
     private final CoreModuleManager coreModuleManager;

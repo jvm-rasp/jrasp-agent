@@ -3,8 +3,8 @@ package com.jrasp.core.util;
 import java.lang.management.ManagementFactory;
 
 public class ProcessHelper {
-    public static int getCurrentPID() {
+    public static String getCurrentPID() {
         String name = ManagementFactory.getRuntimeMXBean().getName();
-        return Integer.parseInt(name.split("@")[0]);
+        return name.split("@")[0];
     }
 }

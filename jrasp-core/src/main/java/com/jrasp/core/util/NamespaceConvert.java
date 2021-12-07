@@ -7,6 +7,7 @@ import ch.qos.logback.classic.spi.ILoggingEvent;
 public class NamespaceConvert extends ClassicConverter {
 
     private static volatile String namespace;
+    private static String pid = ProcessHelper.getCurrentPID();
 
     @Override
     public String convert(ILoggingEvent event) {
@@ -18,6 +19,7 @@ public class NamespaceConvert extends ClassicConverter {
     public static void initNamespaceConvert(final String namespace) {
         NamespaceConvert.namespace = namespace;
         PatternLayout.defaultConverterMap.put("JRASP_NAMESPACE", NamespaceConvert.class.getName());
+        PatternLayout.defaultConverterMap.put("PID", pid);
     }
 
 }

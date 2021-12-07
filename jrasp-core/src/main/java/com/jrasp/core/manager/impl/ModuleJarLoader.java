@@ -2,11 +2,11 @@ package com.jrasp.core.manager.impl;
 
 import com.jrasp.api.Information;
 import com.jrasp.api.Module;
+import com.jrasp.api.log.Log;
 import com.jrasp.core.classloader.ModuleJarClassLoader;
+import com.jrasp.core.log.LogFactory;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -18,7 +18,7 @@ import java.util.Set;
 // jar文件加载
 public class ModuleJarLoader {
 
-    private final Logger logger = LoggerFactory.getLogger(getClass());
+    private final Log logger = LogFactory.getLog(getClass());
 
     // 等待加载的模块jar文件(源文件)
     private final File moduleJarFile;

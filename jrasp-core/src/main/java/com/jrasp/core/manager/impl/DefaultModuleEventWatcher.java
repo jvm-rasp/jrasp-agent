@@ -4,17 +4,17 @@ import com.jrasp.api.event.Event;
 import com.jrasp.api.filter.Filter;
 import com.jrasp.api.listener.EventListener;
 import com.jrasp.api.listener.ext.EventWatchCondition;
+import com.jrasp.api.log.Log;
 import com.jrasp.api.resource.ModuleEventWatcher;
 import com.jrasp.core.CoreModule;
 import com.jrasp.core.enhance.weaver.EventListenerHandler;
+import com.jrasp.core.log.LogFactory;
 import com.jrasp.core.manager.CoreLoadedClassDataSource;
 import com.jrasp.core.util.Sequencer;
 import com.jrasp.core.util.matcher.ExtFilterMatcher;
 import com.jrasp.core.util.matcher.GroupMatcher;
 import com.jrasp.core.util.matcher.Matcher;
 import org.apache.commons.collections.CollectionUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.lang.instrument.Instrumentation;
 import java.util.Iterator;
@@ -30,7 +30,7 @@ import static com.jrasp.core.util.matcher.ExtFilterMatcher.toOrGroupMatcher;
  */
 public class DefaultModuleEventWatcher implements ModuleEventWatcher {
 
-    private final Logger logger = LoggerFactory.getLogger(getClass());
+    private final Log logger = LogFactory.getLog(getClass());
 
     private final Instrumentation inst;
     private final CoreLoadedClassDataSource classDataSource;

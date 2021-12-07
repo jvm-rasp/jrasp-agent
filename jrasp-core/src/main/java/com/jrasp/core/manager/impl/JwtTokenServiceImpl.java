@@ -3,17 +3,17 @@ package com.jrasp.core.manager.impl;
 import com.alibaba.fastjson.JSONObject;
 import com.jrasp.api.authentication.JwtTokenService;
 import com.jrasp.api.authentication.PayloadDto;
+import com.jrasp.api.log.Log;
+import com.jrasp.core.log.LogFactory;
 import org.jose4j.jwe.ContentEncryptionAlgorithmIdentifiers;
 import org.jose4j.jwe.JsonWebEncryption;
 import org.jose4j.jwe.KeyManagementAlgorithmIdentifiers;
 import org.jose4j.keys.PbkdfKey;
 import org.jose4j.lang.JoseException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class JwtTokenServiceImpl implements JwtTokenService {
 
-    private final Logger logger = LoggerFactory.getLogger(getClass());
+    private final Log logger = LogFactory.getLog(getClass());
 
     public static JwtTokenServiceImpl instance = new JwtTokenServiceImpl();
 

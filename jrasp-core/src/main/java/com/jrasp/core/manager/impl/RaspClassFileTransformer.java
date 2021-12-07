@@ -2,7 +2,9 @@ package com.jrasp.core.manager.impl;
 
 import com.jrasp.api.event.Event;
 import com.jrasp.api.listener.EventListener;
+import com.jrasp.api.log.Log;
 import com.jrasp.core.enhance.EventEnhancer;
+import com.jrasp.core.log.LogFactory;
 import com.jrasp.core.util.ObjectIDs;
 import com.jrasp.core.util.RaspClassUtils;
 import com.jrasp.core.util.RaspProtector;
@@ -10,8 +12,6 @@ import com.jrasp.core.util.matcher.Matcher;
 import com.jrasp.core.util.matcher.MatchingResult;
 import com.jrasp.core.util.matcher.UnsupportedMatcher;
 import com.jrasp.core.util.matcher.structure.ClassStructure;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.lang.instrument.ClassFileTransformer;
 import java.security.ProtectionDomain;
@@ -24,7 +24,7 @@ import static com.jrasp.core.util.matcher.structure.ClassStructureFactory.create
  */
 public class RaspClassFileTransformer implements ClassFileTransformer {
 
-    private final Logger logger = LoggerFactory.getLogger(getClass());
+    private final Log logger = LogFactory.getLog(getClass());
 
     private final int watchId;
     private final String uniqueId;

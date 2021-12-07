@@ -1,7 +1,9 @@
 package com.jrasp.core.server.jetty;
 
+import com.jrasp.api.log.Log;
 import com.jrasp.core.CoreConfigure;
 import com.jrasp.core.JvmRasp;
+import com.jrasp.core.log.LogFactory;
 import com.jrasp.core.server.CoreServer;
 import com.jrasp.core.server.jetty.servlet.ModuleHttpServlet;
 import com.jrasp.core.util.Initializer;
@@ -12,8 +14,6 @@ import org.eclipse.jetty.server.nio.SelectChannelConnector;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -28,7 +28,8 @@ import static org.eclipse.jetty.servlet.ServletContextHandler.NO_SESSIONS;
 public class JettyCoreServer implements CoreServer {
 
     private static volatile CoreServer coreServer;
-    private final Logger logger = LoggerFactory.getLogger(getClass());
+    private final Log logger = LogFactory.getLog(getClass());
+
     private final Initializer initializer = new Initializer(true);
 
     private Server httpServer;

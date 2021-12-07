@@ -1,6 +1,8 @@
 package com.jrasp.core.manager.impl;
 
 import com.jrasp.api.filter.Filter;
+import com.jrasp.api.log.Log;
+import com.jrasp.core.log.LogFactory;
 import com.jrasp.core.manager.CoreLoadedClassDataSource;
 import com.jrasp.core.util.RaspProtector;
 import com.jrasp.core.util.RaspStringUtils;
@@ -8,8 +10,6 @@ import com.jrasp.core.util.matcher.ExtFilterMatcher;
 import com.jrasp.core.util.matcher.Matcher;
 import com.jrasp.core.util.matcher.UnsupportedMatcher;
 import com.jrasp.core.util.matcher.structure.ClassStructureFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.lang.instrument.Instrumentation;
 import java.util.*;
@@ -19,7 +19,7 @@ import static com.jrasp.core.util.RaspClassUtils.isComeFromRaspFamily;
 
 public class DefaultCoreLoadedClassDataSource implements CoreLoadedClassDataSource {
 
-    private final Logger logger = LoggerFactory.getLogger(getClass());
+    private final Log logger = LogFactory.getLog(getClass());
     private final Instrumentation inst;
     private final boolean isEnableUnsafe;
 

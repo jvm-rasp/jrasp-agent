@@ -11,12 +11,15 @@ import com.jrasp.core.CoreModule;
 import com.jrasp.core.CoreModule.ReleaseResource;
 import com.jrasp.core.classloader.ModuleJarClassLoader;
 import com.jrasp.core.enhance.weaver.EventListenerHandler;
+import com.jrasp.core.enhance.weaver.EventProcessor;
 import com.jrasp.core.log.LogFactory;
 import com.jrasp.core.manager.CoreLoadedClassDataSource;
 import com.jrasp.core.manager.CoreModuleManager;
 import com.jrasp.core.manager.ProviderManager;
 import com.jrasp.core.manager.impl.ModuleLibLoader.ModuleJarLoadCallback;
 import com.jrasp.core.util.RaspProtector;
+import com.jrasp.core.util.RaspReflectUtils;
+import com.jrasp.core.util.ThreadUtil;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
 
@@ -24,6 +27,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.instrument.Instrumentation;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -432,10 +436,22 @@ public class DefaultCoreModuleManager implements CoreModuleManager {
             }
         }
 
-        // 移除所有监听器
+        // 清除变量并移除所有监听器
+        // EventListenerHandler(单例) ---> mappingOfEventProcessor(全局唯一) ---> (LISTENER_ID,EventProcessor)(每个监听器一个)---> EventProcessor.processRef (每个线程一个)
+        List<Thread> threadList = ThreadUtil.getThreadList();
         for (final RaspClassFileTransformer sandboxClassFileTransformer : coreModule.getRaspClassFileTransformers()) {
-            EventListenerHandler.getSingleton()
-                    .remove(sandboxClassFileTransformer.getListenerId());
+            int listenerId = sandboxClassFileTransformer.getListenerId();
+            final EventListenerHandler eventListenerHandler = EventListenerHandler.getSingleton();
+            EventProcessor eventProcessor = eventListenerHandler.get(listenerId);
+            // todo 遍历所有线程的实现方式不太友好，但是可以做到完全清除
+            for (Thread thread : threadList) {
+                Object o = RaspReflectUtils.unCaughtGetClassDeclaredJavaFieldValue(Thread.class, "threadLocals", thread);
+                if (null != o) {
+                    Method method = RaspReflectUtils.unCaughtGetClassDeclaredJavaMethod(o.getClass(), "remove", ThreadLocal.class);
+                    RaspReflectUtils.unCaughtInvokeMethod(method, o, eventProcessor.processRef);
+                }
+            }
+            eventListenerHandler.remove(listenerId);
         }
 
         // 从模块注册表中删除
@@ -548,8 +564,7 @@ public class DefaultCoreModuleManager implements CoreModuleManager {
 
         // 冻结所有监听器
         for (final RaspClassFileTransformer raspClassFileTransformer : coreModule.getRaspClassFileTransformers()) {
-            EventListenerHandler.getSingleton()
-                    .frozen(raspClassFileTransformer.getListenerId());
+            EventListenerHandler.getSingleton().frozen(raspClassFileTransformer.getListenerId());
         }
 
         // 标记模块为：已冻结

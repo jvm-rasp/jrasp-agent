@@ -44,7 +44,7 @@ public class EventListenerHandler implements SpyHandler {
     private final AtomicInteger invokeIdSequencer = new AtomicInteger(1000); // 不会溢出，回到最小值 -2147483648
 
     // 全局处理器ID:处理器映射集合
-    private final Map<Integer/*LISTENER_ID*/, EventProcessor> mappingOfEventProcessor
+    public final Map<Integer/*LISTENER_ID*/, EventProcessor> mappingOfEventProcessor
             = new ConcurrentHashMap<Integer, EventProcessor>();
 
     /**
@@ -103,6 +103,16 @@ public class EventListenerHandler implements SpyHandler {
                 listenerId,
                 processor.listener
         );
+    }
+
+    /**
+     * 移除事件处理器
+     *
+     * @param listenerId 事件处理器ID
+     */
+    public EventProcessor get(int listenerId) {
+        final EventProcessor processor = mappingOfEventProcessor.get(listenerId);
+        return processor;
     }
 
     /**

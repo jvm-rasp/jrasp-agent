@@ -22,7 +22,7 @@ import static com.jrasp.core.util.RaspReflectUtils.isInterruptEventHandler;
 /**
  * 事件处理器
  */
-class EventProcessor {
+public class EventProcessor {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -188,7 +188,7 @@ class EventProcessor {
     int status;
     Map<Thread,Thread> currentThreadSet;
 
-    final ThreadLocal<Process> processRef = new ThreadLocal<Process>() {
+    public final ThreadLocal<Process> processRef = new ThreadLocal<Process>() {
         @Override
         protected Process initialValue() {
             return new Process();

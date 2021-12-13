@@ -64,7 +64,7 @@ jrasp-agent 基于Java Agent技术对Java字节码进行修改，增加安全检
   ```
 
 ## 联系我们
-技术交流群
+技术交流群(如二维码过期，请加官方运营微信：sear244)
 ![image](https://github.com/jvm-rasp/assets/blob/master/tech-chat.png)
 
 公众号

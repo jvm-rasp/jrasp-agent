@@ -445,10 +445,16 @@ public class DefaultCoreModuleManager implements CoreModuleManager {
             EventProcessor eventProcessor = eventListenerHandler.get(listenerId);
             // todo 遍历所有线程的实现方式不太友好，但是可以做到完全清除
             for (Thread thread : threadList) {
-                Object o = RaspReflectUtils.unCaughtGetClassDeclaredJavaFieldValue(Thread.class, "threadLocals", thread);
-                if (null != o) {
-                    Method method = RaspReflectUtils.unCaughtGetClassDeclaredJavaMethod(o.getClass(), "remove", ThreadLocal.class);
-                    RaspReflectUtils.unCaughtInvokeMethod(method, o, eventProcessor.processRef);
+                // 反射获取 ThreadLocalMap 对象
+                Object threadLocalMap = RaspReflectUtils.unCaughtGetClassDeclaredJavaFieldValue(Thread.class, "threadLocals", thread);
+                if (null != threadLocalMap) {
+                    //  反射获取 ThreadLocalMap类的 remove 方法
+                    Method method = RaspReflectUtils.unCaughtGetClassDeclaredJavaMethod(threadLocalMap.getClass(), "remove", ThreadLocal.class);
+                    try {
+                        RaspReflectUtils.unCaughtInvokeMethod(method, threadLocalMap, eventProcessor.processRef);
+                    } catch (Exception e) {
+                        // ignore
+                    }
                 }
             }
             eventListenerHandler.remove(listenerId);

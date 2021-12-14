@@ -28,8 +28,10 @@ public class PackageModule implements Module {
     @Command("version")
     public void version(final Map<String, String> parameterMap, final PrintWriter writer) throws IOException {
         String className = parameterMap.get("class");
+        logger.info("search class={}", className);
         if (instrumentation != null) {
             Class[] classList = instrumentation.getAllLoadedClasses();
+            logger.info("class length={}", classList.length);
             for (int i = 0; i < classList.length; i++) {
                 Class clazz = classList[i];
                 String name = clazz.getName();

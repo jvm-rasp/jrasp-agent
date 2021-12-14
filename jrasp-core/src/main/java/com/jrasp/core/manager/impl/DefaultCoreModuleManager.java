@@ -301,6 +301,15 @@ public class DefaultCoreModuleManager implements CoreModuleManager {
                     );
                 }
 
+                // Instrumentation
+                else if (Instrumentation.class.isAssignableFrom(fieldType)) {
+                    writeField(
+                            resourceField,
+                            module,
+                            inst,
+                            true
+                    );
+                }
                 // ThreadLocalHostInfo注入
                 else if (ThreadLocal.class.isAssignableFrom(fieldType)) {
                     final String name = resourceField.getName();

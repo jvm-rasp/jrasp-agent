@@ -13,6 +13,8 @@ import org.kohsuke.MetaInfServices;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.instrument.Instrumentation;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 @MetaInfServices(Module.class)
@@ -29,21 +31,18 @@ public class PackageModule implements Module {
     public void version(final Map<String, String> parameterMap, final PrintWriter writer) throws IOException {
         String className = parameterMap.get("class");
         logger.info("search class={}", className);
-        if (instrumentation != null) {
-            Class[] classList = instrumentation.getAllLoadedClasses();
-            logger.info("class length={}", classList.length);
-            for (int i = 0; i < classList.length; i++) {
-                Class clazz = classList[i];
-                String name = clazz.getName();
-                if (name.equals(className) || name.contains(className)) {
-                    Package aPackage = clazz.getPackage();
-                    writer.println(JSONObject.toJSONString(RestResultUtils.success(aPackage), SerializerFeature.PrettyFormat));
-                    writer.flush();
-                }
+        List<Package> packages = new ArrayList<Package>(20);
+        Class[] classList = instrumentation.getAllLoadedClasses();
+        logger.info("class list length={}", classList.length);
+        for (int i = 0; i < classList.length; i++) {
+            Class clazz = classList[i];
+            String name = clazz.getName();
+            if (name.equals(className) || name.contains(className)) {
+                Package aPackage = clazz.getPackage();
+                packages.add(aPackage);
             }
-        } else {
-            writer.println(JSONObject.toJSONString(RestResultUtils.success("instrumentation==null"), SerializerFeature.PrettyFormat));
-            writer.flush();
         }
+        writer.println(JSONObject.toJSONString(RestResultUtils.success(packages), SerializerFeature.PrettyFormat));
+        writer.flush();
     }
 }

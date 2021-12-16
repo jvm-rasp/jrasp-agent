@@ -53,10 +53,16 @@ public class CoreLauncher {
                              final String cfg) throws Exception {
 
         VirtualMachine vmObj = null;
+
         try {
 
             vmObj = VirtualMachine.attach(targetJvmPid);
+
             if (vmObj != null) {
+                // jdk 版本检查
+                //Properties targetSystemProperties = vmObj.getSystemProperties();
+                //String targetJavaVersion = targetSystemProperties.getProperty("java.specification.version");
+                //String currentJavaVersion = System.getProperty("java.specification.version");
                 vmObj.loadAgent(agentJarPath, cfg);
             }
 

@@ -1,7 +1,6 @@
 package com.jrasp.module.admin;
 
-import com.alibaba.fastjson.JSONObject;
-import com.alibaba.fastjson.serializer.SerializerFeature;
+import com.jrasp.api.json.JSONObject;
 import com.jrasp.api.*;
 import com.jrasp.api.Module;
 import com.jrasp.api.annotation.Command;
@@ -19,14 +18,17 @@ public class InfoModule implements Module {
     @Resource
     private ConfigInfo configInfo;
 
+    @Resource
+    private JSONObject jsonObject;
+
     @Command("version")
     public void version(final PrintWriter writer) throws IOException {
-        HashMap<String,Object> infoMap=new HashMap<String,Object>();
-        infoMap.put("username",configInfo.getUsername());
-        infoMap.put("version",configInfo.getVersion());
-        infoMap.put("mode",configInfo.getMode());
-        infoMap.put("raspHome",configInfo.getRaspHome());
-        writer.println(JSONObject.toJSONString(RestResultUtils.success(infoMap),SerializerFeature.PrettyFormat));
+        HashMap<String, Object> infoMap = new HashMap<String, Object>();
+        infoMap.put("username", configInfo.getUsername());
+        infoMap.put("version", configInfo.getVersion());
+        infoMap.put("mode", configInfo.getMode());
+        infoMap.put("raspHome", configInfo.getRaspHome());
+        writer.println(jsonObject.toJSONString(RestResultUtils.success(infoMap)));
         writer.flush();
     }
 }

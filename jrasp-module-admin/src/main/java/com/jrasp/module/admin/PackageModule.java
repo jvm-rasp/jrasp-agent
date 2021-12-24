@@ -1,7 +1,6 @@
 package com.jrasp.module.admin;
 
-import com.alibaba.fastjson.JSONObject;
-import com.alibaba.fastjson.serializer.SerializerFeature;
+import com.jrasp.api.json.JSONObject;
 import com.jrasp.api.Information;
 import com.jrasp.api.Module;
 import com.jrasp.api.Resource;
@@ -27,6 +26,9 @@ public class PackageModule implements Module {
     @Resource
     private Log logger;
 
+    @Resource
+    private JSONObject jsonObject;
+
     @Command("version")
     public void version(final Map<String, String> parameterMap, final PrintWriter writer) throws IOException {
         String className = parameterMap.get("class");
@@ -42,7 +44,7 @@ public class PackageModule implements Module {
                 packages.add(aPackage);
             }
         }
-        writer.println(JSONObject.toJSONString(RestResultUtils.success(packages), SerializerFeature.PrettyFormat));
+        writer.println(jsonObject.toFormatJSONString(RestResultUtils.success(packages)));
         writer.flush();
     }
 }

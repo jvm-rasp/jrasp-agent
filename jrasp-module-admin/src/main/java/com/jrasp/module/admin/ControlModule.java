@@ -1,12 +1,11 @@
 package com.jrasp.module.admin;
 
-import com.alibaba.fastjson.JSONObject;
-import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.jrasp.api.ConfigInfo;
 import com.jrasp.api.Information;
 import com.jrasp.api.Module;
 import com.jrasp.api.Resource;
 import com.jrasp.api.annotation.Command;
+import com.jrasp.api.json.JSONObject;
 import com.jrasp.api.log.Log;
 import com.jrasp.api.model.RestResultUtils;
 import org.apache.commons.lang3.reflect.MethodUtils;
@@ -21,6 +20,9 @@ public class ControlModule implements Module {
 
     @Resource
     private Log logger;
+
+    @Resource
+    private JSONObject jsonObject;
 
     @Resource
     private ConfigInfo configInfo;
@@ -54,7 +56,7 @@ public class ControlModule implements Module {
         shutdownJvmRaspHook.setDaemon(true);
 
         // 在卸载自己之前，先向这个世界发出最后的呐喊吧！
-        writer.println(JSONObject.toJSONString(RestResultUtils.success("shutdown success", null), SerializerFeature.PrettyFormat));
+        writer.println(jsonObject.toFormatJSONString(RestResultUtils.success("shutdown success", null)));
         writer.flush();
         writer.close();
 

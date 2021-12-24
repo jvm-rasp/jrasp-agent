@@ -1,7 +1,5 @@
 package com.jrasp.module.admin;
 
-import com.alibaba.fastjson.JSONObject;
-import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.jrasp.api.ConfigInfo;
 import com.jrasp.api.Information;
 import com.jrasp.api.Module;
@@ -9,6 +7,7 @@ import com.jrasp.api.Resource;
 import com.jrasp.api.annotation.Command;
 import com.jrasp.api.authentication.JwtTokenService;
 import com.jrasp.api.authentication.PayloadDto;
+import com.jrasp.api.json.JSONObject;
 import com.jrasp.api.log.Log;
 import com.jrasp.api.model.RestResult;
 import com.jrasp.api.model.RestResultUtils;
@@ -25,7 +24,10 @@ import java.util.Map;
 public class LoginModule implements Module {
 
     @Resource
-    private Log logger ;
+    private Log logger;
+
+    @Resource
+    private JSONObject jsonObject;
 
     @Resource
     private ConfigInfo configInfo;
@@ -45,7 +47,7 @@ public class LoginModule implements Module {
             PayloadDto payloadDto = jwtTokenService.getDefaultPayloadDto(username);
             String token = "";
             try {
-                token = jwtTokenService.generateToken(JSONObject.toJSONString(payloadDto));
+                token = jwtTokenService.generateToken(jsonObject.toJSONString(payloadDto));
             } catch (Exception e) {
                 // todo null
                 logger.error("generateToken error", e);
@@ -54,7 +56,7 @@ public class LoginModule implements Module {
         } else {
             restResult = RestResultUtils.failed(ResultCodeEnum.CLIENT_ERROR, "用户名或者密码错误");
         }
-        writer.println(JSONObject.toJSONString(restResult, SerializerFeature.PrettyFormat));
+        writer.println(jsonObject.toFormatJSONString(restResult));
         writer.flush();
     }
 
@@ -71,7 +73,7 @@ public class LoginModule implements Module {
         } else {
             restResult = RestResultUtils.failed(ResultCodeEnum.CLIENT_ERROR, "用户名或者密码错误");
         }
-        writer.println(JSONObject.toJSONString(restResult, SerializerFeature.PrettyFormat));
+        writer.println(jsonObject.toFormatJSONString(restResult));
         writer.flush();
     }
 }

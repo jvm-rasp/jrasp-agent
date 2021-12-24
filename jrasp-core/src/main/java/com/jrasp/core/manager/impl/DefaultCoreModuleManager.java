@@ -4,6 +4,7 @@ import com.jrasp.api.*;
 import com.jrasp.api.Module;
 import com.jrasp.api.authentication.JwtTokenService;
 import com.jrasp.api.event.Event;
+import com.jrasp.api.json.JSONObject;
 import com.jrasp.api.log.Log;
 import com.jrasp.api.resource.*;
 import com.jrasp.core.CoreConfigure;
@@ -12,6 +13,7 @@ import com.jrasp.core.CoreModule.ReleaseResource;
 import com.jrasp.core.classloader.ModuleJarClassLoader;
 import com.jrasp.core.enhance.weaver.EventListenerHandler;
 import com.jrasp.core.enhance.weaver.EventProcessor;
+import com.jrasp.core.json.JsonImpl;
 import com.jrasp.core.log.LogFactory;
 import com.jrasp.core.manager.CoreLoadedClassDataSource;
 import com.jrasp.core.manager.CoreModuleManager;
@@ -293,12 +295,12 @@ public class DefaultCoreModuleManager implements CoreModuleManager {
 
                 // log 注入
                 else if (Log.class.isAssignableFrom(fieldType)) {
-                    writeField(
-                            resourceField,
-                            module,
-                            LogFactory.getLog(module.getClass()),
-                            true
-                    );
+                    writeField(resourceField, module, LogFactory.getLog(module.getClass()), true);
+                }
+
+                // JsonImpl注入
+                else if (JSONObject.class.isAssignableFrom(fieldType)) {
+                    writeField(resourceField, module, new JsonImpl(), true);
                 }
 
                 // Instrumentation

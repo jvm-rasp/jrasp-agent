@@ -38,7 +38,7 @@ public class CoreConfigure {
 
     // jrasp技术支持链接
     private static final String KEY_SUPPORT_URL = "supportURL";
-    private static final String DEFAULT_SUPPORT_URL ="https://applink.feishu.cn/client/chat/chatter/add_by_link?link_token=e35l9ee2-a000-45ba-8863-75b5ca2cdbe6" ;
+    private static final String DEFAULT_SUPPORT_URL ="technical support：http://www.jrasp.com/" ;
 
     // 是否开启鉴权
     private static final String KEY_ENBALE_AUTH = "enableAuth";

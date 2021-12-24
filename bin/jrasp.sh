@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-typeset RASP_SUPPORT_URL="https://applink.feishu.cn/client/chat/chatter/add_by_link?link_token=e35l9ee2-a000-45ba-8863-75b5ca2cdbe6"
+typeset RASP_SUPPORT_URL="technical support：http://www.jrasp.com/"
 
 typeset RASP_HOME_DIR
 [[ -z ${RASP_HOME_DIR} ]] && RASP_HOME_DIR=${PWD}/..

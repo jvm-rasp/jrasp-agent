@@ -51,7 +51,7 @@ public class JvmRasp {
 
     private void init() {
         // 输出技术支持链接，方便业务排查问题
-        System.out.println(String.format("%s [jrasp] %s %s",
+        System.out.println(String.format("%s  INFO [jrasp] %s %s",
                 new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.sss").format(new Date()),
                 "开启RASP安全防护，技术支持:", cfg.getSupportURL()));
 
@@ -113,7 +113,9 @@ public class JvmRasp {
      */
     public void destroy() {
         // 输出技术支持链接，方便业务排查问题
-        System.out.println("关闭RASP安全防护,技术支持:" + cfg.getSupportURL());
+        System.out.println(String.format("%s  INFO [jrasp] %s %s",
+                new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.sss").format(new Date()),
+                "关闭RASP安全防护,技术支持:", cfg.getSupportURL()));
 
         if (clearThread != null) {
             Runtime.getRuntime().removeShutdownHook(clearThread);

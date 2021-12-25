@@ -19,7 +19,7 @@ jrasp-agent 基于Java Agent技术对Java字节码进行修改，增加安全检
 
 ## 编译环境
 + jdk8
-
++ mvn 3.2.5
 ## 快速安装
 
 - **1.下载并安装**
@@ -63,8 +63,12 @@ jrasp-agent 基于Java Agent技术对Java字节码进行修改，增加安全检
   {"code":200,"message":"shutdown success"}
   ```
 
-## 联系我们
-![image](https://github.com/jvm-rasp/assets/blob/master/1.png)
+## 技术交流群(如二维码过期，请加官方运营微信：sear244)
+![image](https://github.com/jvm-rasp/assets/blob/master/tech-chat.png)
+
+## 技术公众号
+![image](https://github.com/jvm-rasp/assets/blob/master/gongzhonghao.jpeg)
+
 
 ## 贡献者
 

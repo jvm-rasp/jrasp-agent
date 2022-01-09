@@ -72,6 +72,7 @@ jrasp-agent 基于Java Agent技术对Java字节码进行修改，增加安全检
 
 ## 贡献者
 
+项目参考：阿里的jvm-sandbox、百度open-rasp、字节跳动rasp、阿里云AMRS等产品
 
 ## 使用者
 

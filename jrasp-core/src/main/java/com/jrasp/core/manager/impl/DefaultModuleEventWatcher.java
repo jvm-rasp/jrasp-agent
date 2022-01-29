@@ -171,7 +171,7 @@ public class DefaultModuleEventWatcher implements ModuleEventWatcher {
                       final Event.Type... eventType) {
         final int watchId = watchIdSequencer.next();
         // 给对应的模块追加ClassFileTransformer
-        final RaspClassFileTransformer raspClassFileTransformer = new RaspClassFileTransformer(
+        final RaspClassFileTransformer raspClassFileTransformer = new RaspClassFileTransformer(inst,
                 watchId, coreModule.getUniqueId(), matcher, listener, isEnableUnsafe, eventType, namespace);
 
         // 注册到CoreModule中

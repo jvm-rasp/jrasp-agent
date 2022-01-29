@@ -94,12 +94,10 @@ public class UnsupportedMatcher implements Matcher {
     /*
      * 是否不支持的方法修饰
      * 1. abstract的方法没有实现，没有必要增强
-     * 2. native的方法暂时无法支持
      */
     private boolean isUnsupportedBehavior(final BehaviorStructure behaviorStructure) {
         final Access access = behaviorStructure.getAccess();
-        return access.isAbstract()
-                || access.isNative();
+        return access.isAbstract();
     }
 
     @Override

@@ -2,6 +2,7 @@ package com.jrasp.core.enhance;
 
 import com.jrasp.api.event.Event;
 import com.jrasp.core.enhance.weaver.asm.EventWeaver;
+import com.jrasp.core.manager.NativeMethodEnhanceAware;
 import com.jrasp.core.util.AsmUtils;
 import com.jrasp.core.util.ObjectIDs;
 import org.objectweb.asm.ClassReader;
@@ -25,6 +26,12 @@ import static org.objectweb.asm.Opcodes.ASM7;
 public class EventEnhancer implements Enhancer {
 
     private static final Logger logger = LoggerFactory.getLogger(EventEnhancer.class);
+
+    private NativeMethodEnhanceAware nativeMethodEnhanceAware;
+
+    public EventEnhancer(NativeMethodEnhanceAware nativeMethodEnhanceAware) {
+        this.nativeMethodEnhanceAware = nativeMethodEnhanceAware;
+    }
 
     /**
      * 创建ClassWriter for asm
@@ -96,7 +103,7 @@ public class EventEnhancer implements Enhancer {
         final ClassWriter cw = createClassWriter(targetClassLoader, cr);
         final int targetClassLoaderObjectID = ObjectIDs.instance.identity(targetClassLoader);
         cr.accept(
-                new EventWeaver(
+                new EventWeaver(nativeMethodEnhanceAware,
                         ASM7, cw, namespace, listenerId,
                         targetClassLoaderObjectID,
                         cr.getClassName(),

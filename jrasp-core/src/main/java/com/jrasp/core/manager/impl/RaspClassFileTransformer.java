@@ -4,7 +4,9 @@ import com.jrasp.api.event.Event;
 import com.jrasp.api.listener.EventListener;
 import com.jrasp.api.log.Log;
 import com.jrasp.core.enhance.EventEnhancer;
+import com.jrasp.core.enhance.weaver.asm.EventWeaver;
 import com.jrasp.core.log.LogFactory;
+import com.jrasp.core.manager.NativeMethodEnhanceAware;
 import com.jrasp.core.util.ObjectIDs;
 import com.jrasp.core.util.RaspClassUtils;
 import com.jrasp.core.util.RaspProtector;
@@ -14,17 +16,22 @@ import com.jrasp.core.util.matcher.UnsupportedMatcher;
 import com.jrasp.core.util.matcher.structure.ClassStructure;
 
 import java.lang.instrument.ClassFileTransformer;
+import java.lang.instrument.Instrumentation;
 import java.security.ProtectionDomain;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.jrasp.core.util.matcher.structure.ClassStructureFactory.createClassStructure;
 
 /**
  * 沙箱类形变器
  */
-public class RaspClassFileTransformer implements ClassFileTransformer {
+public class RaspClassFileTransformer implements ClassFileTransformer,NativeMethodEnhanceAware {
 
     private final Log logger = LogFactory.getLog(getClass());
+
+    private final AtomicBoolean setNativeMethodPrefix = new AtomicBoolean(false);
+    private final Instrumentation inst;
 
     private final int watchId;
     private final String uniqueId;
@@ -37,13 +44,15 @@ public class RaspClassFileTransformer implements ClassFileTransformer {
     private final int listenerId;
     private final AffectStatistic affectStatistic = new AffectStatistic();
 
-    RaspClassFileTransformer(final int watchId,
+    RaspClassFileTransformer(   final Instrumentation inst,
+                                final int watchId,
                                 final String uniqueId,
                                 final Matcher matcher,
                                 final EventListener eventListener,
                                 final boolean isEnableUnsafe,
                                 final Event.Type[] eventTypeArray,
                                 final String namespace) {
+        this.inst = inst;
         this.watchId = watchId;
         this.uniqueId = uniqueId;
         this.matcher = matcher;
@@ -124,7 +133,7 @@ public class RaspClassFileTransformer implements ClassFileTransformer {
 
         // 开始进行类匹配
         try {
-            final byte[] toByteCodeArray = new EventEnhancer().toByteCodeArray(
+            final byte[] toByteCodeArray = new EventEnhancer(this).toByteCodeArray(
                     loader,
                     srcByteCodeArray,
                     behaviorSignCodes,
@@ -201,6 +210,22 @@ public class RaspClassFileTransformer implements ClassFileTransformer {
      */
     public AffectStatistic getAffectStatistic() {
         return affectStatistic;
+    }
+
+    @Override
+    public String getNativeMethodPrefix() {
+        return EventWeaver.NATIVE_PREFIX;
+    }
+
+    @Override
+    public void makrNativeMethodEnhance() {
+        if(setNativeMethodPrefix.compareAndSet(false,true)){
+            if(inst.isNativeMethodPrefixSupported()){
+                inst.setNativeMethodPrefix(this,getNativeMethodPrefix());
+            }else{
+                throw new UnsupportedOperationException("Native Method Prefix Unspported");
+            }
+        }
     }
 
 }

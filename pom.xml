@@ -7,7 +7,7 @@
     <groupId>com.jrasp</groupId>
     <artifactId>jrasp-agent</artifactId>
     <packaging>pom</packaging>
-    <version>1.0</version>
+    <version>1.0.2</version>
 
     <name>jrasp-agent ${jrasp.version}</name>
 
@@ -26,11 +26,11 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <jrasp.version>1.0</jrasp.version>
+        <jrasp.version>1.0.2</jrasp.version>
         <shade-prefix>jrasp</shade-prefix>
         <jetty.version>8.1.2.v20120308</jetty.version>
-        <jose4j.version>1.0</jose4j.version>
-        <guava.version>18.0</guava.version>
+        <jose4j.version>1.0.2</jose4j.version>
+        <guava.version>19.0</guava.version>
         <asm.version>7.2</asm.version>
         <servlet.version>3.0.1</servlet.version>
         <fastjson.version>1.2.78</fastjson.version>

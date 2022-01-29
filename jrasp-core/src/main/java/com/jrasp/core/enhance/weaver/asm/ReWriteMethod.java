@@ -1,9 +1,12 @@
 package com.jrasp.core.enhance.weaver.asm;
 
+import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.AdviceAdapter;
+
+import java.com.jrasp.spy.Spy;
 
 public class ReWriteMethod extends AdviceAdapter implements Opcodes, AsmTypes, AsmMethods {
 
@@ -111,6 +114,57 @@ public class ReWriteMethod extends AdviceAdapter implements Opcodes, AsmTypes, A
             unbox(argumentTypeArray[i]);
             storeArg(i);
         }
+    }
+    final protected void loadReturn(Type returnType){
+        final int sort = returnType.getSort();
+        switch (sort) {
+            case Type.VOID: {
+                pushNull();
+                break;
+            }
+            case Type.LONG:
+            case Type.DOUBLE: {
+                dup2();
+                box(Type.getReturnType(methodDesc));
+                break;
+            }
+            case Type.ARRAY:
+            case Type.OBJECT: {
+                dup();
+                break;
+            }
+            case Type.METHOD:
+            default: {
+                dup();
+                box(Type.getReturnType(methodDesc));
+                break;
+            }
+        }
+    }
+
+    final protected void processControl(String desc) {
+        final Label finishLabel = new Label();
+        final Label returnLabel = new Label();
+        final Label throwsLabel = new Label();
+        dup();
+        visitFieldInsn(GETFIELD, ASM_TYPE_SPY_RET, "state", ASM_TYPE_INT);
+        dup();
+        push(Spy.Ret.RET_STATE_RETURN);
+        ifICmp(EQ, returnLabel);
+        push(Spy.Ret.RET_STATE_THROWS);
+        ifICmp(EQ, throwsLabel);
+        goTo(finishLabel);
+        mark(returnLabel);
+        pop();
+        visitFieldInsn(GETFIELD, ASM_TYPE_SPY_RET, "respond", ASM_TYPE_OBJECT);
+        checkCastReturn(Type.getReturnType(desc));
+        goTo(finishLabel);
+        mark(throwsLabel);
+        visitFieldInsn(GETFIELD, ASM_TYPE_SPY_RET, "respond", ASM_TYPE_OBJECT);
+        checkCast(ASM_TYPE_THROWABLE);
+        throwException();
+        mark(finishLabel);
+        pop();
     }
 
 }

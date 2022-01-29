@@ -5,7 +5,7 @@
     <parent>
         <artifactId>jrasp-agent</artifactId>
         <groupId>com.jrasp</groupId>
-        <version>1.0</version>
+        <version>1.0.2</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -41,6 +41,7 @@
                                     <Agent-Class>com.jrasp.agent.AgentLauncher</Agent-Class>
                                     <Can-Redefine-Classes>true</Can-Redefine-Classes>
                                     <Can-Retransform-Classes>true</Can-Retransform-Classes>
+                                    <Can-Set-Native-Method-Prefix>true</Can-Set-Native-Method-Prefix>
                                 </manifestEntries>
                             </archive>
                         </configuration>

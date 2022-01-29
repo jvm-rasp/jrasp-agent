@@ -1,5 +1,6 @@
 package com.jrasp.core.classloader;
 
+import com.jrasp.core.util.PlatformDependentUtil;
 import org.apache.commons.lang3.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,54 +58,57 @@ public class RoutingURLClassLoader extends URLClassLoader {
 
     @Override
     protected Class<?> loadClass(final String javaClassName, final boolean resolve) throws ClassNotFoundException {
-        return classLoadingLock.loadingInLock(javaClassName, new ClassLoadingLock.ClassLoading() {
-            @Override
-            public Class<?> loadClass(String javaClassName) throws ClassNotFoundException {
-                // 优先查询类加载路由表,如果命中路由规则,则优先从路由表中的ClassLoader完成类加载
-                if (ArrayUtils.isNotEmpty(routingArray)) {
-                    for (final Routing routing : routingArray) {
-                        if (!routing.isHit(javaClassName)) {
-                            continue;
-                        }
-                        final ClassLoader routingClassLoader = routing.classLoader;
-                        try {
-                            return routingClassLoader.loadClass(javaClassName);
-                        } catch (Exception cause) {
-                            // 如果在当前routingClassLoader中找不到应该优先加载的类(应该不可能，但不排除有就是故意命名成同名类)
-                            // 此时应该忽略异常，继续往下加载
-                            // ignore...
-                        }
+        synchronized (getClassLoadingLock0(javaClassName)){
+            // 优先查询类加载路由表,如果命中路由规则,则优先从路由表中的ClassLoader完成类加载
+            if (ArrayUtils.isNotEmpty(routingArray)) {
+                for (final Routing routing : routingArray) {
+                    if (!routing.isHit(javaClassName)) {
+                        continue;
                     }
-                }
-
-                // 先走一次已加载类的缓存，如果没有命中，则继续往下加载
-                final Class<?> loadedClass = findLoadedClass(javaClassName);
-                if (loadedClass != null) {
-                    return loadedClass;
-                }
-
-                try {
-                    Class<?> aClass = findClass(javaClassName);
-                    if (resolve) {
-                        resolveClass(aClass);
-                    }
-                    return aClass;
-                } catch (Exception cause) {
-                    // todo 为什么在异常之中使用类加载器加载
-                    BusinessClassLoaderHolder.DelegateBizClassLoader delegateBizClassLoader = BusinessClassLoaderHolder.getBussinessClassLoader();
+                    final ClassLoader routingClassLoader = routing.classLoader;
                     try {
-                        if(null != delegateBizClassLoader){
-                            return delegateBizClassLoader.loadClass(javaClassName,resolve);
-                        }
-                    } catch (Exception e) {
-                        //忽略异常，继续往下加载
+                        return routingClassLoader.loadClass(javaClassName);
+                    } catch (Exception cause) {
+                        // 如果在当前routingClassLoader中找不到应该优先加载的类(应该不可能，但不排除有就是故意命名成同名类)
+                        // 此时应该忽略异常，继续往下加载
+                        // ignore...
                     }
-                    return RoutingURLClassLoader.super.loadClass(javaClassName, resolve);
                 }
             }
-        });
+
+            // 先走一次已加载类的缓存，如果没有命中，则继续往下加载
+            final Class<?> loadedClass = findLoadedClass(javaClassName);
+            if (loadedClass != null) {
+                return loadedClass;
+            }
+
+            try {
+                Class<?> aClass = findClass(javaClassName);
+                if (resolve) {
+                    resolveClass(aClass);
+                }
+                return aClass;
+            } catch (Exception cause) {
+                BusinessClassLoaderHolder.DelegateBizClassLoader delegateBizClassLoader = BusinessClassLoaderHolder.getBussinessClassLoader();
+                try {
+                    if(null != delegateBizClassLoader){
+                        return delegateBizClassLoader.loadClass(javaClassName,resolve);
+                    }
+                } catch (Exception e) {
+                    //忽略异常，继续往下加载
+                }
+                return RoutingURLClassLoader.super.loadClass(javaClassName, resolve);
+            }
+        }
     }
 
+    @SuppressWarnings("Since15")
+    private Object getClassLoadingLock0(String javaClassName) {
+        if(PlatformDependentUtil.javaVersion() >= 7){
+            return getClassLoadingLock(javaClassName);
+        }
+        return this;
+    }
 
     /**
      * 类加载路由匹配器

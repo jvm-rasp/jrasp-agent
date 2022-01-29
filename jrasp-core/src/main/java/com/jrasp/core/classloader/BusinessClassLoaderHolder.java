@@ -18,8 +18,7 @@ public class BusinessClassLoaderHolder {
     }
 
     public static DelegateBizClassLoader getBussinessClassLoader(){
-
-        return holder.get();
+        return null != holder ? holder.get() : null;
     }
 
     // classloader 包装一层

@@ -1,6 +1,5 @@
 package com.jrasp.core.server;
 
-
 import com.jrasp.core.CoreConfigure;
 import com.jrasp.core.server.jetty.JettyCoreServer;
 

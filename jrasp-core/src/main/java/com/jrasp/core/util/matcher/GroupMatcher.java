@@ -1,6 +1,5 @@
 package com.jrasp.core.util.matcher;
 
-
 import com.jrasp.core.util.matcher.structure.BehaviorStructure;
 import com.jrasp.core.util.matcher.structure.ClassStructure;
 
@@ -13,7 +12,6 @@ public abstract class GroupMatcher implements Matcher {
     private GroupMatcher(final Matcher... matcherArray) {
         this.matcherArray = matcherArray;
     }
-
 
     public static final class Or extends GroupMatcher {
 

@@ -1,9 +1,9 @@
 package com.jrasp.core.classloader;
 
+import com.jrasp.api.log.Log;
+import com.jrasp.core.log.LogFactory;
 import com.jrasp.core.util.PlatformDependentUtil;
 import org.apache.commons.lang3.ArrayUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.URL;
@@ -13,13 +13,15 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Enumeration;
 
+import static com.jrasp.core.log.AgentLogIdConstant.ROUTING_URL_CLASS_LOADER_LOG_ID;
+
 /**
  * 可路由的URLClassLoader
  */
 public class RoutingURLClassLoader extends URLClassLoader {
 
-    private static final Logger logger = LoggerFactory.getLogger(RoutingURLClassLoader.class);
-    private final ClassLoadingLock classLoadingLock = new ClassLoadingLock();
+    private final static Log logger = LogFactory.getLog(RoutingURLClassLoader.class);
+
     private final Routing[] routingArray;
 
     public RoutingURLClassLoader(final URL[] urls,
@@ -58,7 +60,7 @@ public class RoutingURLClassLoader extends URLClassLoader {
 
     @Override
     protected Class<?> loadClass(final String javaClassName, final boolean resolve) throws ClassNotFoundException {
-        synchronized (getClassLoadingLock0(javaClassName)){
+        synchronized (getClassLoadingLock0(javaClassName)) {
             // 优先查询类加载路由表,如果命中路由规则,则优先从路由表中的ClassLoader完成类加载
             if (ArrayUtils.isNotEmpty(routingArray)) {
                 for (final Routing routing : routingArray) {
@@ -91,8 +93,8 @@ public class RoutingURLClassLoader extends URLClassLoader {
             } catch (Exception cause) {
                 BusinessClassLoaderHolder.DelegateBizClassLoader delegateBizClassLoader = BusinessClassLoaderHolder.getBussinessClassLoader();
                 try {
-                    if(null != delegateBizClassLoader){
-                        return delegateBizClassLoader.loadClass(javaClassName,resolve);
+                    if (null != delegateBizClassLoader) {
+                        return delegateBizClassLoader.loadClass(javaClassName, resolve);
                     }
                 } catch (Exception e) {
                     //忽略异常，继续往下加载
@@ -104,7 +106,7 @@ public class RoutingURLClassLoader extends URLClassLoader {
 
     @SuppressWarnings("Since15")
     private Object getClassLoadingLock0(String javaClassName) {
-        if(PlatformDependentUtil.javaVersion() >= 7){
+        if (PlatformDependentUtil.javaVersion() >= 7) {
             return getClassLoadingLock(javaClassName);
         }
         return this;
@@ -145,7 +147,7 @@ public class RoutingURLClassLoader extends URLClassLoader {
                         return true;
                     }
                 } catch (Throwable cause) {
-                    logger.warn("routing {} failed, regex-express={}.", javaClassName, regexExpress, cause);
+                    logger.warn(ROUTING_URL_CLASS_LOADER_LOG_ID,"routing {} failed, regex-express={}.", javaClassName, regexExpress, cause);
                 }
             }
             return false;

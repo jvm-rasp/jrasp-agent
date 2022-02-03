@@ -5,11 +5,11 @@ import com.jrasp.api.event.BeforeEvent;
 import com.jrasp.api.event.Event;
 import com.jrasp.api.event.InvokeEvent;
 import com.jrasp.api.listener.EventListener;
+import com.jrasp.api.log.Log;
 import com.jrasp.core.classloader.BusinessClassLoaderHolder;
+import com.jrasp.core.log.LogFactory;
 import com.jrasp.core.util.ObjectIDs;
 import com.jrasp.core.util.RaspProtector;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.com.jrasp.spy.Spy;
 import java.com.jrasp.spy.SpyHandler;
@@ -20,6 +20,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.jrasp.api.event.Event.Type.IMMEDIATELY_RETURN;
 import static com.jrasp.api.event.Event.Type.IMMEDIATELY_THROWS;
+import static com.jrasp.core.log.AgentLogIdConstant.*;
 import static com.jrasp.core.util.RaspReflectUtils.isInterruptEventHandler;
 import static java.com.jrasp.spy.Spy.Ret.newInstanceForNone;
 import static java.com.jrasp.spy.Spy.Ret.newInstanceForThrows;
@@ -32,13 +33,13 @@ import static org.apache.commons.lang3.StringUtils.join;
  */
 public class EventListenerHandler implements SpyHandler {
 
+    private final static Log logger = LogFactory.getLog(EventListenerHandler.class);
+
     private static EventListenerHandler singleton = new EventListenerHandler();
 
     public static EventListenerHandler getSingleton() {
         return singleton;
     }
-
-    private final Logger logger = LoggerFactory.getLogger(getClass());
 
     // 调用序列生成器
     private final AtomicInteger invokeIdSequencer = new AtomicInteger(1000); // 不会溢出，回到最小值 -2147483648
@@ -58,7 +59,7 @@ public class EventListenerHandler implements SpyHandler {
                        final EventListener listener,
                        final Event.Type[] eventTypes) {
         mappingOfEventProcessor.put(listenerId, new EventProcessor(listenerId, listener, eventTypes));
-        logger.info("activated listener[id={};target={};] event={}",
+        logger.info(ACTIVED_LISTENER_LOG_ID, "activated listener[id={};target={};] event={}",
                 listenerId,
                 listener,
                 join(eventTypes, ",")
@@ -73,13 +74,12 @@ public class EventListenerHandler implements SpyHandler {
     public void frozen(int listenerId) {
         final EventProcessor processor = mappingOfEventProcessor.get(listenerId);
         if (null == processor) {
-            logger.debug("ignore frozen listener={}, because not found.", listenerId);
             return;
         }
 
         processor.frozen();
 
-        logger.info("frozen listener[id={};target={};]",
+        logger.info(FROZEN_LISTENER_LOG_ID,"frozen listener[id={};target={};]",
                 listenerId,
                 processor.listener
         );
@@ -95,11 +95,10 @@ public class EventListenerHandler implements SpyHandler {
     public void remove(int listenerId) {
         final EventProcessor processor = mappingOfEventProcessor.remove(listenerId);
         if (null == processor) {
-            logger.debug("ignore remove listener={}, because not found.", listenerId);
             return;
         }
 
-        logger.info("remove listener[id={};target={};]",
+        logger.info(REMOVE_LISTENER_LOG_ID,"remove listener[id={};target={};]",
                 listenerId,
                 processor.listener
         );
@@ -154,14 +153,6 @@ public class EventListenerHandler implements SpyHandler {
 
         // 调用事件处理
         try {
-            if (logger.isDebugEnabled()) {
-                logger.debug("on-event: event|{}|{}|{}|{}",
-                        event.type,
-                        processId,
-                        invokeId,
-                        listenerId
-                );
-            }
             listener.onEvent(event);
         }
 
@@ -171,14 +162,6 @@ public class EventListenerHandler implements SpyHandler {
             final EventProcessor.Process process = processor.processRef.get();
 
             final ProcessControlException.State state = pce.getState();
-            logger.debug("on-event: event|{}|{}|{}|{}, process-changed: {}. isIgnoreProcessEvent={};",
-                    event.type,
-                    processId,
-                    invokeId,
-                    listenerId,
-                    state,
-                    pce.isIgnoreProcessEvent()
-            );
 
             // 如果流程控制要求忽略后续处理所有事件，则需要在此处进行标记
             if (pce.isIgnoreProcessEvent()) {
@@ -192,12 +175,7 @@ public class EventListenerHandler implements SpyHandler {
 
                         // 如果已经禁止后续返回任何事件了，则不进行后续的操作
                         if (pce.isIgnoreProcessEvent()) {
-                            logger.debug("on-event: event|{}|{}|{}|{}, ignore immediately-return-event, isIgnored.",
-                                    event.type,
-                                    processId,
-                                    invokeId,
-                                    listenerId
-                            );
+
                         } else {
                             // 补偿立即返回事件
                             compensateProcessControlEvent(pce, processor, process, event);
@@ -221,12 +199,7 @@ public class EventListenerHandler implements SpyHandler {
 
                         // 如果已经禁止后续返回任何事件了，则不进行后续的操作
                         if (pce.isIgnoreProcessEvent()) {
-                            logger.debug("on-event: event|{}|{}|{}|{}, ignore immediately-throws-event, isIgnored.",
-                                    event.type,
-                                    processId,
-                                    invokeId,
-                                    listenerId
-                            );
+
                         } else {
 
                             // 如果是在BEFORE中立即抛出，则后续不会再有THROWS事件产生
@@ -270,17 +243,7 @@ public class EventListenerHandler implements SpyHandler {
             if (isInterruptEventHandler(listener.getClass())) {
                 throw throwable;
             }
-
             // 普通事件处理器则可以打个日志后,直接放行
-            else {
-                logger.warn("on-event: event|{}|{}|{}|{} occur an error.",
-                        event.type,
-                        processId,
-                        invokeId,
-                        listenerId,
-                        throwable
-                );
-            }
         }
 
         // 默认返回不进行任何流程变更
@@ -322,16 +285,9 @@ public class EventListenerHandler implements SpyHandler {
         }
 
         try {
-            logger.debug("compensate-event: event|{}|{}|{}|{} when ori-event:{}",
-                    compensateEvent.type,
-                    iEvent.processId,
-                    iEvent.invokeId,
-                    processor.listenerId,
-                    event.type
-            );
             processor.listener.onEvent(compensateEvent);
         } catch (Throwable cause) {
-            logger.warn("compensate-event: event|{}|{}|{}|{} when ori-event:{} occur error.",
+            logger.warn(PROCESS_EVENT_ERROR_LOG_ID,"compensate-event: event|{}|{}|{}|{} when ori-event:{} occur error.",
                     compensateEvent.type,
                     iEvent.processId,
                     iEvent.invokeId,
@@ -359,7 +315,6 @@ public class EventListenerHandler implements SpyHandler {
 
         // 在守护区内产生的事件不需要响应
         if (RaspProtector.instance.isInProtecting()) {
-            logger.debug("listener={} is in protecting, ignore processing before-event", listenerId);
             return newInstanceForNone();
         }
 
@@ -368,12 +323,10 @@ public class EventListenerHandler implements SpyHandler {
 
         // 如果尚未注册,则直接返回,不做任何处理
         if (null == processor) {
-            logger.debug("listener={} is not activated, ignore processing before-event.", listenerId);
             return newInstanceForNone();
         }
 
         if (processor.isFrozen()) {
-            logger.debug("listener={} is frozen, ignore processing before-event.", listenerId);
             return newInstanceForNone();
         }
 
@@ -382,7 +335,6 @@ public class EventListenerHandler implements SpyHandler {
 
         // 如果当前处理ID被忽略，则立即返回
         if (process.isIgnoreProcess()) {
-            logger.debug("listener={} is marked ignore process!", listenerId);
             return newInstanceForNone();
         }
 
@@ -438,7 +390,6 @@ public class EventListenerHandler implements SpyHandler {
 
         // 在守护区内产生的事件不需要响应
         if (RaspProtector.instance.isInProtecting()) {
-            logger.debug("listener={} is in protecting, ignore processing {}-event", listenerId, isReturn ? "return" : "throws");
             return newInstanceForNone();
         }
 
@@ -446,12 +397,10 @@ public class EventListenerHandler implements SpyHandler {
 
         // 如果尚未注册,则直接返回,不做任何处理
         if (null == wrap) {
-            logger.debug("listener={} is not activated, ignore processing return-event|throws-event.", listenerId);
             return newInstanceForNone();
         }
 
         if (wrap.isFrozen()) {
-            logger.debug("listener={} is frozen, ignore processing before-event.", listenerId);
             return newInstanceForNone();
         }
 
@@ -485,7 +434,7 @@ public class EventListenerHandler implements SpyHandler {
         // 如果PID==IID说明已经到栈顶，此时需要核对堆栈是否为空
         // 如果不为空需要输出日志进行告警
         if (checkProcessStack(processId, invokeId, process.isEmptyStack())) {
-            logger.warn("ERROR process-stack. pid={};iid={};listener={};",
+            logger.warn(PROCESS_STACK_ERROR_LOG_ID,"ERROR process-stack. pid={};iid={};listener={};",
                     processId,
                     invokeId,
                     listenerId
@@ -510,18 +459,15 @@ public class EventListenerHandler implements SpyHandler {
 
         // 在守护区内产生的事件不需要响应
         if (RaspProtector.instance.isInProtecting()) {
-            logger.debug("listener={} is in protecting, ignore processing call-before-event", listenerId);
             return;
         }
 
         final EventProcessor wrap = mappingOfEventProcessor.get(listenerId);
         if (null == wrap) {
-            logger.debug("listener={} is not activated, ignore processing call-before-event.", listenerId);
             return;
         }
 
         if (wrap.isFrozen()) {
-            logger.debug("listener={} is frozen, ignore processing before-event.", listenerId);
             return;
         }
 
@@ -559,18 +505,15 @@ public class EventListenerHandler implements SpyHandler {
 
         // 在守护区内产生的事件不需要响应
         if (RaspProtector.instance.isInProtecting()) {
-            logger.debug("listener={} is in protecting, ignore processing call-return-event", listenerId);
             return;
         }
 
         final EventProcessor wrap = mappingOfEventProcessor.get(listenerId);
         if (null == wrap) {
-            logger.debug("listener={} is not activated, ignore processing call-return-event.", listenerId);
             return;
         }
 
         if (wrap.isFrozen()) {
-            logger.debug("listener={} is frozen, ignore processing before-event.", listenerId);
             return;
         }
 
@@ -602,18 +545,15 @@ public class EventListenerHandler implements SpyHandler {
 
         // 在守护区内产生的事件不需要响应
         if (RaspProtector.instance.isInProtecting()) {
-            logger.debug("listener={} is in protecting, ignore processing call-throws-event", listenerId);
             return;
         }
 
         final EventProcessor wrap = mappingOfEventProcessor.get(listenerId);
         if (null == wrap) {
-            logger.debug("listener={} is not activated, ignore processing call-throws-event.", listenerId);
             return;
         }
 
         if (wrap.isFrozen()) {
-            logger.debug("listener={} is frozen, ignore processing before-event.", listenerId);
             return;
         }
 
@@ -645,18 +585,15 @@ public class EventListenerHandler implements SpyHandler {
 
         // 在守护区内产生的事件不需要响应
         if (RaspProtector.instance.isInProtecting()) {
-            logger.debug("listener={} is in protecting, ignore processing call-line-event", listenerId);
             return;
         }
 
         final EventProcessor wrap = mappingOfEventProcessor.get(listenerId);
         if (null == wrap) {
-            logger.debug("listener={} is not activated, ignore processing line-event.", listenerId);
             return;
         }
 
         if (wrap.isFrozen()) {
-            logger.debug("listener={} is frozen, ignore processing before-event.", listenerId);
             return;
         }
 

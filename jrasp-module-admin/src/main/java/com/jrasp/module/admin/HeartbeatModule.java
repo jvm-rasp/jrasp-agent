@@ -7,11 +7,12 @@ import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.kohsuke.MetaInfServices;
 
 import java.lang.management.ManagementFactory;
-import java.util.Date;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import static com.jrasp.module.admin.AdminModuleLogIdConstant.*;
 
 @MetaInfServices(Module.class)
 @Information(id = "heartbeat", author = "jrasp", version = "0.0.1")
@@ -56,7 +57,7 @@ public class HeartbeatModule extends ModuleLifecycleAdapter implements Module {
                     try {
                         work();
                     } catch (Exception e) {
-                        logger.error("error occurred when report heartbeat", e);
+                        logger.error(HEART_BEAT_MODULE_WORK_ERROR_LOG_ID,"error occurred when report heartbeat", e);
                     }
                 }
             }, 1, FREQUENCY, TimeUnit.SECONDS); // to avoid dead lock, init time could not be 0
@@ -65,7 +66,7 @@ public class HeartbeatModule extends ModuleLifecycleAdapter implements Module {
 
     // 心跳消息写入本地
     private void work() {
-        logger.info("ip: {}, pid: {}, port: {}, version: {}", configInfo.getServerAddress().getHostName(), pid, configInfo.getServerAddress().getPort(), configInfo.getVersion());
+        logger.info(HEART_BEAT_MODULE_WORK_LOG_ID,"ip: {}, pid: {}, port: {}, version: {}", configInfo.getServerAddress().getHostName(), pid, configInfo.getServerAddress().getPort(), configInfo.getVersion());
     }
 
     private void stop() {

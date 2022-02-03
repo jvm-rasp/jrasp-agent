@@ -8,6 +8,7 @@ import org.apache.commons.lang3.StringUtils;
 import java.io.File;
 import java.util.Arrays;
 
+import static com.jrasp.core.log.AgentLogIdConstant.AGENT_COMMON_LOG_ID;
 import static org.apache.commons.io.FileUtils.convertFileCollectionToFileArray;
 import static org.apache.commons.io.FileUtils.listFiles;
 import static org.apache.commons.lang3.StringUtils.join;
@@ -48,7 +49,7 @@ public class ModuleLibLoader {
                 ModuleJarLoader moduleJarLoader = new ModuleJarLoader(moduleJarFile, copyDir, mode);
                 moduleJarLoader.load(mCb);  // 类加载回调
             } catch (Throwable cause) {
-                logger.warn("loading module-jar occur error! module-jar={};", moduleJarFile, cause);
+                logger.warn(AGENT_COMMON_LOG_ID,"loading module-jar occur error! module-jar={};", moduleJarFile, cause);
             }
         }
     }
@@ -57,7 +58,7 @@ public class ModuleLibLoader {
     private File[] listModuleJarFileInLib() {
         final File[] moduleJarFileArray = toModuleJarFileArray();
         Arrays.sort(moduleJarFileArray);   // todo 排序，输出日志jar信息是按照字母排序的
-        logger.info("loading module-lib={}, found {} module-jar files : {}",
+        logger.info(AGENT_COMMON_LOG_ID,"loading module-lib={}, found {} module-jar files : {}",
                 moduleLibDir,
                 moduleJarFileArray.length,
                 join(moduleJarFileArray, ",")    // list转字符串逗号分割

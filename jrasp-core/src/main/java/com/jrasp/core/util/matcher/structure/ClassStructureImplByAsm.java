@@ -2,21 +2,22 @@ package com.jrasp.core.util.matcher.structure;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import com.jrasp.api.log.Log;
 import com.jrasp.api.util.LazyGet;
+import com.jrasp.core.log.LogFactory;
 import com.jrasp.core.util.BitUtils;
 import com.jrasp.core.util.collection.Pair;
 import com.jrasp.core.util.matcher.structure.PrimitiveClassStructure.Primitive;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.objectweb.asm.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static com.jrasp.core.log.AgentLogIdConstant.AGENT_COMMON_LOG_ID;
 import static com.jrasp.core.util.RaspStringUtils.toInternalClassName;
 import static com.jrasp.core.util.RaspStringUtils.toJavaClassName;
 import static com.jrasp.core.util.matcher.structure.PrimitiveClassStructure.mappingPrimitiveByJavaClassName;
@@ -215,7 +216,8 @@ class ArrayClassStructure extends EmptyClassStructure {
  */
 public class ClassStructureImplByAsm extends FamilyClassStructure {
 
-    private final Logger logger = LoggerFactory.getLogger(getClass());
+    private final static Log logger = LogFactory.getLog(ClassStructureImplByAsm.class);
+
     private final ClassReader classReader;
     private final ClassLoader loader;
     private final Access access;
@@ -308,7 +310,7 @@ public class ClassStructureImplByAsm extends FamilyClassStructure {
                     return classStructure;
                 } catch (Throwable cause) {
                     // ignore
-                    logger.warn("new instance class structure by using ASM failed, will return null. class={};loader={};",
+                    logger.warn(AGENT_COMMON_LOG_ID,"new instance class structure by using ASM failed, will return null. class={};loader={};",
                             javaClassName, loader, cause);
                     classStructureCache.put(pair, null);
                 } finally {

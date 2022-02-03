@@ -17,6 +17,7 @@ import org.kohsuke.MetaInfServices;
 
 import java.io.PrintWriter;
 import java.util.Map;
+import static com.jrasp.module.admin.AdminModuleLogIdConstant.*;
 
 @MetaInfServices(Module.class)
 @Information(id = "user", version = "0.0.1", author = "jrasp")
@@ -50,7 +51,7 @@ public class LoginModule implements Module {
                 token = jwtTokenService.generateToken(jsonObject.toJSONString(payloadDto));
             } catch (Exception e) {
                 // todo null
-                logger.error("generateToken error", e);
+                logger.error(LOGIN_MODULE_ERROR_LOG_ID,"generateToken error", e);
             }
             restResult = RestResultUtils.success("login success", token);
         } else {

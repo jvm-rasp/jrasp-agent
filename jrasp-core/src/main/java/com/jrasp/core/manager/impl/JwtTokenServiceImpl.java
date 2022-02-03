@@ -11,6 +11,8 @@ import org.jose4j.jwe.KeyManagementAlgorithmIdentifiers;
 import org.jose4j.keys.PbkdfKey;
 import org.jose4j.lang.JoseException;
 
+import static com.jrasp.core.log.AgentLogIdConstant.AGENT_COMMON_LOG_ID;
+
 public class JwtTokenServiceImpl implements JwtTokenService {
 
     private final Log logger = LogFactory.getLog(getClass());
@@ -37,7 +39,7 @@ public class JwtTokenServiceImpl implements JwtTokenService {
         try {
             compactSerialization = jwe.getCompactSerialization();
         } catch (JoseException e) {
-            logger.error("generate token error", e);
+            logger.error(AGENT_COMMON_LOG_ID,"generate token error", e);
         }
         return compactSerialization;
     }
@@ -51,7 +53,7 @@ public class JwtTokenServiceImpl implements JwtTokenService {
             jwe.setKey(new PbkdfKey(password));
             payload = jwe.getPayload();
         } catch (Exception e) {
-            logger.error("verify token error", e);
+            logger.error(AGENT_COMMON_LOG_ID,"verify token error", e);
         }
         PayloadDto payloadDto = JSONObject.parseObject(payload, PayloadDto.class);
         return System.currentTimeMillis() <= payloadDto.getEnd();

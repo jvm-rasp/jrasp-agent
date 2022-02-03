@@ -1,18 +1,17 @@
 package com.jrasp.core.util;
 
+import com.jrasp.api.log.Log;
+import com.jrasp.core.log.LogFactory;
+
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static com.jrasp.core.log.AgentLogIdConstant.AGENT_COMMON_LOG_ID;
 
-/**
- * @author zhuangpeng
- * @since 2020/12/3
- */
+
 public class PlatformDependentUtil {
 
-    private static final Logger logger = LoggerFactory.getLogger(PlatformDependentUtil.class);
+    private final static Log logger = LogFactory.getLog(PlatformDependentUtil.class);
 
     private static final int JAVA_VERSION = javaVersion0();
 
@@ -24,7 +23,7 @@ public class PlatformDependentUtil {
         final int majorVersion;
 
         majorVersion = majorVersionFromJavaSpecificationVersion();
-        logger.info("Java version: {}", majorVersion);
+        logger.info(AGENT_COMMON_LOG_ID, "Java version: {}", majorVersion);
 
         return majorVersion;
     }
@@ -57,8 +56,8 @@ public class PlatformDependentUtil {
      * the property access fails.
      *
      * @return the property value.
-     *         {@code def} if there's no such property or if an access to the
-     *         specified property is not allowed.
+     * {@code def} if there's no such property or if an access to the
+     * specified property is not allowed.
      */
     public static String get(final String key, String def) {
         if (key == null) {
@@ -81,7 +80,7 @@ public class PlatformDependentUtil {
                 });
             }
         } catch (SecurityException e) {
-            logger.warn("Unable to retrieve a system property '{}'; default values will be used.", key, e);
+            logger.warn(AGENT_COMMON_LOG_ID, "Unable to retrieve a system property '{}'; default values will be used.", key, e);
         }
 
         if (value == null) {

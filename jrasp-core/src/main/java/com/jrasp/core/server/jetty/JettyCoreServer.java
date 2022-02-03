@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.lang.instrument.Instrumentation;
 import java.net.InetSocketAddress;
 
+import static com.jrasp.core.log.AgentLogIdConstant.AGENT_COMMON_LOG_ID;
 import static com.jrasp.core.util.NetworkUtils.isPortInUsing;
 import static java.lang.String.format;
 import static org.eclipse.jetty.servlet.ServletContextHandler.NO_SESSIONS;
@@ -65,18 +66,18 @@ public class JettyCoreServer implements CoreServer {
                 public void process() throws Throwable {
                     if (null != httpServer) {
                         // stop http server
-                        logger.info("{} is stopping", JettyCoreServer.this);
+                        logger.info(AGENT_COMMON_LOG_ID,"{} is stopping", JettyCoreServer.this);
                         httpServer.stop();
                     }
                 }
             });
             // destroy http server
-            logger.info("{} is destroying", this);
+            logger.info(AGENT_COMMON_LOG_ID,"{} is destroying", this);
             while (!httpServer.isStopped()) ;
             httpServer.destroy();
 
         } catch (Throwable cause) {
-            logger.warn("{} unBind failed.", this, cause);
+            logger.warn(AGENT_COMMON_LOG_ID,"{} unBind failed.", this, cause);
             throw new IOException("unBind failed.", cause);
         }
     }
@@ -122,7 +123,7 @@ public class JettyCoreServer implements CoreServer {
 
         // module-http-servlet
         final String pathSpec = "/*";
-        logger.info("initializing http-handler. path={}", contextPath + pathSpec);
+        logger.info(AGENT_COMMON_LOG_ID,"initializing http-handler. path={}", contextPath + pathSpec);
         context.addServlet(
                 new ServletHolder(new ModuleHttpServlet(cfg, jvmRasp.getCoreModuleManager())),
                 pathSpec
@@ -201,7 +202,7 @@ public class JettyCoreServer implements CoreServer {
                             cfg.getCfgLibPath() + File.separator + "jrasp-logback.xml",
                             cfg.getLogsPath()
                     );
-                    logger.info("initializing server. cfg={}", cfg);
+                    logger.info(AGENT_COMMON_LOG_ID,"initializing server. cfg={}", cfg);
                     jvmRasp = new JvmRasp(cfg, inst);
                     initHttpServer();
                     initJettyContextHandler();
@@ -213,11 +214,11 @@ public class JettyCoreServer implements CoreServer {
             try {
                 jvmRasp.getCoreModuleManager().reset();
             } catch (Throwable cause) {
-                logger.warn("reset occur error when initializing.", cause);
+                logger.warn(AGENT_COMMON_LOG_ID,"reset occur error when initializing.", cause);
             }
 
             final InetSocketAddress local = getLocal();
-            logger.info("initialized server. actual bind to {}:{}",
+            logger.info(AGENT_COMMON_LOG_ID,"initialized server. actual bind to {}:{}",
                     local.getHostName(),
                     local.getPort()
             );
@@ -226,13 +227,13 @@ public class JettyCoreServer implements CoreServer {
         } catch (Throwable cause) {
 
             // 这里会抛出到目标应用层，所以在这里留下错误信息
-            logger.warn("initialize server failed.", cause);
+            logger.warn(AGENT_COMMON_LOG_ID,"initialize server failed.", cause);
 
             // 对外抛出到目标应用中
             throw new IOException("server bind failed.", cause);
         }
 
-        logger.info("{} bind success.", this);
+        logger.info(AGENT_COMMON_LOG_ID,"{} bind success.", this);
     }
 
     @Override
@@ -253,7 +254,7 @@ public class JettyCoreServer implements CoreServer {
             try {
                 unbind();
             } catch (IOException e) {
-                logger.warn("{} unBind failed when destroy.", this, e);
+                logger.warn(AGENT_COMMON_LOG_ID,"{} unBind failed when destroy.", this, e);
             }
         }
 

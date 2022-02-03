@@ -1,14 +1,17 @@
 package com.jrasp.core.util.matcher.structure;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import com.jrasp.api.log.Log;
+import com.jrasp.core.log.LogFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
 
+import static com.jrasp.core.log.AgentLogIdConstant.AGENT_COMMON_LOG_ID;
+
 public class ClassStructureFactory {
 
-    private static final Logger logger = LoggerFactory.getLogger(ClassStructureFactory.class);
+    private final static Log logger = LogFactory.getLog(ClassStructureFactory.class);
 
     public static ClassStructure createClassStructure(final Class<?> clazz) {
         return new ClassStructureImplByJDK(clazz);
@@ -19,7 +22,7 @@ public class ClassStructureFactory {
         try {
             return new ClassStructureImplByAsm(classInputStream, loader);
         } catch (IOException cause) {
-            logger.warn("create class structure failed by using ASM, return null. loader={};", loader, cause);
+            logger.warn(AGENT_COMMON_LOG_ID,"create class structure failed by using ASM, return null. loader={};", loader, cause);
             return null;
         }
     }

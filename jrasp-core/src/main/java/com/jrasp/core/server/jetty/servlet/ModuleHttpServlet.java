@@ -30,6 +30,7 @@ import java.util.*;
 import static com.alibaba.fastjson.serializer.SerializerFeature.PrettyFormat;
 import static com.jrasp.api.model.ResultCodeEnum.*;
 import static com.jrasp.api.util.GaStringUtils.matching;
+import static com.jrasp.core.log.AgentLogIdConstant.AGENT_COMMON_LOG_ID;
 
 public class ModuleHttpServlet extends HttpServlet {
 
@@ -37,7 +38,7 @@ public class ModuleHttpServlet extends HttpServlet {
     private static final List<String> NO_LOGIN_PATHS = Arrays.asList("/user/login", "/user/update", "/info/version", "/module/list");
 
     private static final String SLASH = "/";
-    private final Log logger = LogFactory.getLog(getClass());
+    private final Log logger = LogFactory.getLog(ModuleHttpServlet.class);
 
     private final CoreConfigure cfg;
     private final CoreModuleManager coreModuleManager;
@@ -79,7 +80,7 @@ public class ModuleHttpServlet extends HttpServlet {
         // 获取模块ID
         final String uniqueId = parseUniqueId(path);
         if (StringUtils.isBlank(uniqueId)) {
-            logger.warn("path={} is not matched any module.", path);
+            logger.warn(AGENT_COMMON_LOG_ID,"path={} is not matched any module.", path);
             writer.println(JSONObject.toJSONString(RestResultUtils.failed(NOT_FOUND,"path=%s is not matched any module",path),PrettyFormat));
             return;
         }
@@ -87,7 +88,7 @@ public class ModuleHttpServlet extends HttpServlet {
         // 获取模块
         final CoreModule coreModule = coreModuleManager.get(uniqueId);
         if (null == coreModule) {
-            logger.warn("path={} is matched module {}, but not existed.", path, uniqueId);
+            logger.warn(AGENT_COMMON_LOG_ID,"path={} is matched module {}, but not existed.", path, uniqueId);
             writer.println(JSONObject.toJSONString(RestResultUtils.failed(NOT_FOUND,"path=%s is matched module %s, but not existed.",path,uniqueId),PrettyFormat));
             return;
         }
@@ -100,11 +101,11 @@ public class ModuleHttpServlet extends HttpServlet {
                 coreModule.getModule().getClass()
         );
         if (null == method) {
-            logger.warn("path={} is not matched any method in module {}", path, uniqueId);
+            logger.warn(AGENT_COMMON_LOG_ID,"path={} is not matched any method in module {}", path, uniqueId);
             writer.println(JSONObject.toJSONString(RestResultUtils.failed(NOT_FOUND,"path=%s is not matched any method in module %s", path, uniqueId),PrettyFormat));
             return;
         } else {
-            logger.debug("path={} is matched method {} in module {}", path, method.getName(), uniqueId);
+            logger.debug(AGENT_COMMON_LOG_ID,"path={} is matched method {} in module {}", path, method.getName(), uniqueId);
         }
 
         // 自动释放I/O资源
@@ -120,7 +121,7 @@ public class ModuleHttpServlet extends HttpServlet {
                         try {
                             ((Flushable) closeable).flush();
                         } catch (Exception cause) {
-                            logger.warn("path={} flush I/O occur error!", path, cause);
+                            logger.warn(AGENT_COMMON_LOG_ID,"path={} flush I/O occur error!", path, cause);
                         }
                     }
                     IOUtils.closeQuietly(closeable);
@@ -137,12 +138,11 @@ public class ModuleHttpServlet extends HttpServlet {
             method.setAccessible(true);
             Thread.currentThread().setContextClassLoader(coreModule.getLoader());
             method.invoke(coreModule.getModule(), parameterObjectArray);
-            logger.debug("path={} invoke module {} method {} success.", path, uniqueId, method.getName());
         } catch (IllegalAccessException iae) {
-            logger.warn("path={} invoke module {} method {} occur access denied.", path, uniqueId, method.getName(), iae);
+            logger.warn(AGENT_COMMON_LOG_ID,"path={} invoke module {} method {} occur access denied.", path, uniqueId, method.getName(), iae);
             throw new ServletException(iae);
         } catch (InvocationTargetException ite) {
-            logger.warn("path={} invoke module {} method {} occur error.", path, uniqueId, method.getName(), ite.getTargetException());
+            logger.warn(AGENT_COMMON_LOG_ID,"path={} invoke module {} method {} occur error.", path, uniqueId, method.getName(), ite.getTargetException());
             final Throwable targetCause = ite.getTargetException();
             if (targetCause instanceof ServletException) {
                 throw (ServletException) targetCause;

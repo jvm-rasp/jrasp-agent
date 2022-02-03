@@ -15,13 +15,11 @@ import java.lang.instrument.Instrumentation;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import static com.jrasp.module.admin.AdminModuleLogIdConstant.*;
 
 @MetaInfServices(Module.class)
 @Information(id = "package", version = "0.0.1", author = "jrasp")
 public class PackageModule implements Module {
-
-    @Resource
-    private Instrumentation instrumentation;
 
     @Resource
     private Log logger;
@@ -29,13 +27,16 @@ public class PackageModule implements Module {
     @Resource
     private JSONObject jsonObject;
 
+    @Resource
+    private Instrumentation instrumentation;
+
     @Command("version")
     public void version(final Map<String, String> parameterMap, final PrintWriter writer) throws IOException {
         String className = parameterMap.get("class");
-        logger.info("search class={}", className);
+        logger.info(AdminModuleLogIdConstant.SEARCH_PACKAGE_INFO_LOG_ID,"search class={}", className);
         List<Package> packages = new ArrayList<Package>(20);
         Class[] classList = instrumentation.getAllLoadedClasses();
-        logger.info("class list length={}", classList.length);
+        logger.info(SEARCH_CLASS_INFO_LOG_ID,"class list length={}", classList.length);
         for (int i = 0; i < classList.length; i++) {
             Class clazz = classList[i];
             String name = clazz.getName();

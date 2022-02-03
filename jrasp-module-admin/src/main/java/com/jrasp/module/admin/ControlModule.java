@@ -14,6 +14,8 @@ import org.kohsuke.MetaInfServices;
 import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
 
+import static com.jrasp.module.admin.AdminModuleLogIdConstant.*;
+
 @MetaInfServices(Module.class)
 @Information(id = "control", version = "0.0.1", author = "jrasp")
 public class ControlModule implements Module {
@@ -31,7 +33,7 @@ public class ControlModule implements Module {
     private void uninstall() throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException {
         final Class<?> classOfAgentLauncher = getClass().getClassLoader()
                 .loadClass("com.jrasp.agent.AgentLauncher");
-
+        logger.info(CONTROL_MODULE_UNINSTALL_LOG_ID,"uninstall jrasp agent{}", configInfo.getNamespace());
         MethodUtils.invokeStaticMethod(
                 classOfAgentLauncher,
                 "uninstall",
@@ -41,7 +43,7 @@ public class ControlModule implements Module {
 
     @Command("shutdown")
     public void shutdown(final PrintWriter writer) {
-        logger.info("prepare to shutdown jvm-rasp[{}].", configInfo.getNamespace());
+        logger.info(CONTROL_MODULE_SHUTDOWN_LOG_ID,"prepare to shutdown jvm-rasp[{}].", configInfo.getNamespace());
         // 关闭HTTP服务器
         final Thread shutdownJvmRaspHook = new Thread(new Runnable() {
             @Override
@@ -49,7 +51,7 @@ public class ControlModule implements Module {
                 try {
                     uninstall();
                 } catch (Throwable cause) {
-                    logger.warn("shutdown jvm-rasp failed.", cause);
+                    logger.warn(CONTROL_MODULE_SHUTDOWN_ERROR_LOG_ID,"shutdown jvm-rasp failed.", cause);
                 }
             }
         }, "shutdown-jvm-rasp-hook");

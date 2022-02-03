@@ -24,10 +24,12 @@ import java.util.Map;
 import static com.jrasp.api.model.ResultCodeEnum.CLIENT_ERROR;
 import static com.jrasp.api.util.GaStringUtils.matching;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
+import static com.jrasp.module.admin.AdminModuleLogIdConstant.*;
 
 @MetaInfServices(Module.class)
 @Information(id = "module", version = "0.0.1", author = "jrasp")
 public class ModuleMgrModule implements Module {
+
 
     @Resource
     private Log logger;
@@ -74,7 +76,7 @@ public class ModuleMgrModule implements Module {
                 ModuleInfo moduleInfo = new ModuleInfo(id, isActivated, isLoaded, cCnt, mCnt);
                 moduleInfoList.add(moduleInfo);
             } catch (ModuleException me) {
-                logger.warn("get module info occur error when list modules, module[id={};class={};], error={}, ignore this module.",
+                logger.warn(MODULE_LIST_ERROR_LOG_ID,"get module info occur error when list modules, module[id={};class={};], error={}, ignore this module.",
                         me.getUniqueId(), module.getClass(), me.getErrorCode(), me);
             }
 
@@ -108,7 +110,7 @@ public class ModuleMgrModule implements Module {
                 moduleManager.unload(info.id());
                 total++;
             } catch (ModuleException me) {
-                logger.warn("unload module[id={};] occur error={}.", me.getUniqueId(), me.getErrorCode(), me);
+                logger.warn(MODULE_UNLOAD_ERROR_LOG_ID,"unload module[id={};] occur error={}.", me.getUniqueId(), me.getErrorCode(), me);
             }
         }
         writer.println(jsonObject.toFormatJSONString(RestResultUtils.success("modules unload finished", total)));
@@ -127,7 +129,7 @@ public class ModuleMgrModule implements Module {
                     moduleManager.active(info.id());
                     total++;
                 } catch (ModuleException me) {
-                    logger.warn("active module[id={};] occur error={}.", me.getUniqueId(), me.getErrorCode(), me);
+                    logger.warn(MODULE_ACTIVE_ERROR_LOG_ID,"active module[id={};] occur error={}.", me.getUniqueId(), me.getErrorCode(), me);
                 }// try
             } else {
                 total++;
@@ -149,7 +151,7 @@ public class ModuleMgrModule implements Module {
                     moduleManager.frozen(info.id());
                     total++;
                 } catch (ModuleException me) {
-                    logger.warn("frozen module[id={};] occur error={}.", me.getUniqueId(), me.getErrorCode(), me);
+                    logger.warn(MODULE_FROZEN_ERROR_LOG_ID,"frozen module[id={};] occur error={}.", me.getUniqueId(), me.getErrorCode(), me);
                 }
             } else {
                 total++;

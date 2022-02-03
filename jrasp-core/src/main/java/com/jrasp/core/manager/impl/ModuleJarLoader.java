@@ -15,6 +15,8 @@ import java.util.LinkedHashSet;
 import java.util.ServiceLoader;
 import java.util.Set;
 
+import static com.jrasp.core.log.AgentLogIdConstant.AGENT_COMMON_LOG_ID;
+
 // jar文件加载
 public class ModuleJarLoader {
 
@@ -39,7 +41,7 @@ public class ModuleJarLoader {
     void load(final ModuleLoadCallback mCb) throws IOException {
         boolean hasModuleLoadedSuccessFlag = false;
         ModuleJarClassLoader moduleJarClassLoader = null;
-        logger.info("prepare loading module-jar={};", moduleJarFile);
+        logger.info(AGENT_COMMON_LOG_ID,"prepare loading module-jar={};", moduleJarFile);
         try {
             moduleJarClassLoader = new ModuleJarClassLoader(moduleJarFile,copyDir,true);
             final ClassLoader preTCL = Thread.currentThread().getContextClassLoader();
@@ -53,7 +55,7 @@ public class ModuleJarLoader {
             // 模块加载失败尝试清理jar
             if (!hasModuleLoadedSuccessFlag
                     && null != moduleJarClassLoader) {
-                logger.warn("loading module-jar completed, but NONE module loaded, will be close ModuleJarClassLoader. module-jar={};", moduleJarFile);
+                logger.warn(AGENT_COMMON_LOG_ID,"loading module-jar completed, but NONE module loaded, will be close ModuleJarClassLoader. module-jar={};", moduleJarFile);
                 moduleJarClassLoader.closeIfPossible();
             }
         }
@@ -71,13 +73,13 @@ public class ModuleJarLoader {
             try {
                 module = moduleIt.next();
             } catch (Throwable cause) {
-                logger.warn("loading module instance failed: instance occur error, will be ignored. module-jar={}", moduleJarFile, cause);
+                logger.warn(AGENT_COMMON_LOG_ID,"loading module instance failed: instance occur error, will be ignored. module-jar={}", moduleJarFile, cause);
                 continue;
             }
             final Class<?> classOfModule = module.getClass();
             // 判断模块是否实现了@Information标记
             if (!classOfModule.isAnnotationPresent(Information.class)) {
-                logger.warn("loading module instance failed: not implements @Information, will be ignored. class={};module-jar={};",
+                logger.warn(AGENT_COMMON_LOG_ID,"loading module instance failed: not implements @Information, will be ignored. class={};module-jar={};",
                         classOfModule,
                         moduleJarFile
                 );
@@ -87,7 +89,7 @@ public class ModuleJarLoader {
             final String uniqueId = info.id();
             // 判断模块ID是否合法
             if (StringUtils.isBlank(uniqueId)) {
-                logger.warn("loading module instance failed: @Information.id is missing, will be ignored. class={};module-jar={};",
+                logger.warn(AGENT_COMMON_LOG_ID,"loading module instance failed: @Information.id is missing, will be ignored. class={};module-jar={};",
                         classOfModule,
                         moduleJarFile
                 );
@@ -96,7 +98,7 @@ public class ModuleJarLoader {
             // 判断模块要求的启动模式和容器的启动模式是否匹配
             // todo 目前看到的模块没有强制要求agent启动方式
             if (!ArrayUtils.contains(info.mode(), mode)) {
-                logger.warn("loading module instance failed: launch-mode is not match module required, will be ignored. module={};launch-mode={};required-mode={};class={};module-jar={};",
+                logger.warn(AGENT_COMMON_LOG_ID,"loading module instance failed: launch-mode is not match module required, will be ignored. module={};launch-mode={};required-mode={};class={};module-jar={};",
                         uniqueId,
                         mode,
                         StringUtils.join(info.mode(), ","),
@@ -111,7 +113,7 @@ public class ModuleJarLoader {
                     mCb.onLoad(uniqueId, classOfModule, module, moduleJarFile, moduleClassLoader);
                 }
             } catch (Throwable cause) {
-                logger.warn("loading module instance failed: MODULE-LOADER-PROVIDER denied, will be ignored. module={};class={};module-jar={};",
+                logger.warn(AGENT_COMMON_LOG_ID,"loading module instance failed: MODULE-LOADER-PROVIDER denied, will be ignored. module={};class={};module-jar={};",
                         uniqueId,
                         classOfModule,
                         moduleJarFile,
@@ -125,7 +127,7 @@ public class ModuleJarLoader {
         }
 
 
-        logger.info("loaded module-jar completed, loaded {} module in module-jar={}, modules={}",
+        logger.info(AGENT_COMMON_LOG_ID,"loaded module-jar completed, loaded {} module in module-jar={}, modules={}",
                 loadedModuleUniqueIds.size(),
                 moduleJarFile,
                 loadedModuleUniqueIds

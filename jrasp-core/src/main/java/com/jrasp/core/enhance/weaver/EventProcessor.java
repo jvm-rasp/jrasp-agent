@@ -3,18 +3,19 @@ package com.jrasp.core.enhance.weaver;
 import com.jrasp.api.event.Event;
 import com.jrasp.api.listener.EventListener;
 import com.jrasp.api.listener.ext.AdviceAdapterListener;
+import com.jrasp.api.log.Log;
 import com.jrasp.core.enhance.annotation.Interrupted;
+import com.jrasp.core.log.LogFactory;
 import com.jrasp.core.util.RaspReflectUtils;
 import com.jrasp.core.util.collection.GaStack;
 import com.jrasp.core.util.collection.ThreadUnsafeGaStack;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static com.jrasp.core.log.AgentLogIdConstant.EVENT_PROCESSOR_ERROR_LOG_ID;
 import static com.jrasp.core.util.RaspReflectUtils.isInterruptEventHandler;
 
 /**
@@ -22,7 +23,7 @@ import static com.jrasp.core.util.RaspReflectUtils.isInterruptEventHandler;
  */
 public class EventProcessor {
 
-    private final Logger logger = LoggerFactory.getLogger(getClass());
+    private final static Log logger = LogFactory.getLog(EventProcessor.class);
 
     /**
      * 处理单元
@@ -53,17 +54,7 @@ public class EventProcessor {
                 //第一次进入
                 EventProcessor.this.setcurrentThread();
             }
-
             stack.push(invokeId);
-
-            if (logger.isDebugEnabled()) {
-                logger.debug("push process-stack, process-id={};invoke-id={};deep={};listener={};",
-                        stack.peekLast(),
-                        invokeId,
-                        stack.deep(),
-                        listenerId
-                );
-            }
         }
 
         /**
@@ -76,12 +67,6 @@ public class EventProcessor {
             if (logger.isDebugEnabled()) {
                 final int processId = stack.peekLast();
                 invokeId = stack.pop();
-                logger.debug("pop process-stack, process-id={};invoke-id={};deep={};listener={};",
-                        processId,
-                        invokeId,
-                        stack.deep(),
-                        listenerId
-                );
             } else {
                 invokeId = stack.pop();
             }
@@ -276,7 +261,7 @@ public class EventProcessor {
                 }
             }
         } catch (Exception e) {
-            logger.error("remove threadLocal error !",e);
+            logger.error(EVENT_PROCESSOR_ERROR_LOG_ID,"remove threadLocal error !",e);
         }
     }
 }

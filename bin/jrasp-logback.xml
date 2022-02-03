@@ -8,10 +8,7 @@
             <FileNamePattern>${log.base}/jrasp-agent.log.%d{yyyy-MM-dd}</FileNamePattern>
             <MaxHistory>30</MaxHistory>
         </rollingPolicy>
-        <encoder>
-            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %5p [%JRASP_NAMESPACE] --- [%t] %-40.40logger{39} : %m%n</pattern>
-            <charset>UTF-8</charset>
-        </encoder>
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder"/>
     </appender>
 
     <appender name="RASP-MODULE-APPENDER" class="ch.qos.logback.core.rolling.RollingFileAppender">
@@ -21,10 +18,7 @@
             <FileNamePattern>${log.base}/jrasp-module.log.%d{yyyy-MM-dd}</FileNamePattern>
             <MaxHistory>30</MaxHistory>
         </rollingPolicy>
-        <encoder>
-            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %5p [%JRASP_NAMESPACE] --- [%t] %-40.40logger{39} : %m%n</pattern>
-            <charset>UTF-8</charset>
-        </encoder>
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder"/>
     </appender>
 
     <!-- module 插件-->

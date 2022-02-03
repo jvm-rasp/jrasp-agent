@@ -21,6 +21,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.ServiceLoader;
 
+import static com.jrasp.core.log.AgentLogIdConstant.AGENT_COMMON_LOG_ID;
+
 public class DefaultProviderManager implements ProviderManager {
 
     private final Log logger = LogFactory.getLog(getClass());
@@ -33,7 +35,7 @@ public class DefaultProviderManager implements ProviderManager {
         try {
             init(cfg);
         } catch (Throwable cause) {
-            logger.warn("loading rasp's provider-lib[{}] failed.", cfg.getProviderLibPath(), cause);
+            logger.warn(AGENT_COMMON_LOG_ID,"loading rasp's provider-lib[{}] failed.", cfg.getProviderLibPath(), cause);
         }
     }
 
@@ -41,7 +43,7 @@ public class DefaultProviderManager implements ProviderManager {
         final File providerLibDir = new File(cfg.getProviderLibPath());
         if (!providerLibDir.exists()
                 || !providerLibDir.canRead()) {
-            logger.warn("loading provider-lib[{}] was failed, doest existed or access denied.", providerLibDir);
+            logger.warn(AGENT_COMMON_LOG_ID,"AGENT_COMMON_LOG_ID,loading provider-lib[{}] was failed, doest existed or access denied.", providerLibDir);
             return;
         }
 
@@ -56,11 +58,11 @@ public class DefaultProviderManager implements ProviderManager {
                 // load ModuleLoadingChain
                 inject(moduleLoadingChains, ModuleLoadingChain.class, providerClassLoader, providerJarFile);
 
-                logger.info("loading provider-jar[{}] was success.", providerJarFile);
+                logger.info(AGENT_COMMON_LOG_ID,"loading provider-jar[{}] was success.", providerJarFile);
             } catch (IllegalAccessException cause) {
-                logger.warn("loading provider-jar[{}] occur error, inject provider resource failed.", providerJarFile, cause);
+                logger.warn(AGENT_COMMON_LOG_ID,"loading provider-jar[{}] occur error, inject provider resource failed.", providerJarFile, cause);
             } catch (IOException ioe) {
-                logger.warn("loading provider-jar[{}] occur error, ignore load this provider.", providerJarFile, ioe);
+                logger.warn(AGENT_COMMON_LOG_ID,"loading provider-jar[{}] occur error, ignore load this provider.", providerJarFile, ioe);
             }
 
         }
@@ -75,7 +77,7 @@ public class DefaultProviderManager implements ProviderManager {
         for (final T provider : serviceLoader) {
             injectResource(provider); // 注入Resource
             collection.add(provider); // 加入到 provider 链路
-            logger.info("loading provider[{}] was success from provider-jar[{}], impl={}",
+            logger.info(AGENT_COMMON_LOG_ID,"loading provider[{}] was success from provider-jar[{}], impl={}",
                     clazz.getName(), providerJarFile, provider.getClass().getName());
         }
     }

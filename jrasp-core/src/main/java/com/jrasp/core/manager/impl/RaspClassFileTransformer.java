@@ -21,6 +21,7 @@ import java.security.ProtectionDomain;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static com.jrasp.core.log.AgentLogIdConstant.AGENT_COMMON_LOG_ID;
 import static com.jrasp.core.util.matcher.structure.ClassStructureFactory.createClassStructure;
 
 /**
@@ -97,7 +98,7 @@ public class RaspClassFileTransformer implements ClassFileTransformer,NativeMeth
 
 
         } catch (Throwable cause) {
-            logger.warn("jrasp transform {} in loader={}; failed, module={} at watch={}, will ignore this transform.",
+            logger.warn(AGENT_COMMON_LOG_ID,"jrasp transform {} in loader={}; failed, module={} at watch={}, will ignore this transform.",
                     internalClassName,
                     loader,
                     uniqueId,
@@ -117,7 +118,7 @@ public class RaspClassFileTransformer implements ClassFileTransformer,NativeMeth
         // 如果未开启unsafe开关，是不允许增强来自BootStrapClassLoader的类
         if (!isEnableUnsafe
                 && null == loader) {
-            logger.debug("transform ignore {}, class from bootstrap but unsafe.enable=false.", internalClassName);
+            logger.debug(AGENT_COMMON_LOG_ID,"transform ignore {}, class from bootstrap but unsafe.enable=false.", internalClassName);
             return null;
         }
 
@@ -127,7 +128,7 @@ public class RaspClassFileTransformer implements ClassFileTransformer,NativeMeth
 
         // 如果一个行为都没匹配上也不用继续了
         if (!matchingResult.isMatched()) {
-            logger.debug("transform ignore {}, no behaviors matched in loader={}", internalClassName, loader);
+            logger.debug(AGENT_COMMON_LOG_ID,"transform ignore {}, no behaviors matched in loader={}", internalClassName, loader);
             return null;
         }
 
@@ -142,17 +143,17 @@ public class RaspClassFileTransformer implements ClassFileTransformer,NativeMeth
                     eventTypeArray
             );
             if (srcByteCodeArray == toByteCodeArray) {
-                logger.debug("transform ignore {}, nothing changed in loader={}", internalClassName, loader);
+                logger.debug(AGENT_COMMON_LOG_ID,"transform ignore {}, nothing changed in loader={}", internalClassName, loader);
                 return null;
             }
 
             // statistic affect
             affectStatistic.statisticAffect(loader, internalClassName, behaviorSignCodes);
 
-            logger.info("transform {} finished, by module={} in loader={}", internalClassName, uniqueId, loader);
+            logger.info(AGENT_COMMON_LOG_ID,"transform {} finished, by module={} in loader={}", internalClassName, uniqueId, loader);
             return toByteCodeArray;
         } catch (Throwable cause) {
-            logger.warn("transform {} failed, by module={} in loader={}", internalClassName, uniqueId, loader, cause);
+            logger.warn(AGENT_COMMON_LOG_ID,"transform {} failed, by module={} in loader={}", internalClassName, uniqueId, loader, cause);
             return null;
         }
     }

@@ -1,16 +1,18 @@
 package com.jrasp.core.util;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.jrasp.api.log.Log;
+import com.jrasp.core.log.LogFactory;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static com.jrasp.core.log.AgentLogIdConstant.AGENT_COMMON_LOG_ID;
+
 public class RaspProtector {
 
-    private Logger logger = LoggerFactory.getLogger(getClass());
+    private final static Log logger = LogFactory.getLog(RaspProtector.class);
 
     private final ThreadLocal<AtomicInteger> isInProtectingThreadLocal = new ThreadLocal<AtomicInteger>() {
         @Override
@@ -22,7 +24,7 @@ public class RaspProtector {
     public int enterProtecting() {
         final int referenceCount = isInProtectingThreadLocal.get().getAndIncrement();
         if (logger.isDebugEnabled()) {
-            logger.debug("thread:{} enter protect:{}", Thread.currentThread(), referenceCount);
+            logger.debug(AGENT_COMMON_LOG_ID,"thread:{} enter protect:{}", Thread.currentThread(), referenceCount);
         }
         return referenceCount;
     }
@@ -33,14 +35,14 @@ public class RaspProtector {
         if (referenceCount == 0) {
             isInProtectingThreadLocal.remove();
             if (logger.isDebugEnabled()) {
-                logger.debug("thread:{} exit protect:{} with clean", Thread.currentThread(), referenceCount);
+                logger.debug(AGENT_COMMON_LOG_ID,"thread:{} exit protect:{} with clean", Thread.currentThread(), referenceCount);
             }
         } else if (referenceCount > 0) {
             if (logger.isDebugEnabled()) {
-                logger.debug("thread:{} exit protect:{}", Thread.currentThread(), referenceCount);
+                logger.debug(AGENT_COMMON_LOG_ID,"thread:{} exit protect:{}", Thread.currentThread(), referenceCount);
             }
         } else {
-            logger.warn("thread:{} exit protect:{} with error!", Thread.currentThread(), referenceCount);
+            logger.warn(AGENT_COMMON_LOG_ID,"thread:{} exit protect:{} with error!", Thread.currentThread(), referenceCount);
         }
         return referenceCount;
     }
@@ -62,7 +64,7 @@ public class RaspProtector {
                     final int exitReferenceCount = exitProtecting();
                     assert enterReferenceCount == exitReferenceCount;
                     if (enterReferenceCount != exitReferenceCount) {
-                        logger.warn("thread:{} exit protecting with error!, expect:{} actual:{}",
+                        logger.warn(AGENT_COMMON_LOG_ID,"thread:{} exit protecting with error!, expect:{} actual:{}",
                                 Thread.currentThread(),
                                 enterReferenceCount,
                                 exitReferenceCount

@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Set;
 
 import static com.jrasp.api.filter.ExtFilter.ExtFilterFactory.make;
+import static com.jrasp.core.log.AgentLogIdConstant.AGENT_COMMON_LOG_ID;
 import static com.jrasp.core.util.matcher.ExtFilterMatcher.toOrGroupMatcher;
 
 /**
@@ -61,7 +62,7 @@ public class DefaultModuleEventWatcher implements ModuleEventWatcher {
             try {
                 progress.begin(total);
             } catch (Throwable cause) {
-                logger.warn("begin progress failed.", cause);
+                logger.warn(AGENT_COMMON_LOG_ID,"begin progress failed.", cause);
             }
         }
     }
@@ -72,7 +73,7 @@ public class DefaultModuleEventWatcher implements ModuleEventWatcher {
             try {
                 progress.finish(cCnt, mCnt);
             } catch (Throwable cause) {
-                logger.warn("finish progress failed.", cause);
+                logger.warn(AGENT_COMMON_LOG_ID,"finish progress failed.", cause);
             }
         }
     }
@@ -92,11 +93,6 @@ public class DefaultModuleEventWatcher implements ModuleEventWatcher {
             return;
         }
 
-        if (logger.isDebugEnabled()) {
-            logger.debug("reTransformClasses={};module={};watch={};",
-                    waitingReTransformClasses, coreModule.getUniqueId(), watchId);
-        }
-
         int index = 0;
         for (final Class<?> waitingReTransformClass : waitingReTransformClasses) {
             index++;
@@ -107,7 +103,7 @@ public class DefaultModuleEventWatcher implements ModuleEventWatcher {
                     } catch (Throwable cause) {
                         // 在进行进度汇报的过程中抛出异常,直接进行忽略,因为不影响形变的主体流程
                         // 仅仅只是一个汇报作用而已
-                        logger.warn("watch={} in module={} on {} report progressOnSuccess occur exception at index={};total={};",
+                        logger.warn(AGENT_COMMON_LOG_ID,"watch={} in module={} on {} report progressOnSuccess occur exception at index={};total={};",
                                 watchId, coreModule.getUniqueId(), waitingReTransformClass,
                                 index - 1, total,
                                 cause
@@ -115,12 +111,12 @@ public class DefaultModuleEventWatcher implements ModuleEventWatcher {
                     }
                 }
                 inst.retransformClasses(waitingReTransformClass);
-                logger.info("watch={} in module={} single reTransform {} success, at index={};total={};",
+                logger.info(AGENT_COMMON_LOG_ID,"watch={} in module={} single reTransform {} success, at index={};total={};",
                         watchId, coreModule.getUniqueId(), waitingReTransformClass,
                         index - 1, total
                 );
             } catch (Throwable causeOfReTransform) {
-                logger.warn("watch={} in module={} single reTransform {} failed, at index={};total={}. ignore this class.",
+                logger.warn(AGENT_COMMON_LOG_ID,"watch={} in module={} single reTransform {} failed, at index={};total={}. ignore this class.",
                         watchId, coreModule.getUniqueId(), waitingReTransformClass,
                         index - 1, total,
                         causeOfReTransform
@@ -129,7 +125,7 @@ public class DefaultModuleEventWatcher implements ModuleEventWatcher {
                     try {
                         progress.progressOnFailed(waitingReTransformClass, index, causeOfReTransform);
                     } catch (Throwable cause) {
-                        logger.warn("watch={} in module={} on {} report progressOnFailed occur exception, at index={};total={};",
+                        logger.warn(AGENT_COMMON_LOG_ID,"watch={} in module={} on {} report progressOnFailed occur exception, at index={};total={};",
                                 watchId, coreModule.getUniqueId(), waitingReTransformClass,
                                 index - 1, total,
                                 cause
@@ -182,7 +178,7 @@ public class DefaultModuleEventWatcher implements ModuleEventWatcher {
 
         // 查找需要渲染的类集合
         final List<Class<?>> waitingReTransformClasses = classDataSource.findForReTransform(matcher);
-        logger.info("watch={} in module={} found {} classes for watch(ing).",
+        logger.info(AGENT_COMMON_LOG_ID,"watch={} in module={} found {} classes for watch(ing).",
                 watchId,
                 coreModule.getUniqueId(),
                 waitingReTransformClasses.size()
@@ -252,7 +248,7 @@ public class DefaultModuleEventWatcher implements ModuleEventWatcher {
         final List<Class<?>> waitingReTransformClasses = classDataSource.findForReTransform(
                 new GroupMatcher.Or(waitingRemoveMatcherSet.toArray(new Matcher[0]))
         );
-        logger.info("watch={} in module={} found {} classes for delete.",
+        logger.info(AGENT_COMMON_LOG_ID,"watch={} in module={} found {} classes for delete.",
                 watcherId,
                 coreModule.getUniqueId(),
                 waitingReTransformClasses.size()

@@ -1,19 +1,21 @@
 package com.jrasp.core.enhance;
 
 import com.jrasp.api.event.Event;
+import com.jrasp.api.log.Log;
+import com.jrasp.core.enhance.weaver.EventListenerHandler;
 import com.jrasp.core.enhance.weaver.asm.EventWeaver;
+import com.jrasp.core.log.LogFactory;
 import com.jrasp.core.manager.NativeMethodEnhanceAware;
 import com.jrasp.core.util.AsmUtils;
 import com.jrasp.core.util.ObjectIDs;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Set;
 
+import static com.jrasp.core.log.AgentLogIdConstant.*;
 import static org.apache.commons.io.FileUtils.writeByteArrayToFile;
 import static org.objectweb.asm.ClassReader.EXPAND_FRAMES;
 import static org.objectweb.asm.ClassWriter.COMPUTE_FRAMES;
@@ -25,7 +27,7 @@ import static org.objectweb.asm.Opcodes.ASM7;
  */
 public class EventEnhancer implements Enhancer {
 
-    private static final Logger logger = LoggerFactory.getLogger(EventEnhancer.class);
+    private final static Log logger = LogFactory.getLog(EventListenerHandler.class);
 
     private NativeMethodEnhanceAware nativeMethodEnhanceAware;
 
@@ -76,16 +78,16 @@ public class EventEnhancer implements Enhancer {
         // 创建类所在的包路径
         if (!classPath.mkdirs()
                 && !classPath.exists()) {
-            logger.warn("create dump classpath={} failed.", classPath);
+            logger.warn(DUMP_CLASS_DIR_ERROR_LOG_ID,"create dump classpath={} failed.", classPath);
             return data;
         }
 
         // 将类字节码写入文件
         try {
             writeByteArrayToFile(dumpClassFile, data);
-            logger.info("dump {} to {} success.", className, dumpClassFile);
+            logger.info(WRITER_DUMP_CLASS_LOG_ID,"dump {} to {} success.", className, dumpClassFile);
         } catch (IOException e) {
-            logger.warn("dump {} to {} failed.", className, dumpClassFile, e);
+            logger.warn(WRITER_DUMP_CLASS_ERROR_LOG_ID,"dump {} to {} failed.", className, dumpClassFile, e);
         }
 
         return data;

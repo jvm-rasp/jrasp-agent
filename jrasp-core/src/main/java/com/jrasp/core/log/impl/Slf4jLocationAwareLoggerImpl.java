@@ -1,6 +1,7 @@
 package com.jrasp.core.log.impl;
 
 import com.jrasp.api.log.Log;
+import com.jrasp.core.util.ProcessHelper;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Marker;
 import org.slf4j.spi.LocationAwareLogger;
@@ -15,6 +16,10 @@ public class Slf4jLocationAwareLoggerImpl implements Log {
 
     private static final String LOG_KEY = "log_id";
 
+    private static final String PID_KEY = "pid";
+
+    private static final String pidValue= ProcessHelper.getCurrentPID();
+
     private static final String HOST_NAME_KEY = "host_name";
 
     private static String HOST_NAME_VALUE;
@@ -28,7 +33,7 @@ public class Slf4jLocationAwareLoggerImpl implements Log {
     }
 
     private static Marker appendHostNameAndLogId(int logId) {
-        return append(LOG_KEY, logId).and(append(HOST_NAME_KEY, HOST_NAME_VALUE));
+        return append(LOG_KEY, logId).and(append(HOST_NAME_KEY, HOST_NAME_VALUE)).and(append(PID_KEY,pidValue));
     }
 
     private final LocationAwareLogger logger;

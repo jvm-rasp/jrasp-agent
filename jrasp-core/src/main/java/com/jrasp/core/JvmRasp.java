@@ -67,6 +67,7 @@ public class JvmRasp {
         mkdirs(cfg.getProcessPidPath());
         mkdirs(cfg.getRuntimeSystemModulePath());
         mkdirs(cfg.getRuntimeRequiredModulePath());
+        mkdirs(cfg.getRuntimeAlgorithmModulePath());
         mkdirs(cfg.getRuntimeOptionalModulePath());
         // JVM 退出时删除目录
         try {

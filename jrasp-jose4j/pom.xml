@@ -4,7 +4,7 @@
   <parent>
     <artifactId>jrasp-agent</artifactId>
     <groupId>com.jrasp</groupId>
-    <version>1.0.2</version>
+    <version>1.0.3</version>
   </parent>
 
   <groupId>org.bitbucket.b_c</groupId>

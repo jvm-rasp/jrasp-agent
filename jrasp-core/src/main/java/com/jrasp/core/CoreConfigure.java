@@ -38,7 +38,7 @@ public class CoreConfigure {
 
     // jrasp技术支持链接
     private static final String KEY_SUPPORT_URL = "supportURL";
-    private static final String DEFAULT_SUPPORT_URL ="technical support：http://www.jrasp.com/" ;
+    private static final String DEFAULT_SUPPORT_URL = "technical support：http://www.jrasp.com/";
 
     // 是否开启鉴权
     private static final String KEY_ENBALE_AUTH = "enableAuth";
@@ -48,10 +48,12 @@ public class CoreConfigure {
 
     private static final String REQUIRED_MODULE_FILE_NAME = "required-module";
 
+    private static final String ALGORITHM_MODULE_FILE_NAME = "algorithm-module";
+
     private static final String OPTIONAL_MODULE_FILE_NAME = "optional-module";
 
     // 初始化参数文件
-    private static final String TOKEN_FILE_NAME=".jrasp.token";
+    private static final String TOKEN_FILE_NAME = ".jrasp.token";
 
     private final Map<String, String> featureMap = new LinkedHashMap<String, String>();
 
@@ -97,9 +99,19 @@ public class CoreConfigure {
         return getRaspHome() + File.separatorChar + "run";
     }
 
+    // 获取临时文件路径
+    public String getTempPath() {
+        return getRaspHome() + File.separatorChar + "temp";
+    }
+
     // 获取系统模块加载路径(文件变化的监控路径)
     public String getSystemModuleLibPath() {
         return getRaspHome() + File.separatorChar + SYSTEM_MODULE_FILE_NAME;
+    }
+
+    // 获取用户模块(必装)模块路径(文件变化的监控路径)
+    public String getAlgorithmModuleLibPath() {
+        return getRaspHome() + File.separatorChar + ALGORITHM_MODULE_FILE_NAME;
     }
 
     // 获取用户模块(必装)模块路径(文件变化的监控路径)
@@ -230,6 +242,11 @@ public class CoreConfigure {
     // 获取进程运行时pid/required-module
     public String getRuntimeRequiredModulePath() {
         return getProcessPidPath() + File.separator + REQUIRED_MODULE_FILE_NAME;
+    }
+
+    // 获取进程运行时pid/algorithm-module
+    public String getRuntimeAlgorithmModulePath() {
+        return getProcessPidPath() + File.separator + ALGORITHM_MODULE_FILE_NAME;
     }
 
     // 获取进程运行时pid/optional-nodule

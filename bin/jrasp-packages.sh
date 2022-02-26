@@ -26,7 +26,6 @@ mkdir -p ${JRASP_TARGET_DIR}/temp
 mkdir -p ${JRASP_TARGET_DIR}/provider
 mkdir -p ${JRASP_TARGET_DIR}/required-module  # 用户必装模块路径(仓库，全部复制到run/pid)
 mkdir -p ${JRASP_TARGET_DIR}/optional-module  # 用户可选的模块路径(仓库，部分复制到run/pid)
-mkdir -p ${JRASP_TARGET_DIR}/algorithm-module # 检测算法模块(仓库，全部复制到run/pid)
 mkdir -p ${JRASP_TARGET_DIR}/run              # java进程相关数据：token、module
 mkdir -p ${JRASP_TARGET_DIR}/logs             # jrasp日志：系统日志、检测日志、心跳日志等
 

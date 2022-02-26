@@ -61,10 +61,6 @@ public class DefaultCoreModuleManager implements CoreModuleManager {
     private final File requiredModuleLibDir;             // 必装模块目录
     private final File requiredModuleLibCopyDir;         // 必装模块Copy目录
 
-    // 必装算法模块目录
-    private final File algorithmModuleLibDir;             // 必装算法模块目录
-    private final File algorithmModuleLibCopyDir;         // 必装算法模块Copy目录
-
     // 可选模块目录
     private final File optionalModuleLibDir;               // 可选模块目录
     private final File optionalModuleLibCopyDir;           // 可选模块Copy目录
@@ -108,9 +104,6 @@ public class DefaultCoreModuleManager implements CoreModuleManager {
         // 必装模块
         this.requiredModuleLibDir = new File(cfg.getUserModuleLibPath());
         this.requiredModuleLibCopyDir = new File(cfg.getRuntimeRequiredModulePath());
-        // 必装算法模块
-        this.algorithmModuleLibDir = new File(cfg.getAlgorithmModuleLibPath());
-        this.algorithmModuleLibCopyDir = new File(cfg.getRuntimeAlgorithmModulePath());
         // 非必装模块
         // 非必装模块较为特殊：由jrasp-daemon复制到运行时目录，这里仅需要监听文件变化
         this.optionalModuleLibDir = new File(cfg.getRuntimeOptionalModulePath());
@@ -704,11 +697,10 @@ public class DefaultCoreModuleManager implements CoreModuleManager {
 
         // 1. 强制卸载所有模块
         unloadAll();
-        // 2.加载系统模块、必装模块、非必须模块、算法模块
+        // 2.加载系统模块、必装模块、非必须模块
         loadModule(systemModuleLibDir, systemModuleLibCopyDir, cfg.getLaunchMode());
         loadModule(requiredModuleLibDir, requiredModuleLibCopyDir, cfg.getLaunchMode());
         loadModule(optionalModuleLibDir, optionalModuleLibCopyDir, cfg.getLaunchMode());
-        loadModule(algorithmModuleLibDir, algorithmModuleLibCopyDir, cfg.getLaunchMode());
         return this;
     }
 
@@ -772,9 +764,10 @@ public class DefaultCoreModuleManager implements CoreModuleManager {
             final ArrayList<Long> checksumCRC32s = new ArrayList<Long>();
             final ArrayList<CoreModule> removeCoreModules = new ArrayList<CoreModule>();
             // 1. 找出所有有变动的文件(add/remove)
-            final ArrayList<File> appendJarFiles1 = getAllChangeModuleJar(getUserModuleLibFiles1(), checksumCRC32s); // 系统必装
-            final ArrayList<File> appendJarFiles2 = getAllChangeModuleJar(getUserModuleLibFiles2(), checksumCRC32s); // 系统可选
-            final ArrayList<File> appendAlgorithmJarFiles = getAllChangeModuleJar(getAlgorithmModuleLibFiles(), checksumCRC32s); // 算法模块
+            // 系统必装
+            final ArrayList<File> appendJarFiles1 = getAllChangeModuleJar(getUserModuleLibFiles1(), checksumCRC32s);
+            // 系统可选
+            final ArrayList<File> appendJarFiles2 = getAllChangeModuleJar(getUserModuleLibFiles2(), checksumCRC32s);
 
             // 2. 找出所有待卸载的已加载用户模块
             for (final CoreModule coreModule : loadedModuleBOMap.values()) {
@@ -787,8 +780,8 @@ public class DefaultCoreModuleManager implements CoreModuleManager {
 
                 // 如果CRC32已经在这次待加载的集合中，则说明这个文件没有变动，忽略
                 if (checksumCRC32s.contains(moduleJarClassLoader.getChecksumCRC32())) {
-                    logger.info(AGENT_COMMON_LOG_ID, "soft-flushing module: module-jar already loaded, ignored. module-jar={};CRC32={};",
-                            coreModule.getJarFile(),
+                    logger.info(AGENT_COMMON_LOG_ID, "soft-flushing module: {} already loaded, ignored.CRC32={};",
+                            coreModule.getJarFile().getName(),
                             moduleJarClassLoader.getChecksumCRC32()
                     );
                     continue;
@@ -814,12 +807,6 @@ public class DefaultCoreModuleManager implements CoreModuleManager {
             // 5. 加载可选模块
             for (final File jarFile : appendJarFiles2) {
                 new ModuleLibLoader(jarFile, null, cfg.getLaunchMode())  // todo 重构：可选模块不需要复制，这里代码比较难以理解
-                        .load(new InnerModuleJarLoadCallback(), new InnerModuleLoadCallback());
-            }
-
-            // 6. 加载算法模块
-            for (final File jarFile : appendAlgorithmJarFiles) {
-                new ModuleLibLoader(jarFile, new File(cfg.getRuntimeAlgorithmModulePath()), cfg.getLaunchMode())
                         .load(new InnerModuleJarLoadCallback(), new InnerModuleLoadCallback());
             }
         } catch (Throwable cause) {
@@ -869,10 +856,6 @@ public class DefaultCoreModuleManager implements CoreModuleManager {
 
         // 3. 加载非必装模块
         loadModule(optionalModuleLibDir, optionalModuleLibCopyDir, cfg.getLaunchMode());
-
-        // 4.加载算法模块
-        loadModule(algorithmModuleLibDir, algorithmModuleLibCopyDir, cfg.getLaunchMode());
-
     }
 
     // 找出所以变动的模块
@@ -904,14 +887,9 @@ public class DefaultCoreModuleManager implements CoreModuleManager {
         return getUserModuleLibFiles(cfg.getUserModuleLibPath());
     }
 
-    // 获取用户可选模块加载文件
+    // 获取用户可选模块加载文件 todo 需要修复
     public File[] getUserModuleLibFiles2() {
         return getUserModuleLibFiles(cfg.getRuntimeOptionalModulePath());
-    }
-
-    // 算法模块
-    public File[] getAlgorithmModuleLibFiles() {
-        return getUserModuleLibFiles(cfg.getRuntimeAlgorithmModulePath());
     }
 
     private synchronized File[] getUserModuleLibFiles(String libPath) {

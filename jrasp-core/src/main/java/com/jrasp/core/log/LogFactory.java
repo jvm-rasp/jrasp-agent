@@ -54,7 +54,6 @@ public final class LogFactory {
         try {
             Constructor<? extends Log> candidate = implClass.getConstructor(String.class);
             Log log = candidate.newInstance(LogFactory.class.getName());
-            log.info(SLF4_LOG_INIT_LOG_ID, "Logging initialized using '" + implClass + "' adapter.");
             logConstructor = candidate;
         } catch (Throwable t) {
             throw new LogException("Error setting Log implementation.  Cause: " + t, t);

@@ -115,7 +115,7 @@ public class DefaultCoreLoadedClassDataSource implements CoreLoadedClassDataSour
                     // 所以当尝试获取这个类更多详细信息的时候会引起关联类的ClassNotFoundException等未知的错误（取决于底层ClassLoader的实现）
                     // 这里没有办法穷举出所有的异常情况，所以catch Throwable来完成异常容灾处理
                     // 当解析类出现异常的时候，直接简单粗暴的认为根本没有这个类就好了
-                    logger.info(DEFAULT_CORE_LOADED_CLASS_DATA_SOURCE_LOG_ID,"remove from findForReTransform, because loading class:{} occur an exception", clazz.getName(), cause);
+                    logger.debug(DEFAULT_CORE_LOADED_CLASS_DATA_SOURCE_LOG_ID,"remove from findForReTransform, because loading class:{} occur an exception", clazz.getName(), cause);
                 }
             }
             return classes;

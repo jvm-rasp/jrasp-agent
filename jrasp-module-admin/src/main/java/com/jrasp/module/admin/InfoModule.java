@@ -15,7 +15,6 @@ import java.util.HashMap;
 @Information(id = "info", version = "0.0.1", author = "jrasp")
 public class InfoModule implements Module {
 
-
     @Resource
     private ConfigInfo configInfo;
 

@@ -11,6 +11,8 @@ import org.jose4j.jwe.KeyManagementAlgorithmIdentifiers;
 import org.jose4j.keys.PbkdfKey;
 import org.jose4j.lang.JoseException;
 
+import java.sql.Driver;
+
 import static com.jrasp.core.log.AgentLogIdConstant.AGENT_COMMON_LOG_ID;
 
 public class JwtTokenServiceImpl implements JwtTokenService {

@@ -98,13 +98,7 @@ public class RaspClassFileTransformer implements ClassFileTransformer,NativeMeth
 
 
         } catch (Throwable cause) {
-            logger.warn(AGENT_COMMON_LOG_ID,"jrasp transform {} in loader={}; failed, module={} at watch={}, will ignore this transform.",
-                    internalClassName,
-                    loader,
-                    uniqueId,
-                    watchId,
-                    cause
-            );
+            // ignore
             return null;
         } finally {
             RaspProtector.instance.exitProtecting();

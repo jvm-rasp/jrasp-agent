@@ -1,6 +1,5 @@
 package com.jrasp.api.algorithm;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 
 public interface Algorithm {
@@ -17,12 +16,12 @@ public interface Algorithm {
 
     /**
      * 安全检测算法
+     *
+     * @param httpInfo   http信息
      * @param parameters 参数
-     * @param stack 调用栈
-     * @param httpInfo http信息
      * @return 检测结果
      */
-    boolean check(String[] parameters, ArrayList<String> stack, HashMap<String,Object> httpInfo);
+    boolean check(HashMap<String, Object> httpInfo, Object... parameters) throws Exception;
 
     /**
      * @return 算法描述

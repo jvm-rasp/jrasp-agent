@@ -4,195 +4,51 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.jrasp</groupId>
+    <groupId>com.jrasp.agent</groupId>
     <artifactId>jrasp-agent</artifactId>
     <packaging>pom</packaging>
-    <version>1.0.4</version>
-
-    <name>jrasp-agent ${jrasp.version}</name>
-
+    <version>1.1.0</version>
     <modules>
+        <module>jrasp-bridge</module>
+        <module>jrasp-api</module>
         <module>jrasp-launcher</module>
         <module>jrasp-core</module>
-        <module>jrasp-spy</module>
-        <module>jrasp-common-api</module>
-        <module>jrasp-api</module>
-        <module>jrasp-provider-api</module>
-        <module>jrasp-module-admin</module>
-        <module>jrasp-system-provider</module>
-        <module>jrasp-module-starter</module>
-        <module>jrasp-jose4j</module>
+        <module>jrasp-module</module>
+        <module>jrasp-maven</module>
     </modules>
 
     <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <jrasp.version>1.0.4</jrasp.version>
-        <shade-prefix>jrasp</shade-prefix>
-        <jetty.version>8.1.2.v20120308</jetty.version>
-        <jose4j.version>1.0.4</jose4j.version>
-        <guava.version>30.0-jre</guava.version>
-        <asm.version>7.2</asm.version>
-        <servlet.version>3.0.1</servlet.version>
-        <fastjson.version>1.2.83</fastjson.version>
-        <slf4j-api.version>1.7.24</slf4j-api.version>
-        <logback.version>1.2.1</logback.version>
-        <logstash.version>4.11</logstash.version>
-        <metainf-services.version>1.7</metainf-services.version>
-        <commons-collections.version>3.2.2</commons-collections.version>
-        <commons-io.version>2.9.0</commons-io.version>
-        <commons-lang3.version>3.4</commons-lang3.version>
+        <jrasp.version>1.1.0</jrasp.version>
+        <jrasp.core.version>1.1.0</jrasp.core.version>
     </properties>
-
-    <profiles>
-        <profile>
-            <id>default</id>
-            <properties>
-                <tools-jar>${java.home}/../lib/tools.jar</tools-jar>
-            </properties>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-        </profile>
-    </profiles>
 
     <dependencyManagement>
         <dependencies>
             <dependency>
-                <groupId>junit</groupId>
-                <artifactId>junit</artifactId>
-                <version>4.9</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>com.jrasp</groupId>
+                <groupId>com.jrasp.agent</groupId>
                 <artifactId>jrasp-api</artifactId>
                 <version>${jrasp.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.jrasp</groupId>
-                <artifactId>jrasp-provider-api</artifactId>
+                <groupId>com.jrasp.agent</groupId>
+                <artifactId>jrasp-bridge</artifactId>
                 <version>${jrasp.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.jrasp</groupId>
-                <artifactId>jrasp-common-api</artifactId>
-                <version>${jrasp.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.jrasp</groupId>
-                <artifactId>jrasp-spy</artifactId>
-                <version>${jrasp.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.jrasp</groupId>
+                <groupId>com.jrasp.agent</groupId>
                 <artifactId>jrasp-core</artifactId>
-                <version>${jrasp.version}</version>
+                <version>${jrasp.core.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>junit</groupId>
+                <artifactId>junit</artifactId>
+                <version>4.12</version>
                 <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>javax.servlet</groupId>
-                <artifactId>javax.servlet-api</artifactId>
-                <version>${servlet.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.alibaba</groupId>
-                <artifactId>fastjson</artifactId>
-                <version>${fastjson.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.slf4j</groupId>
-                <artifactId>slf4j-api</artifactId>
-                <version>${slf4j-api.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>ch.qos.logback</groupId>
-                <artifactId>logback-classic</artifactId>
-                <version>${logback.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>net.logstash.logback</groupId>
-                <artifactId>logstash-logback-encoder</artifactId>
-                <version>${logstash.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.kohsuke.metainf-services</groupId>
-                <artifactId>metainf-services</artifactId>
-                <version>${metainf-services.version}</version>
-                <scope>compile</scope>
-            </dependency>
-            <dependency>
-                <groupId>commons-collections</groupId>
-                <artifactId>commons-collections</artifactId>
-                <version>${commons-collections.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>commons-io</groupId>
-                <artifactId>commons-io</artifactId>
-                <version>${commons-io.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.commons</groupId>
-                <artifactId>commons-lang3</artifactId>
-                <version>${commons-lang3.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.ow2.asm</groupId>
-                <artifactId>asm</artifactId>
-                <version>${asm.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.ow2.asm</groupId>
-                <artifactId>asm-commons</artifactId>
-                <version>${asm.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.ow2.asm</groupId>
-                <artifactId>asm-util</artifactId>
-                <version>${asm.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.google.guava</groupId>
-                <artifactId>guava</artifactId>
-                <version>${guava.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.bitbucket.b_c</groupId>
-                <artifactId>jose4j</artifactId>
-                <version>${jose4j.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.eclipse.jetty</groupId>
-                <artifactId>jetty-server</artifactId>
-                <version>${jetty.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.eclipse.jetty</groupId>
-                <artifactId>jetty-servlet</artifactId>
-                <version>${jetty.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.eclipse.jetty</groupId>
-                <artifactId>jetty-websocket</artifactId>
-                <version>${jetty.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
 
     <build>
-        <pluginManagement>
-            <plugins>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-deploy-plugin</artifactId>
-                    <version>2.4</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-assembly-plugin</artifactId>
-                    <version>2.2-beta-5</version>
-                </plugin>
-            </plugins>
-        </pluginManagement>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -202,9 +58,9 @@
                     <source>1.6</source>
                     <target>1.6</target>
                     <encoding>UTF-8</encoding>
-                    <showDeprecation>true</showDeprecation>
                 </configuration>
             </plugin>
         </plugins>
     </build>
+
 </project>

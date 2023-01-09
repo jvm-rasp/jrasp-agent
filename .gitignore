@@ -4,15 +4,18 @@
 
 ## for maven
 jrasp-api/target/
-jrasp-jose4j/target/
-jrasp-common-api/target/
+jrasp-bridge/target/
 jrasp-core/target/
-jrasp-provider-api/target/
-jrasp-spy/target/
 jrasp-launcher/target/
-jrasp-system-module/target/
-jrasp-system-provider/target/
-jrasp-module-starter/target/
+jrasp-module/**/target
+jrasp-module/target
+jrasp-attach/bin
+
+jrasp-daemon/bin/jrasp-daemon
+jrasp-daemon\bin\jrasp-daemon.exe
+
+jrasp-daemon/bin/jattach_darwin
+jrasp-daemon/bin/jattach_linux
 target/
 
 ## for eclipse and vscode

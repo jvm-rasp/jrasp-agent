@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>jrasp-agent</artifactId>
+        <groupId>com.jrasp.agent</groupId>
+        <version>1.1.0</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>jrasp-module</artifactId>
+    <packaging>pom</packaging>
+    <modules>
+        <module>mysql-hook</module>
+        <module>sql-algorithm</module>
+        <module>expression-hook</module>
+        <module>expression-algorithm</module>
+        <module>xxe-hook</module>
+        <module>http-hook</module>
+        <module>http-algorithm</module>
+        <module>rce-hook</module>
+        <module>rce-algorithm</module>
+        <module>jndi-hook</module>
+        <module>ssrf-hook</module>
+        <module>deserialization-hook</module>
+        <module>deserialization-algorithm</module>
+        <module>file-hook</module>
+        <module>file-algorithm</module>
+        <module>ssrf-algorithm</module>
+    </modules>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.jrasp.agent</groupId>
+            <artifactId>jrasp-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.jrasp.agent</groupId>
+            <artifactId>jrasp-maven</artifactId>
+            <version>1.1.0</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.kohsuke.metainf-services</groupId>
+            <artifactId>metainf-services</artifactId>
+            <version>1.9</version>
+            <optional>true</optional>
+        </dependency>
+    </dependencies>
+
+</project>

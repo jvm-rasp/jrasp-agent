@@ -1,84 +1,175 @@
 # jrasp-agent
 
-## 项目简介
+![Build Status](https://img.shields.io/badge/Build-passing-brightgreen)
+![Go Guild Version](https://img.shields.io/badge/Go-v1.16+-blue)
+![Maven Version](https://img.shields.io/badge/Maven-v3.25-blue)
+![Java Build Version](https://img.shields.io/badge/Java-v1.6+-blue)
+![License](https://img.shields.io/badge/License-LGPL3.0-informational)
+![install](https://img.shields.io/badge/install-5000%2B-yellowgreen)
+![platform](https://img.shields.io/badge/platform-linux%7CmacOS%7Cwindows-success)
 
-Java Runtime Application Self-Protection 意思是Java应用自我保护系统，简称`jrasp`。
+## 01 Project introduction [中文说明](README_ch.md)
 
-jrasp-agent 是 jrasp 项目最核心的部分。
+_Java Runtime Application Self Protection_ means Java application self-protection system, which is called 'jrasp' for short.
 
-jrasp-agent 基于Java Agent技术对Java字节码进行修改，增加安全检测逻辑，对漏洞攻击实时检测与阻断。
+jrasp-agent is the core part of jrasp project.
 
-## 功能特性
+jrasp-agent based on Java Agent technology, modifies Java bytecode, adds security detection logic, detects and blocks vulnerability attacks in real time.
 
-- 安全插件可定制
-- 检测逻辑低延时
-- 插件热更新
+## 02 Characteristics
 
-## 运行环境依赖
-+ jdk6～11
+### Functional characteristics
 
-## 编译环境
-+ jdk8
-+ mvn 3.2.5
-## 快速安装
+- Security plug-in can be customized
+- Detection logic low delay
+- Plug in Hot Update
+- Java Process Identification and Automatic Injection
+- Support native method hooks such as command execution to completely prevent bypassing;
+- Compatible with Windows, Mac and Linux
+- Small size, core jar package 600KB
 
-- **1.下载并安装**
+### Performance
+- Increase CPU by 5% (test under normal request)
+- Memory consumption below 200MB
 
-  ```shell
-  # 1.下载最新版本的jrasp 
-  git clone https://github.com/jvm-rasp/jrasp-agent.git
-  
-  # 2.进入到bin目录下 
-  cd jrasp-agent/bin
-  
-  # 3.编译打包
-  ./jrasp-packages.sh
-  
-  # 4.打包后的安装包位置，复制安装包到指定位置
-  jrasp-agent/target/jrasp-agent-1.0-bin.zip
-  
-  # 5.安装包解压
-  unzip jrasp-agent-1.0-bin.zip
-  ```
-- **2.对Java进程开启防护**
+### Self security
 
-  ```shell
-  # 进入沙箱执行脚本
-  cd jrasp-agent/bin
+- Plug in and daemon HASH verification
+- Agent and Daemon socket customized communication protocol and RSA asymmetric encryption;
+- The core functions are loaded by custom class loaders and isolated from business classes, which improves the difficulty of attacking RASP from within the JVM;
+- Reflection reinforcement: RASP core methods (such as unloading, degradation, etc.) reflect reinforcement to prevent malicious reflection;
+- Do not use third-party frameworks, such as servlet, json, sl4j2, apache common, etc
 
-  # 注入JVM进程20855
-  ./jrasp.sh -p 20855
-  ```
-  注入成功之后的提示
-  ```
-  {"code":200,"data":{"mode":"ATTACH","raspHome":"/Users/xxx/Desktop/jrasp-agent/bin/..","version":"1.0","username":"admin"}}
-  点击链接获得技术支持: https://applink.feishu.cn/client/chat/chatter/add_by_link?link_token=e35l9ee2-a000-45ba-8863-75b5ca2cdbe6
-  ```
-- **3.卸载jrasp**
-  ```shell
-  ./jrasp.sh -p 20855 -s 
-  ```
-  卸载jrasp成功的提示
-  ```shell
-  {"code":200,"message":"shutdown success"}
-  ```
+### Security module
 
-## 技术交流群(如二维码过期，请加官方运营微信：sear244)
-![image](https://github.com/jvm-rasp/assets/blob/master/tech-chat.png)
+Security module of jrasp agent
+The currently supported modules are:
+- 1. Command execution module (native)
+- 2. Deserialization module (jdk deserialization/fastjson/yaml/stream)
+- 3. HTTP module (springboot/tomcat/jetty/underwown/spark) (IP blacklist/URL blacklist/scanner identification)
+- 4. xxe module (dom4j/jdom/jdk)
+- 5. File access module (io/nio)
+- 6. Expression injection module (spel/ognl)
+- 7. SQL injection (mysql)
+- 8. JNDI injection
 
-## 技术公众号
-![image](https://github.com/jvm-rasp/assets/blob/master/gongzhonghao.jpeg)
+under development:
+- 9. SSRF
+- 10. danger protocol
+- 11. DNS query 
+- 12. Memory 
+- 13. Class loader 
+- 14. attach
+
+### Supported jdk versions
+
++ jdk6+
+
+## 03 Install (centos)
+
+- **1.download**
+
+```shell
+curl https://jrasp-download.oss-cn-shanghai.aliyuncs.com/jrasp-install.sh|bash
+```
+
+It should be noted that the above installation script will install jrasp in the `/usr/local/jrasp` directory.
+
+- **2.1 start mode 1：use attach tool (only for test or debug)**
+
+Use the 'attach' tool to inject Java processes. Enter the bin directory under the jrasp installation directory
+```shell
+cd ./jrasp/bin
+```
+Injecting Java processes with pid 46575
+```java
+./attach -p 46575
+```
+
+attach success log：
+```shell
+2022/09/29 18:04:28 attach java process,pid: 46575
+2022/09/29 18:04:28 jvm create uds socket file success
+2022/09/29 18:04:28 command socket init success: [0.0.0.0:51370]
+2022/09/29 18:04:28 attach jvm success
+```
+
+- **2.2 start mode 2：startup daemon (only for online environments)**
+
+enter the bin directory：
+```shell
+cd ./jrasp/bin
+```
+startup daemon process：
+```shell
+./jrasp-daemon
+```
+start success log：
+```shell
+➜  ./jrasp-daemon 
+       _   _____                _____   _____  
+      | | |  __ \      /\      / ____| |  __ \ 
+      | | | |__) |    /  \    | (___   | |__) |
+  _   | | |  _  /    / /\ \    \___ \  |  ___/ 
+ | |__| | | | \ \   / ____ \   ____) | | |   
+  \____/  |_|  \_\ /_/    \_\ |_____/  |_|
+:: JVM RASP ::        (v1.1.0.RELEASE) https://www.jrasp.com
+{"level":"INFO","ts":"2023-01-08 22:30:21.150","caller":"jrasp-daemon/main.go:55","msg":"daemon startup","logId":1000,"ip":"192.168.8.145","hostName":"MacBook-Pro","pid":20333,"detail":"{\"agentMode\":\"dynamic\"}"}
+{"level":"INFO","ts":"2023-01-08 22:30:21.150","caller":"jrasp-daemon/main.go:57","msg":"config id","logId":1030,"ip":"192.168.8.145","hostName":"MacBook-Pro","pid":20333,"detail":"{\"configId\":1}"}
+```
+Note: use systemctl startup jrasp-daemon process.
+
+- **3 Output Log**
+
+all log files are under the `jrasp/logs/` directory.
+
++ jrasp-agent-0.log is the java agent log
++ jrasp-daemon.log is the daemon process log
++ jrasp-attack-0.log is the attack log
+
+## 04 Log reporting to the management end (not required, can be skipped)
+
+The logs generated by the jrasp agent are on the local disk and can be transferred to kafka using log collection tools such as `filebeat` 
+
+Filebeat one click installation command:
+```java
+curl https://jrasp-download.oss-cn-shanghai.aliyuncs.com/filebeat-install.sh|bash
+```
+
+Note that only public cloud (such as Alibaba Cloud, Tencent Cloud and Huawei Cloud) environments are supported; The logs are transferred to the kafka cluster officially provided by jrasp.
+
+## 05 develop & Compilation (can be skipped, use the release package)
+
++ jdk 1.8
++ golang 1.16
++ maven 3.2.5
+
+Enter the jrsap-agent/bin directory and execute the corresponding environment script.
+
+It should be noted that macOs/windows is only for development and testing.
 
 
-## 贡献者
+## 06 Version record
 
-基于开源项目`jvm-sandbox`，项目中的hook类部分参考`open-rasp`, 感谢优秀的开源项目。 
+[v1.1.0.RELEASE](CHANGELOG.md)
 
-反哺开源项目：jrasp团队在借鉴开源项目的同时，发现jvm-sandbox/open-rasp等多个bug，并提交给项目社区，受到社区的好评。
+## 07 Wechart
 
-## 使用者
+wx：sear2022
 
+## 08 Official website
 
-## 版权信息
+https://www.jrasp.com
 
- GPL3.0
+## 09 Explanation
+
++ Based on the open source project [jvm-sandbox](https://github.com/alibaba/jvm-sandbox)
+
++ the hook class/method part from [open-rasp](https://github.com/baidu/openrasp)
+## 10 Users
+
+If you are using it, please contact us and add it here.
+
+## 11 Copyright Information
+
+GPL3.0（You can learn and use in your own projects, but commercialization must be authorized)

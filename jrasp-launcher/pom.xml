@@ -4,27 +4,19 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <artifactId>jrasp-agent</artifactId>
-        <groupId>com.jrasp</groupId>
-        <version>1.0.4</version>
+        <groupId>com.jrasp.agent</groupId>
+        <version>1.1.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>jrasp-launcher</artifactId>
-    <name>jrasp-launcher ${jrasp.version}</name>
 
     <build>
-        <finalName>jrasp-launcher-${jrasp.version}</finalName>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-deploy-plugin</artifactId>
-                <configuration>
-                    <skip>true</skip>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-assembly-plugin</artifactId>
+                <version>2.2-beta-5</version>
                 <executions>
                     <execution>
                         <goals>
@@ -37,13 +29,16 @@
                             </descriptorRefs>
                             <archive>
                                 <manifestEntries>
-                                    <Premain-Class>com.jrasp.agent.AgentLauncher</Premain-Class>
-                                    <Agent-Class>com.jrasp.agent.AgentLauncher</Agent-Class>
+                                    <Premain-Class>com.jrasp.agent.launcher110.AgentLauncher</Premain-Class>
+                                    <Agent-Class>com.jrasp.agent.launcher110.AgentLauncher</Agent-Class>
                                     <Can-Redefine-Classes>true</Can-Redefine-Classes>
                                     <Can-Retransform-Classes>true</Can-Retransform-Classes>
                                     <Can-Set-Native-Method-Prefix>true</Can-Set-Native-Method-Prefix>
+                                    <!--这里将agent依赖的bridge注入到bootclassloader中-->
+                                    <Boot-Class-Path>jrasp-bridge-${version}.jar</Boot-Class-Path>
                                 </manifestEntries>
                             </archive>
+                            <appendAssemblyId>false</appendAssemblyId>
                         </configuration>
                     </execution>
                 </executions>

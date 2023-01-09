@@ -1,0 +1,12 @@
+[Unit]
+Description=jrasp-daemon service
+
+[Service]
+Type=simple
+WorkingDirectory=/usr/local/jrasp/bin
+ExecStart=/usr/local/jrasp/bin/startup.sh
+ExecStop=/usr/local/jrasp/bin/shutdown.sh
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

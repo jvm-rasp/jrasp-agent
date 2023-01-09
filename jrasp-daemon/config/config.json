@@ -1,0 +1,14 @@
+{
+  "agentMode": "dynamic",
+  "version":"1.1.0",
+  "configId": 1,
+  "moduleAutoUpdate": false,
+  "moduleConfigMap": {
+    "rce-hook": {
+      "moduleName": "rce-hook",
+      "parameters": {
+        "disable": "false"
+      }
+    }
+  }
+}

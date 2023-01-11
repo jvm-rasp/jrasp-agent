@@ -1,5 +1,13 @@
 # 版本迭代
 
+## 1.1.1 【2023-01】
+#### Enhancement
++ [module] SQL检测增加LRU缓存，相同sql仅检测一次
+#### Bugfix
++ [attach & build] 解决windows打包脚本兼容性问题
+### TODO
++ [module] 检测模块增加自定义html
+
 ## 1.1.0【2022-10】
 #### Enhancement
 + [attach] 新增jrasp-attach工程(Golang)，支持手动注入、查看hook类、更新模块参数和卸载RASP

@@ -6,6 +6,7 @@ import com.jrasp.agent.api.algorithm.Algorithm;
 import com.jrasp.agent.api.log.RaspLog;
 import com.jrasp.agent.api.request.AttackInfo;
 import com.jrasp.agent.api.request.Context;
+import com.jrasp.agent.api.util.LRUCache;
 import com.jrasp.agent.api.util.ParamSupported;
 
 import java.util.*;
@@ -40,6 +41,8 @@ public class MySqlAlgorithm implements Algorithm {
      * sql白名单: 防止误报
      */
     private CopyOnWriteArraySet<String> sqlWhiteList = new CopyOnWriteArraySet<String>();
+
+    private LRUCache<String, Object> SQL_LRU_CACHE = new LRUCache<String, Object>(1024);
 
     public MySqlAlgorithm(Map<String, String> configMaps, RaspLog logger) {
         this.logger = logger;
@@ -89,8 +92,15 @@ public class MySqlAlgorithm implements Algorithm {
                 return;
             }
             if (action > -1) {
+                // 先判断缓存
+                boolean containsKey = SQL_LRU_CACHE.isContainsKey(sql);
+                if (containsKey) {
+                    return;
+                }
                 boolean validateMySql = WallUtils.isValidateMySql(sql);
                 if (validateMySql) {
+                    // 正常sql加入缓存，后面不再判断
+                    SQL_LRU_CACHE.put(sql, false);
                     return;
                 }
                 // 判断阻断状态

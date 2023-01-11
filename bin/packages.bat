@@ -96,8 +96,8 @@ rem 文件复制
 rem agent jar复制
 
 echo f | xcopy /s /f "%JRASP_HOME%\jrasp-bridge\target\jrasp-bridge-"%VERSION%".jar" "%LIB_DIR%\jrasp-bridge-"%VERSION%".jar"
-echo f | xcopy /s /f "%JRASP_HOME%\jrasp-core\target\jrasp-core-*-jar-with-dependencies.jar" "%LIB_DIR%\jrasp-core.jar"
-echo f | xcopy /s /f "%JRASP_HOME%\jrasp-launcher\target\jrasp-launcher-"%VERSION%"-jar-with-dependencies.jar" "%LIB_DIR%\jrasp-launcher-"%VERSION%".jar"
+echo f | xcopy /s /f "%JRASP_HOME%\jrasp-core\target\jrasp-core-"%VERSION%".jar" "%LIB_DIR%\jrasp-core-"%VERSION%".jar"
+echo f | xcopy /s /f "%JRASP_HOME%\jrasp-launcher\target\jrasp-launcher-"%VERSION%".jar" "%LIB_DIR%\jrasp-launcher-"%VERSION%".jar"
 
 rem module jar复制
 rem 当前路径以及子路径下复制jar包

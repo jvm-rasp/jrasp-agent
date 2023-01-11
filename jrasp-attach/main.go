@@ -215,6 +215,7 @@ func readVsersion(raspHome string) (string, error) {
 		// 去除换行与空格
 		versionStr = strings.Replace(versionStr, " ", "", -1)
 		versionStr = strings.Replace(versionStr, "\n", "", -1)
+		versionStr = strings.Replace(versionStr, "\r", "", -1)
 		return versionStr, nil
 	} else {
 		log.Fatalf("version token file[%s] not exist", versionFile)

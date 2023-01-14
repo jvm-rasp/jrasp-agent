@@ -118,6 +118,18 @@ copy "%JRASP_HOME%\jrasp-daemon\bin\jrasp-daemon.exe" "%BIN_DIR%"
 rem VERSION.txt
 copy "%CURRENT_DIR%\VERSION.txt"  "%JRASP_PACKAGE_HOME%"
 
+
+
+rem  windows系统下 打包整体编译结果至zip
+if not exist %JRASP_HOME%\tools\7z.exe (
+    echo [JRASP ERROR] 7z.exe not exist!
+    goto end
+)
+
+Echo zipping...
+%JRASP_HOME%\tools\7z.exe a "%JRASP_HOME%\target\jrasp-windows-release.zip" %JRASP_PACKAGE_HOME%
+
+
 :end
 
 echo [JRASP INFO] JRASP PACKAGE END. %DATE%

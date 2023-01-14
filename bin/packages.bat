@@ -127,7 +127,7 @@ if not exist %JRASP_HOME%\tools\7z.exe (
 )
 
 Echo zipping...
-%JRASP_HOME%\tools\7z.exe a "%JRASP_HOME%\target\jrasp-windows-release.zip" %JRASP_PACKAGE_HOME%
+%JRASP_HOME%\tools\7z.exe a "%JRASP_HOME%\target\jrasp-%VERSION%-windows-release.zip" %JRASP_PACKAGE_HOME%
 
 
 :end

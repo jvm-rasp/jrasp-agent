@@ -4,9 +4,11 @@
 #### Enhancement
 + [module] SQL检测增加LRU缓存，相同sql仅检测一次
 #### Bugfix
-+ [attach & build] 解决windows打包脚本兼容性问题
++ [attach & build] 解决windows打包脚本兼容性问题，增加windows系统编译自动打包功能；
 ### TODO
 + [module] 检测模块增加自定义html
++ [部署方案] 小规模服务部署
++ [module] 支持sqlserver数据库
 
 ## 1.1.0【2022-10】
 #### Enhancement

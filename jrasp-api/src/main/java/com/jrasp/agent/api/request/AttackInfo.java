@@ -1,5 +1,6 @@
 package com.jrasp.agent.api.request;
 
+import com.jrasp.agent.api.util.EscapeUtil;
 import com.jrasp.agent.api.util.StackTrace;
 
 import java.util.Arrays;
@@ -153,7 +154,7 @@ public class AttackInfo {
                 .append(array2String(stackTrace)).append('\"');
         sb.append(",\"payload\":\"")
                 // 转义符号
-                .append(payload.replaceAll("\"", "\\\\\"")).append('\"');
+                .append(EscapeUtil.quote(payload)).append('\"');
         sb.append(",\"isBlocked\":")
                 .append(isBlocked);
         sb.append(",\"attackType\":\"")

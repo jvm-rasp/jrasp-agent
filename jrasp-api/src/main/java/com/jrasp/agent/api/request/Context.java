@@ -1,5 +1,7 @@
 package com.jrasp.agent.api.request;
 
+import com.jrasp.agent.api.util.EscapeUtil;
+
 import java.io.ByteArrayOutputStream;
 import java.io.CharArrayWriter;
 import java.util.HashMap;
@@ -94,13 +96,11 @@ public class Context {
     }
 
     // h1:v1;h2:v2;h3:v3;h4:v4
-    // TODO 转义
     public String getHeaderString() {
         if (header != null && header.size() > 0) {
             StringBuilder sb = new StringBuilder();
             for (Map.Entry<String, String> entry : header.entrySet()) {
-                String s = entry.getValue().replaceAll("\"", "\\\\\"");
-                sb.append(entry.getKey()).append(":").append(s).append(";");
+                sb.append(entry.getKey()).append(":").append(entry.getValue()).append(";");
             }
             //  去掉最后一个;
             return sb.substring(0, sb.length() - 1);
@@ -108,15 +108,13 @@ public class Context {
         return "";
     }
 
-    // TODO 转义
     public String getParametersString() {
         if (parameters != null && parameters.size() > 0) {
             StringBuilder sb = new StringBuilder();
             for (Map.Entry<String, String[]> entry : parameters.entrySet()) {
                 String key = entry.getKey();
                 for (String v : entry.getValue()) {
-                    String s = v.replaceAll("\"", "\\\\\"");
-                    sb.append(key).append("=").append(s).append("&");
+                    sb.append(key).append("=").append(v).append("&");
                 }
             }
             //  去掉最后一个&
@@ -342,9 +340,9 @@ public class Context {
         sb.append(",\"remoteHost\":\"")
                 .append(remoteHost).append('\"');
         sb.append(",\"requestURL\":\"")
-                .append(requestURL).append('\"');
+                .append(EscapeUtil.quote(requestURL)).append('\"');
         sb.append(",\"requestURI\":\"")
-                .append(requestURI).append('\"');
+                .append(EscapeUtil.quote(requestURI)).append('\"');
         sb.append(",\"contentType\":\"")
                 .append(contentType).append('\"');
         sb.append(",\"contentLength\":")
@@ -352,11 +350,11 @@ public class Context {
         sb.append(",\"characterEncoding\":\"")
                 .append(characterEncoding).append('\"');
         sb.append(",\"parameters\":\"")
-                .append(getParametersString()).append('\"');
+                .append(EscapeUtil.quote(getParametersString())).append('\"');
         sb.append(",\"header\":\"")
-                .append(getHeaderString()).append('\"');
+                .append(EscapeUtil.quote(getHeaderString())).append('\"');
         sb.append(",\"queryString\":\"")
-                .append(getQueryString()).append('\"');
+                .append(EscapeUtil.quote(getQueryString())).append('\"');
         sb.append(",\"marks\":\"")
                 .append(getMarks()).append('\"');
         // 直接输出byte[]

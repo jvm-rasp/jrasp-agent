@@ -209,7 +209,7 @@ public class AgentLauncher {
                 : defaultString;
     }
 
-    private static Map<String, String> toFeatureMap(final String featureString) {
+    public static Map<String, String> toFeatureMap(final String featureString) {
         final Map<String, String> featureMap = new LinkedHashMap<String, String>();
 
         // 不对空字符串进行解析
@@ -227,7 +227,10 @@ public class AgentLauncher {
             if (isBlankString(kvPairSegmentString)) {
                 continue;
             }
-            final String[] kvSegmentArray = kvPairSegmentString.split("=");
+            // k1=v1;k2=v2;
+            // 加上limit限制为2，兼容性更强，如果v1中含有"="，解析将报错
+            // 例如传递如下参数 url=http://localhost:8080?index=home;
+            final String[] kvSegmentArray = kvPairSegmentString.split("=",2);
             if (kvSegmentArray.length != 2
                     || isBlankString(kvSegmentArray[0])
                     || isBlankString(kvSegmentArray[1])) {

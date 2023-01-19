@@ -10,15 +10,20 @@ Only use in `test` or `debug`.
 Go to the JRASP installation directory, execute `./attach -h`
 
 ```shell
-$ ./attach -h         
+$ ./attach -h
 Usage of ./attach:
+  -c string
+        usage for update global config. example: ./attach -p <pid> -c k=v
   -d string
         usage for update module data. example: ./attach -p <pid> -d rce-hook:k1=v1;k2=v2;k3=v31,v32,v33
   -l    usage for list transform class. example: ./attach -p <pid> -l
   -p int
         usage for attach java pid. example: ./attach -p <pid> (default -1)
   -s    usage for stop agent. example: ./attach -p <pid> -s
-  -v    usage for inject version. example: ./attach -v
+  -u string
+        usage for unload module. example: ./attach -p <pid> -u rce-hook
+  -v    usage for attach version. example: ./attach -v
+
 ```
 
 ###1. attach jrasp agent to jvm
@@ -51,7 +56,7 @@ $ ./attach -p 6841 -d rce-hook:disable=true
 2022/12/10 14:42:37 update module data,rce-hook:disable=true
 2022/12/10 14:42:37 update parameters result:true
 ```
-Taking the RCE module as an example, update the disable parameter to true
+RCE module as an example, update the disable parameter to true
 
 ###4. stop jrasp agent
 ```java

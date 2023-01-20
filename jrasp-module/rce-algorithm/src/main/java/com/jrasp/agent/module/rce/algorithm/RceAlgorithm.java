@@ -73,14 +73,11 @@ public class RceAlgorithm extends ModuleLifecycleAdapter implements Module, Algo
             "java.sql.DriverManager.getConnection"
     ));
 
-    private volatile Boolean disable = false;
-
-    private volatile Integer action = 0;
+    private volatile Integer rceAction = 0;
 
     @Override
     public boolean update(Map<String, String> configMaps) {
-        this.disable = ParamSupported.getParameter(configMaps, "disable", Boolean.class, disable);
-        this.action = ParamSupported.getParameter(configMaps, "action", Integer.class, action);
+        this.rceAction = ParamSupported.getParameter(configMaps, "rce_action", Integer.class, rceAction);
         return true;
     }
 
@@ -91,7 +88,7 @@ public class RceAlgorithm extends ModuleLifecycleAdapter implements Module, Algo
 
     @Override
     public void check(Context context, Object... parameters) throws Exception {
-        if (action > -1) {
+        if (rceAction > -1) {
             // 命令执行白名单
             String cmd = (String) parameters[0];
             List<String> tokens = getTokens(cmd);
@@ -104,12 +101,12 @@ public class RceAlgorithm extends ModuleLifecycleAdapter implements Module, Algo
             if (context != null) {
                 String includeParameter = include(context.getParametersString(), tokens);
                 if (includeParameter != null) {
-                    doActionCtl(action, context, cmd, "rce token contains in parameters", includeParameter, 80);
+                    doActionCtl(rceAction, context, cmd, "rce token contains in parameters", includeParameter, 80);
                     return;
                 }
                 String includeHeader = include(context.getHeaderString(), tokens);
                 if (includeHeader != null) {
-                    doActionCtl(action, context, cmd, "rce token contains in headers", includeHeader, 80);
+                    doActionCtl(rceAction, context, cmd, "rce token contains in headers", includeHeader, 80);
                     return;
                 }
             }
@@ -117,7 +114,7 @@ public class RceAlgorithm extends ModuleLifecycleAdapter implements Module, Algo
             //  检测算法2： 包含敏感字符
             for (String item : blockCmdList) {
                 if (javaCmd.contains(item)) {
-                    doActionCtl(action, context, cmd, "java cmd [" + item + "] in black list.", "", 80);
+                    doActionCtl(rceAction, context, cmd, "java cmd [" + item + "] in black list.", "", 80);
                     return;
                 }
             }
@@ -126,13 +123,13 @@ public class RceAlgorithm extends ModuleLifecycleAdapter implements Module, Algo
             String[] stackTraceString = StackTrace.getStackTraceString(100, false);
             for (String stack : stackTraceString) {
                 if (dangeStackSet.contains(stack)) {
-                    doActionCtl(action, context, cmd, "danger rce stack: " + stack, "", 90);
+                    doActionCtl(rceAction, context, cmd, "danger rce stack: " + stack, "", 90);
                     return;
                 }
             }
 
             // 检测算法4：命令执行监控
-            doActionCtl(action, context, cmd, "log all rce", "", 50);
+            doActionCtl(rceAction, context, cmd, "log all rce", "", 50);
         }
     }
 

@@ -77,6 +77,14 @@ public class ParamSupported {
                 return Arrays.asList(string.split(","));
             }
         }, List.class, List.class);
+
+        // 转换set
+        regConverter(new Converter<Set>() {
+            @Override
+            public Set<String> convert(String string) {
+                return new HashSet<String>(Arrays.asList(string.split(",")));
+            }
+        }, Set.class, Set.class);
     }
 
     /**

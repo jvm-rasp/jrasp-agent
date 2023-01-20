@@ -110,7 +110,7 @@ public class OisAlgorithm implements Algorithm {
 
     public OisAlgorithm(RaspLog logger, Map<String, String> configMaps) {
         this.logger = logger;
-        this.oisBlackListAction = ParamSupported.getParameter(configMaps, "oisBlackListAction", Integer.class, oisBlackListAction);
+        this.oisBlackListAction = ParamSupported.getParameter(configMaps, "ois_black_list_action", Integer.class, oisBlackListAction);
     }
 
     @Override

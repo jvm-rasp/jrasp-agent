@@ -12,6 +12,7 @@ import com.jrasp.agent.api.matcher.ClassMatcher;
 import com.jrasp.agent.api.matcher.EventWatchBuilder;
 import com.jrasp.agent.api.matcher.ModuleEventWatcher;
 import com.jrasp.agent.api.request.Context;
+import com.jrasp.agent.api.util.ParamSupported;
 import org.kohsuke.MetaInfServices;
 
 import java.io.ObjectStreamClass;
@@ -51,6 +52,7 @@ public class DeserializationHook extends ModuleLifecycleAdapter implements Modul
 
     @Override
     public boolean update(Map<String, String> configMaps) {
+        this.disable = ParamSupported.getParameter(configMaps, "disable", Boolean.class, false);
         return false;
     }
 

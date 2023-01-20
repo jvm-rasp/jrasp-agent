@@ -45,7 +45,7 @@ public class XmlAlgorithm implements Algorithm {
 
     public XmlAlgorithm(RaspLog logger, Map<String, String> configMaps) {
         this.logger = logger;
-        this.xmlBlackListAction = ParamSupported.getParameter(configMaps, "xmlBlackListAction", Integer.class, xmlBlackListAction);
+        this.xmlBlackListAction = ParamSupported.getParameter(configMaps, "xml_black_list_action", Integer.class, xmlBlackListAction);
     }
 
     @Override

@@ -13,6 +13,7 @@ import com.jrasp.agent.api.matcher.EventWatchBuilder;
 import com.jrasp.agent.api.matcher.MethodMatcher;
 import com.jrasp.agent.api.matcher.ModuleEventWatcher;
 import com.jrasp.agent.api.request.Context;
+import com.jrasp.agent.api.util.ParamSupported;
 import org.kohsuke.MetaInfServices;
 
 import java.net.Inet4Address;
@@ -44,7 +45,8 @@ public class SsrfHook extends ModuleLifecycleAdapter implements Module, LoadComp
 
     @Override
     public boolean update(Map<String, String> configMaps) {
-        return false;
+        this.disable = ParamSupported.getParameter(configMaps, "disable", Boolean.class, disable);
+        return true;
     }
 
     @Override

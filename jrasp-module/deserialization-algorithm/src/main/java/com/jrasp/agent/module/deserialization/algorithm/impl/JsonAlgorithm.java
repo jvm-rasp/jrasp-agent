@@ -95,7 +95,7 @@ public class JsonAlgorithm implements Algorithm {
 
     public JsonAlgorithm(RaspLog logger, Map<String, String> configMaps) {
         this.logger = logger;
-        this.jsonBlackListAction = ParamSupported.getParameter(configMaps, "jsonBlackListAction", Integer.class, jsonBlackListAction);
+        this.jsonBlackListAction = ParamSupported.getParameter(configMaps, "json_black_list_action", Integer.class, jsonBlackListAction);
     }
 
     @Override

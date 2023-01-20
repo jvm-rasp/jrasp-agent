@@ -11,6 +11,7 @@ import com.jrasp.agent.api.matcher.ClassMatcher;
 import com.jrasp.agent.api.matcher.EventWatchBuilder;
 import com.jrasp.agent.api.matcher.ModuleEventWatcher;
 import com.jrasp.agent.api.request.Context;
+import com.jrasp.agent.api.util.ParamSupported;
 import com.jrasp.agent.api.util.StringUtils;
 import org.kohsuke.MetaInfServices;
 
@@ -43,9 +44,7 @@ public class HttpHook extends ModuleLifecycleAdapter implements Module {
 
     @Override
     public boolean update(Map<String, String> configMaps) {
-        // 是否禁用hook点
-        String disableStr = configMaps.get("disable");
-        this.disable = Boolean.valueOf(disableStr);
+        this.disable = ParamSupported.getParameter(configMaps, "disable", Boolean.class, disable);
         return true;
     }
 

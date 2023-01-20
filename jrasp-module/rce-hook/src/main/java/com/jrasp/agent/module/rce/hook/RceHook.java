@@ -13,6 +13,7 @@ import com.jrasp.agent.api.matcher.EventWatchBuilder;
 import com.jrasp.agent.api.matcher.MethodMatcher;
 import com.jrasp.agent.api.matcher.ModuleEventWatcher;
 import com.jrasp.agent.api.request.Context;
+import com.jrasp.agent.api.util.ParamSupported;
 import org.kohsuke.MetaInfServices;
 
 import java.util.*;
@@ -41,9 +42,7 @@ public class RceHook extends ModuleLifecycleAdapter implements Module, LoadCompl
 
     @Override
     public boolean update(Map<String, String> configMaps) {
-        // 是否禁用hook点
-        String disableHookStr = configMaps.get("disable");
-        this.disable = Boolean.valueOf(disableHookStr);
+        this.disable = ParamSupported.getParameter(configMaps, "disable", Boolean.class, disable);
         return true;
     }
 

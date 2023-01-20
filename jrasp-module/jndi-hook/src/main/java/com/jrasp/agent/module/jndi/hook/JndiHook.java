@@ -52,8 +52,8 @@ public class JndiHook implements Module, LoadCompleted {
     @Override
     public boolean update(Map<String, String> configMaps) {
         this.disable = ParamSupported.getParameter(configMaps, "disable", Boolean.class, disable);
-        this.jndiBlackListAction = ParamSupported.getParameter(configMaps, "jndiBlackListAction", Integer.class, jndiBlackListAction);
-        this.dangerProtocol = ParamSupported.getParameter(configMaps, "dangerProtocol", String[].class, dangerProtocol);
+        this.jndiBlackListAction = ParamSupported.getParameter(configMaps, "jndi_black_list_action", Integer.class, jndiBlackListAction);
+        this.dangerProtocol = ParamSupported.getParameter(configMaps, "danger_protocol", String[].class, dangerProtocol);
         return false;
     }
 

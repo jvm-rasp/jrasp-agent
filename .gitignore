@@ -11,7 +11,7 @@ jrasp-module/**/target
 jrasp-module/target
 jrasp-attach/bin
 
-jrasp-daemon/bin/jrasp-daemon
+target/jrasp-daemon
 jrasp-daemon\bin\jrasp-daemon.exe
 
 jrasp-daemon/bin/jattach_darwin

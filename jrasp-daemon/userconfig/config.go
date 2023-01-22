@@ -2,9 +2,10 @@ package userconfig
 
 import (
 	"fmt"
-	"github.com/spf13/viper"
 	"jrasp-daemon/defs"
 	"time"
+
+	"github.com/spf13/viper"
 )
 
 // AgentMode 运行模式
@@ -57,7 +58,7 @@ type Config struct {
 	BinFileHash string `json:"binFileHash"` // hash
 
 	// module列表
-	ModuleConfigMap map[string]ModuleConfig `json:"moduleConfigMap"` // 模块配置
+	ModuleConfigs []ModuleConfig `json:"moduleConfigs"` // 模块配置
 
 	// 模块更新
 	ModuleAutoUpdate bool `json:"moduleAutoUpdate"` // 本地磁盘没有缓存，模块对象存储服务上下载
@@ -68,11 +69,12 @@ type Config struct {
 
 // ModuleConfig module信息
 type ModuleConfig struct {
-	ModuleName  string            `json:"moduleName"`  // 名称，如tomcat-hook
-	ModuleType  string            `json:"moduleType"`  // 模块类型：hook、algorithm
-	DownLoadURL string            `json:"downLoadURL"` // 下载链接
-	Md5         string            `json:"md5"`         // 插件hash
-	Parameters  map[string]string `json:"parameters"`  // 参数列表
+	ModuleName  string `json:"moduleName"`  // 名称，如tomcat-hook
+	ModuleType  string `json:"moduleType"`  // 模块类型：hook、algorithm
+	DownLoadURL string `json:"downLoadURL"` // 下载链接
+	Md5         string `json:"md5"`         // 插件hash
+	// TODO 参数类型使用interface{}, 尽量保存原始类型
+	Parameters map[string][]interface{} `json:"parameters"` // 参数列表
 }
 
 func InitConfig() (*Config, error) {

@@ -116,7 +116,7 @@ func (this *Update) DownLoadModuleFiles() {
 }
 
 func (this *Update) downLoad(fileHashMap map[string]string) {
-	for _, m := range this.cfg.ModuleConfigMap {
+	for _, m := range this.cfg.ModuleConfigs {
 		hash, ok := fileHashMap[m.ModuleName]
 		if !ok || hash != m.Md5 {
 			// 下载文件
@@ -158,11 +158,19 @@ func (this *Update) calDiskHash(files []fs.FileInfo) map[string]string {
 		fileAbsPath := filepath.Join(this.moduleDir, name)
 		ext := path.Ext(name) // .jar
 		nameWithOutExt := strings.TrimSuffix(name, ext)
-		_, ok := this.cfg.ModuleConfigMap[nameWithOutExt]
-		if !ok {
-			// 不在配置列表中的插件，执行删除
+
+		var notExisted = true
+		for i := 0; i < len(this.cfg.ModuleConfigs); i++ {
+			moduleConfig := this.cfg.ModuleConfigs[i]
+			if moduleConfig.ModuleName == nameWithOutExt {
+				notExisted = false
+			}
+		}
+
+		// 不在配置列表中的插件，执行删除
+		if notExisted {
 			_ = os.Remove(fileAbsPath)
-			zlog.Warnf(defs.DOWNLOAD, "module is not in config,wile delete", "name:%s", name)
+			zlog.Warnf(defs.DOWNLOAD, "module is not in config, wile delete", "name:%s", name)
 			continue
 		}
 

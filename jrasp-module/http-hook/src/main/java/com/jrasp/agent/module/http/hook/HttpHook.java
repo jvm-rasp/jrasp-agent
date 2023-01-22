@@ -399,8 +399,10 @@ public class HttpHook extends ModuleLifecycleAdapter implements Module {
                 .build();
     }
 
+    // bugfix: 方法参数不得涉及第三方类
+    public static void storeJettyRequestInfo(Context context, Object object) {
+        org.eclipse.jetty.server.Request request = (org.eclipse.jetty.server.Request) object;
 
-    public static void storeJettyRequestInfo(Context context, org.eclipse.jetty.server.Request request) {
         // 本机地址
         String localAddr = request.getLocalAddr();
         context.setLocalAddr(localAddr);
@@ -458,7 +460,8 @@ public class HttpHook extends ModuleLifecycleAdapter implements Module {
         context.setHeader(header);
     }
 
-    public static void storeTomcatRequestInfo(Context context, org.apache.catalina.connector.Request request) {
+    public static void storeTomcatRequestInfo(Context context, Object object) {
+        org.apache.catalina.connector.Request request = (org.apache.catalina.connector.Request) object;
         // 本机地址
         String localAddr = request.getLocalAddr();
         context.setLocalAddr(localAddr);
@@ -516,7 +519,8 @@ public class HttpHook extends ModuleLifecycleAdapter implements Module {
         context.setHeader(header);
     }
 
-    public void storeRequestInfo(Context context, io.undertow.server.HttpServerExchange exchange) {
+    public void storeRequestInfo(Context context, Object request) {
+        io.undertow.server.HttpServerExchange exchange = (io.undertow.server.HttpServerExchange) request;
         // 本机地址
         String localAddr = exchange.getDestinationAddress().getAddress().getHostAddress();
         context.setLocalAddr(localAddr);
@@ -557,7 +561,9 @@ public class HttpHook extends ModuleLifecycleAdapter implements Module {
         context.setHeader(header);
     }
 
-    public static void storeSparkJettyRequestInfo(Context context, org.sparkproject.jetty.server.Request request) {
+    public static void storeSparkJettyRequestInfo(Context context, Object object) {
+        org.sparkproject.jetty.server.Request request = (org.sparkproject.jetty.server.Request) object;
+
         // 本机地址
         String localAddr = request.getLocalAddr();
         context.setLocalAddr(localAddr);

@@ -51,10 +51,8 @@ public class SsrfAlgorithm extends ModuleLifecycleAdapter implements Module, Alg
             String ip = (String) params.get("ip");
             String url = (String) params.get("url");
             Boolean isRedirect = (Boolean) params.get("isRedirect");
-            // 算法1：当参数来自用户输入，且为内网IP，判定为SSRF攻击
-            if(isRedirect){
+            // TODO 算法1：当参数来自用户输入，且为内网IP，判定为SSRF攻击
 
-            }
 
             // 算法2：检查常见探测域名
             String hostnameDnslog = isHostnameDnslog(hostName);

@@ -24,7 +24,7 @@ public class FileUploadAlgorithm implements Algorithm {
     private String[] travelStr = new String[]{"../", "..\\"};
 
     //禁止上传脚本文件
-    private String[] blackList = new String[]{".jsp", ".asp", ".phar", ".phtml", ".sh", ".py", ".pl", ".rb"};
+    private String[] fileUploadBlackList = new String[]{".jsp", ".asp", ".phar", ".phtml", ".sh", ".py", ".pl", ".rb"};
 
     @Override
     public String getType() {
@@ -37,8 +37,9 @@ public class FileUploadAlgorithm implements Algorithm {
 
     public FileUploadAlgorithm(Map<String, String> configMaps, RaspLog logger) {
         this.logger = logger;
-        this.travelStr = ParamSupported.getParameter(configMaps, "travelStr", String[].class, travelStr);
-        this.fileUploadAction = ParamSupported.getParameter(configMaps, "fileUploadAction", Integer.class, fileUploadAction);
+        this.travelStr = ParamSupported.getParameter(configMaps, "travel_str", String[].class, travelStr);
+        this.fileUploadAction = ParamSupported.getParameter(configMaps, "file_upload_action", Integer.class, fileUploadAction);
+        this.fileUploadBlackList = ParamSupported.getParameter(configMaps, "file_upload_black_list", String[].class, fileUploadBlackList);
     }
 
     @Override
@@ -62,7 +63,7 @@ public class FileUploadAlgorithm implements Algorithm {
 
             // 防护方式2：禁止脚本文件的上传
             String s = path.toLowerCase();
-            for (String item : blackList) {
+            for (String item : fileUploadBlackList) {
                 if (s.contains(item)) {
                     doActionCtl(fileUploadAction, context, path, "disable script file upload", "realpath: " + realpath, 50);
                 }

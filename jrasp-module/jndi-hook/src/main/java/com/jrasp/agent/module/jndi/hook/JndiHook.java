@@ -126,9 +126,9 @@ public class JndiHook implements Module, LoadCompleted {
 
     // 拦截所有jndi调用
     public void check(Context context, Object... parameters) throws Exception {
-        if (parameters != null && parameters.length >= 1) {
-            String lookupUrl = (String) parameters[0];
-            if (this.jndiBlackListAction > -1) {
+        if (this.jndiBlackListAction > -1) {
+            if (parameters != null && parameters.length >= 1) {
+                String lookupUrl = (String) parameters[0];
                 if (hasDangerProtocol(lookupUrl)) {
                     boolean block = jndiBlackListAction == 1;
                     AttackInfo attackInfo = new AttackInfo(context, lookupUrl, block, TYPE, "danger jndi url", "", 100);

@@ -23,14 +23,14 @@ public class FileDeleteAlgorithm implements Algorithm {
      */
     private String[] travelStr = new String[]{"../", "..\\"};
 
-    private Integer action = 0;
+    private Integer fileDeleteAction = 0;
 
     private final RaspLog logger;
 
     public FileDeleteAlgorithm(Map<String, String> configMaps, RaspLog logger) {
         this.logger = logger;
-        this.travelStr = ParamSupported.getParameter(configMaps, "travelStr", String[].class, travelStr);
-        this.action = ParamSupported.getParameter(configMaps, "action", Integer.class, action);
+        this.travelStr = ParamSupported.getParameter(configMaps, "travel_str", String[].class, travelStr);
+        this.fileDeleteAction = ParamSupported.getParameter(configMaps, "file_delete_action", Integer.class, fileDeleteAction);
     }
 
     public FileDeleteAlgorithm(RaspLog logger) {
@@ -44,7 +44,7 @@ public class FileDeleteAlgorithm implements Algorithm {
 
     @Override
     public void check(Context context, Object... parameters) throws Exception {
-        if (action >= 0) {
+        if (fileDeleteAction >= 0) {
             File file = (File) parameters[0];
             String path = file.getPath();
             String realpath;
@@ -57,7 +57,7 @@ public class FileDeleteAlgorithm implements Algorithm {
             if (StringUtils.isNotBlank(realpath)) {
                 for (String item : travelStr) {
                     if (path.contains(item)) {
-                        boolean enableBlock = action == 1;
+                        boolean enableBlock = fileDeleteAction == 1;
                         AttackInfo attackInfo = new AttackInfo(context, path, enableBlock,
                                 getType(), getDescribe(), "realpath: " + realpath, 80);
                         logger.attack(attackInfo);

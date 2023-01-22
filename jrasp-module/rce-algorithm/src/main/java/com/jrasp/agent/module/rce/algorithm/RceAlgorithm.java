@@ -26,20 +26,22 @@ public class RceAlgorithm extends ModuleLifecycleAdapter implements Module, Algo
     @RaspResource
     private RaspLog logger;
 
+    private volatile Integer rceAction = 0;
+
     /**
      * 命令执行白名单
      */
-    private Set<String> whiteCmdSet = new HashSet<String>();
+    private volatile Set<String> rceWhiteSet = new HashSet<String>();
 
     /**
      * 命令执行黑名单
      */
-    private List<String> blockCmdList = Arrays.asList("curl", "wget",
+    private volatile List<String> rceBlockList = Arrays.asList("curl", "wget",
             "echo", "touch", "gawk", "telnet", "xterm", "perl", "python", "python3",
             "ruby", "lua", "whoami", "php", "pwd", "ifconfig", "alias", "export"
     );
 
-    private Set<String> dangeStackSet = new HashSet<String>(Arrays.asList(
+    private Set<String> rceDangerStackSet = new HashSet<String>(Arrays.asList(
             "com.thoughtworks.xstream.XStream.unmarshal",
             "java.beans.XMLDecoder.readObject",
             "java.io.ObjectInputStream.readObject",
@@ -73,11 +75,12 @@ public class RceAlgorithm extends ModuleLifecycleAdapter implements Module, Algo
             "java.sql.DriverManager.getConnection"
     ));
 
-    private volatile Integer rceAction = 0;
-
     @Override
     public boolean update(Map<String, String> configMaps) {
         this.rceAction = ParamSupported.getParameter(configMaps, "rce_action", Integer.class, rceAction);
+        this.rceWhiteSet = ParamSupported.getParameter(configMaps, "rce_white_list", Set.class, rceWhiteSet);
+        this.rceBlockList = ParamSupported.getParameter(configMaps, "rce_block_list", List.class, rceBlockList);
+        this.rceDangerStackSet = ParamSupported.getParameter(configMaps, "rce_danger_stack_list", Set.class, rceDangerStackSet);
         return true;
     }
 
@@ -93,7 +96,7 @@ public class RceAlgorithm extends ModuleLifecycleAdapter implements Module, Algo
             String cmd = (String) parameters[0];
             List<String> tokens = getTokens(cmd);
             String javaCmd = tokens.get(0);
-            if (whiteCmdSet.contains(javaCmd)) {
+            if (rceWhiteSet.contains(javaCmd)) {
                 return;
             }
             // 检测算法1： 用户输入后门
@@ -101,18 +104,18 @@ public class RceAlgorithm extends ModuleLifecycleAdapter implements Module, Algo
             if (context != null) {
                 String includeParameter = include(context.getParametersString(), tokens);
                 if (includeParameter != null) {
-                    doActionCtl(rceAction, context, cmd, "rce token contains in parameters", includeParameter, 80);
+                    doActionCtl(rceAction, context, cmd, "rce token contains in http parameters", includeParameter, 80);
                     return;
                 }
                 String includeHeader = include(context.getHeaderString(), tokens);
                 if (includeHeader != null) {
-                    doActionCtl(rceAction, context, cmd, "rce token contains in headers", includeHeader, 80);
+                    doActionCtl(rceAction, context, cmd, "rce token contains in http headers", includeHeader, 80);
                     return;
                 }
             }
 
             //  检测算法2： 包含敏感字符
-            for (String item : blockCmdList) {
+            for (String item : rceBlockList) {
                 if (javaCmd.contains(item)) {
                     doActionCtl(rceAction, context, cmd, "java cmd [" + item + "] in black list.", "", 80);
                     return;
@@ -122,7 +125,7 @@ public class RceAlgorithm extends ModuleLifecycleAdapter implements Module, Algo
             // 检测算法3： 栈特征
             String[] stackTraceString = StackTrace.getStackTraceString(100, false);
             for (String stack : stackTraceString) {
-                if (dangeStackSet.contains(stack)) {
+                if (rceDangerStackSet.contains(stack)) {
                     doActionCtl(rceAction, context, cmd, "danger rce stack: " + stack, "", 90);
                     return;
                 }

@@ -558,11 +558,11 @@ public class DefaultCoreModuleManager {
                 checksumCRC32s.add(checksumCRC32);
                 // 如果CRC32已经在已加载的模块集合中存在，则说明这个文件没有变动，忽略
                 if (isChecksumCRC32Existed(checksumCRC32)) {
-                    logger.log(Level.INFO, "soft-flushing module: module-jar is not changed, ignored. module-jar={0};CRC32={1};", new Object[]{jarFile, checksumCRC32});
+                    logger.log(Level.INFO, "soft-flushing module: module-jar is not changed, ignored. module-jar={0}", new Object[]{jarFile.getName()});
                     continue;
                 }
 
-                logger.log(Level.INFO, "soft-flushing module: module-jar is changed, will be flush. module-jar={0};CRC32={1};", new Object[]{jarFile, checksumCRC32});
+                logger.log(Level.INFO, "soft-flushing module: module-jar is changed, will be flush. module-jar={0}", new Object[]{jarFile.getName()});
                 appendJarFiles.add(jarFile);
             }
 
@@ -573,14 +573,14 @@ public class DefaultCoreModuleManager {
                 // 如果CRC32已经在这次待加载的集合中，则说明这个文件没有变动，忽略
                 if (checksumCRC32s.contains(moduleJarClassLoader.getChecksumCRC32())) {
                     logger.log(Level.INFO, "soft-flushing module: module-jar already loaded, ignored. module-jar={0};CRC32={1};",
-                            new Object[]{coreModule.getJarFile(),
+                            new Object[]{coreModule.getJarFile().getName(),
                                     moduleJarClassLoader.getChecksumCRC32()}
                     );
                     continue;
                 }
                 logger.log(Level.INFO, "soft-flushing module: module-jar is changed, module will be reload/remove. module={0};module-jar={1};",
                         new Object[]{coreModule.getUniqueId(),
-                                coreModule.getJarFile()}
+                                coreModule.getJarFile().getName()}
                 );
                 removeCoreModules.add(coreModule);
             }

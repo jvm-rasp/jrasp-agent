@@ -13,10 +13,11 @@ import com.jrasp.agent.api.matcher.EventWatchBuilder;
 import com.jrasp.agent.api.matcher.MethodMatcher;
 import com.jrasp.agent.api.matcher.ModuleEventWatcher;
 import com.jrasp.agent.api.request.Context;
-import com.jrasp.agent.api.util.ParamSupported;
 import org.kohsuke.MetaInfServices;
 
 import java.util.*;
+
+import static com.jrasp.agent.api.util.ParamSupported.getParameter;
 
 /**
  * 命令执行方法hook模块
@@ -42,7 +43,7 @@ public class RceHook extends ModuleLifecycleAdapter implements Module, LoadCompl
 
     @Override
     public boolean update(Map<String, String> configMaps) {
-        this.disable = ParamSupported.getParameter(configMaps, "disable", Boolean.class, disable);
+        this.disable = getParameter(configMaps, "disable", Boolean.class, disable);
         return true;
     }
 
@@ -85,7 +86,6 @@ public class RceHook extends ModuleLifecycleAdapter implements Module, LoadCompl
 
         @Override
         protected void afterThrowing(Advice advice) throws Throwable {
-            // 方法调用完成，如果抛出异常（插桩的代码bug导致的异常或者主动阻断的异常）将清除上下文环境变量
             context.remove();
         }
     }
@@ -102,7 +102,6 @@ public class RceHook extends ModuleLifecycleAdapter implements Module, LoadCompl
 
         @Override
         protected void afterThrowing(Advice advice) throws Throwable {
-            // 方法调用完成，如果抛出异常（插桩的代码bug导致的异常或者主动阻断的异常）将清除上下文环境变量
             context.remove();
         }
     }

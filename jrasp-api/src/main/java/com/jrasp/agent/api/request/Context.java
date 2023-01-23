@@ -66,6 +66,12 @@ public class Context {
     // 原始 http request 对象
     private Object request;
 
+    // 原始 http response 对象
+    private Object response;
+
+    // 原始 http response contentType 对象
+    private String responseContentType;
+
     private Object inputStream = null;
 
     private Object charReader = null;
@@ -327,6 +333,22 @@ public class Context {
 
     public Object getObject(String name) {
         return attach.get(name);
+    }
+
+    public Object getResponse() {
+        return response;
+    }
+
+    public void setResponse(Object response) {
+        this.response = response;
+    }
+
+    public String getResponseContentType() {
+        return responseContentType;
+    }
+
+    public void setResponseContentType(String responseContentType) {
+        this.responseContentType = responseContentType;
     }
 
     public String toJSON() {

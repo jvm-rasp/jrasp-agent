@@ -7,15 +7,19 @@ jrasp-attach 是一个将jrasp-agent注入到目标JVM的小工具，适合于�
 在执行编译打包之后，进入到 jrasp-agent的安装目录bin目录下执行 `./attach -h` 获取帮助文档：
 
 ```shell
-$ ./attach -h         
+$ ./attach -h
 Usage of ./attach:
+  -c string
+        usage for update global config. example: ./attach -p <pid> -c k=v
   -d string
         usage for update module data. example: ./attach -p <pid> -d rce-hook:k1=v1;k2=v2;k3=v31,v32,v33
   -l    usage for list transform class. example: ./attach -p <pid> -l
   -p int
         usage for attach java pid. example: ./attach -p <pid> (default -1)
   -s    usage for stop agent. example: ./attach -p <pid> -s
-  -v    usage for inject version. example: ./attach -v
+  -u string
+        usage for unload module. example: ./attach -p <pid> -u rce-hook
+  -v    usage for attach version. example: ./attach -v
 ```
 
 ###1. 对Java进程发起注入（process）

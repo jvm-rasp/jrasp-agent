@@ -40,8 +40,8 @@ public class FileListAlgorithm implements Algorithm {
 
     public FileListAlgorithm(Map<String, String> configMaps, RaspLog logger) {
         this.logger = logger;
-        this.travelStr = ParamSupported.getParameter(configMaps, "travelStr", String[].class, travelStr);
-        this.fileListAction = ParamSupported.getParameter(configMaps, "fileListAction", Integer.class, fileListAction);
+        this.travelStr = ParamSupported.getParameter(configMaps, "travel_str", String[].class, travelStr);
+        this.fileListAction = ParamSupported.getParameter(configMaps, "file_list_action", Integer.class, fileListAction);
     }
 
     public FileListAlgorithm(RaspLog logger) {

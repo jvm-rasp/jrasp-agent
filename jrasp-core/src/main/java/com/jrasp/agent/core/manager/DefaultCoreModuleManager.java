@@ -206,6 +206,9 @@ public class DefaultCoreModuleManager {
                     // 这里使用注入的原因是
                     // 为了兼容tomcat的日志格式,tomcat 使用的getlogger与类加载器有关
                     writeField(resourceField, module, Loggging.INSTANCE, true);
+                } else if (RaspConfig.class.isAssignableFrom(fieldType)) {
+                    // 全局配置
+                    writeField(resourceField, module, CoreConfigure.getInstance(), true);
                 } else {
                     // 其他情况需要输出日志警告
                     logger.log(Level.WARNING, "module inject @RaspResource ignored: field not found. module={0};class={1};type={2};field={3};",
@@ -338,8 +341,9 @@ public class DefaultCoreModuleManager {
 
     /**
      * 在 rasp 退出时清理线程变量，这里使用 inheritableThreadLocals 应该清除 inheritableThreadLocals
-     * @see Thread.inheritableThreadLocals
-     * @see Thread.threadLocals
+     *
+     * @see // Thread.inheritableThreadLocals
+     * @see // Thread.threadLocals
      */
     private void cleanThreadLocals(Thread thread) {
         Object threadLocals = RaspReflectUtils.unCaughtGetClassDeclaredJavaFieldValue(Thread.class, "threadLocals", thread);
@@ -558,11 +562,11 @@ public class DefaultCoreModuleManager {
                 checksumCRC32s.add(checksumCRC32);
                 // 如果CRC32已经在已加载的模块集合中存在，则说明这个文件没有变动，忽略
                 if (isChecksumCRC32Existed(checksumCRC32)) {
-                    logger.log(Level.INFO, "soft-flushing module: module-jar is not changed, ignored. module-jar={0};CRC32={1};", new Object[]{jarFile, checksumCRC32});
+                    logger.log(Level.INFO, "soft-flushing module: module-jar is not changed, ignored. module-jar={0}", new Object[]{jarFile.getName()});
                     continue;
                 }
 
-                logger.log(Level.INFO, "soft-flushing module: module-jar is changed, will be flush. module-jar={0};CRC32={1};", new Object[]{jarFile, checksumCRC32});
+                logger.log(Level.INFO, "soft-flushing module: module-jar is changed, will be flush. module-jar={0}", new Object[]{jarFile.getName()});
                 appendJarFiles.add(jarFile);
             }
 
@@ -573,14 +577,14 @@ public class DefaultCoreModuleManager {
                 // 如果CRC32已经在这次待加载的集合中，则说明这个文件没有变动，忽略
                 if (checksumCRC32s.contains(moduleJarClassLoader.getChecksumCRC32())) {
                     logger.log(Level.INFO, "soft-flushing module: module-jar already loaded, ignored. module-jar={0};CRC32={1};",
-                            new Object[]{coreModule.getJarFile(),
+                            new Object[]{coreModule.getJarFile().getName(),
                                     moduleJarClassLoader.getChecksumCRC32()}
                     );
                     continue;
                 }
                 logger.log(Level.INFO, "soft-flushing module: module-jar is changed, module will be reload/remove. module={0};module-jar={1};",
                         new Object[]{coreModule.getUniqueId(),
-                                coreModule.getJarFile()}
+                                coreModule.getJarFile().getName()}
                 );
                 removeCoreModules.add(coreModule);
             }

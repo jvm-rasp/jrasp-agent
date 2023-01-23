@@ -52,8 +52,8 @@ public class JndiHook implements Module, LoadCompleted {
     @Override
     public boolean update(Map<String, String> configMaps) {
         this.disable = ParamSupported.getParameter(configMaps, "disable", Boolean.class, disable);
-        this.jndiBlackListAction = ParamSupported.getParameter(configMaps, "jndiBlackListAction", Integer.class, jndiBlackListAction);
-        this.dangerProtocol = ParamSupported.getParameter(configMaps, "dangerProtocol", String[].class, dangerProtocol);
+        this.jndiBlackListAction = ParamSupported.getParameter(configMaps, "jndi_black_list_action", Integer.class, jndiBlackListAction);
+        this.dangerProtocol = ParamSupported.getParameter(configMaps, "danger_protocol", String[].class, dangerProtocol);
         return false;
     }
 
@@ -126,9 +126,9 @@ public class JndiHook implements Module, LoadCompleted {
 
     // 拦截所有jndi调用
     public void check(Context context, Object... parameters) throws Exception {
-        if (parameters != null && parameters.length >= 1) {
-            String lookupUrl = (String) parameters[0];
-            if (this.jndiBlackListAction > -1) {
+        if (this.jndiBlackListAction > -1) {
+            if (parameters != null && parameters.length >= 1) {
+                String lookupUrl = (String) parameters[0];
                 if (hasDangerProtocol(lookupUrl)) {
                     boolean block = jndiBlackListAction == 1;
                     AttackInfo attackInfo = new AttackInfo(context, lookupUrl, block, TYPE, "danger jndi url", "", 100);

@@ -6,7 +6,6 @@ import com.jrasp.agent.api.log.RaspLog;
 import com.jrasp.agent.api.request.AttackInfo;
 import com.jrasp.agent.api.request.Context;
 import com.jrasp.agent.api.util.ParamSupported;
-import com.jrasp.agent.api.util.StackTrace;
 import com.jrasp.agent.api.util.StringUtils;
 
 import java.util.*;
@@ -21,14 +20,14 @@ public class XmlAlgorithm implements Algorithm {
     private Integer xmlBlackListAction = 0;
 
     //  xml反序列化类黑名单
-    private Set<String> xmlBlackClassList = new HashSet<String>(Arrays.asList(
+    private Set<String> xmlBlackClassSet = new HashSet<String>(Arrays.asList(
             "java.io.PrintWriter", "java.io.FileInputStream", "java.io.FileOutputStream", "java.util.PriorityQueue",
             "javax.sql.rowset.BaseRowSet", "javax.activation.DataSource", "java.nio.channels.Channel", "java.io.InputStream",
             "java.lang.ProcessBuilder", "java.lang.Runtime", "javafx.collections.ObservableList", "java.beans.EventHandler", "sun.swing.SwingLazyValue", "java.io.File"
     ));
 
     // xml反序列化包黑名单
-    private Set<String> xmlBlackPackageList = new HashSet<String>(Arrays.asList(
+    private Set<String> xmlBlackPackageSet = new HashSet<String>(Arrays.asList(
             "sun.reflect", "sun.tracing", "com.sun.corba", "javax.crypto", "jdk.nashorn.internal",
             "sun.awt.datatransfer", "com.sun.tools", "javax.imageio", "com.sun.rowset"
     ));
@@ -45,7 +44,10 @@ public class XmlAlgorithm implements Algorithm {
 
     public XmlAlgorithm(RaspLog logger, Map<String, String> configMaps) {
         this.logger = logger;
-        this.xmlBlackListAction = ParamSupported.getParameter(configMaps, "xmlBlackListAction", Integer.class, xmlBlackListAction);
+        this.xmlBlackListAction = ParamSupported.getParameter(configMaps, "xml_black_list_action", Integer.class, xmlBlackListAction);
+        this.xmlBlackClassSet = ParamSupported.getParameter(configMaps, "xml_black_class_list", Set.class, xmlBlackClassSet);
+        this.xmlBlackPackageSet = ParamSupported.getParameter(configMaps, "xml_black_package_list", Set.class, xmlBlackPackageSet);
+        this.xmlBlackKeyList = ParamSupported.getParameter(configMaps, "xml_black_key_list", List.class, xmlBlackKeyList);
     }
 
     @Override
@@ -55,26 +57,28 @@ public class XmlAlgorithm implements Algorithm {
 
     @Override
     public void check(Context context, Object... parameters) throws Exception {
-        if (parameters != null && parameters.length >= 1) {
-            String className = (String) parameters[0];
-            // 类名称匹配
-            if (xmlBlackClassList.contains(className)) {
-                doAction(context, className, xmlBlackListAction, "deserialization class hit black list, class: " + className, 90);
-                return;
-            }
-
-            // 包名称匹配
-            String pkg = StringUtils.isContainsPackage(className, xmlBlackPackageList);
-            if (pkg != null) {
-                doAction(context, className, xmlBlackListAction, "deserialization class hit black list, package: " + pkg, 80);
-                return;
-            }
-
-            // 关键字黑名单
-            for (String key : xmlBlackKeyList) {
-                if (className.contains(key)) {
-                    doAction(context, className, xmlBlackListAction, "deserialization class hit black list, key: " + key, 50);
+        if (xmlBlackListAction > -1) {
+            if (parameters != null && parameters.length >= 1) {
+                String className = (String) parameters[0];
+                // 类名称匹配
+                if (xmlBlackClassSet.contains(className)) {
+                    doAction(context, className, xmlBlackListAction, "deserialization class hit black list, class: " + className, 90);
                     return;
+                }
+
+                // 包名称匹配
+                String pkg = StringUtils.isContainsPackage(className, xmlBlackPackageSet);
+                if (pkg != null) {
+                    doAction(context, className, xmlBlackListAction, "deserialization class hit black list, package: " + pkg, 80);
+                    return;
+                }
+
+                // 关键字黑名单
+                for (String key : xmlBlackKeyList) {
+                    if (className.contains(key)) {
+                        doAction(context, className, xmlBlackListAction, "deserialization class hit black list, key: " + key, 50);
+                        return;
+                    }
                 }
             }
         }

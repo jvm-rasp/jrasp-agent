@@ -110,7 +110,7 @@ public class SocketServer implements CoreServer {
             final InetSocketAddress local = getLocal();
             writeAgentInitResult(local);
             // 耗时瓶颈在于读写文件
-            LOGGER.log(Level.INFO, "server socket success init, bind to [{0}:{1}], cost time: {2} ms", new Object[]{local.getHostName(), local.getPort(),System.currentTimeMillis()/1000-start});
+            LOGGER.log(Level.INFO, "server socket success init, bind to [{0}:{1}], cost time: {2} ms", new Object[]{local.getHostName(), local.getPort(), System.currentTimeMillis() / 1000 - start});
         } catch (Throwable cause) {
             LOGGER.log(Level.WARNING, "initialize server failed.", cause);
             throw new IOException("server bind failed.", cause);
@@ -211,6 +211,7 @@ public class SocketServer implements CoreServer {
         handlerMap.put(UNLOAD, new UnloadModuleHandler(coreModuleManager));
         handlerMap.put(ACTIVE, new ActiveModuleHandler(coreModuleManager));
         handlerMap.put(FROZEN, new FrozenModuleHandler(coreModuleManager));
+        handlerMap.put(CONFIG, new UpdateConfigPacketHandler());
     }
 
     private void runServer() {
@@ -255,11 +256,13 @@ public class SocketServer implements CoreServer {
                 Codec.INSTANCE.encode(outputStream, response);
             } catch (Throwable t) {
                 try {
-                    LOGGER.log(Level.WARNING, "error occurred when update module parameters", t);
-                    Packet error = new Packet(PacketType.ERROR, t.getMessage());
-                    Codec.INSTANCE.encode(outputStream, error);
-                } catch (Throwable e) {
-                    // TODO
+                    if (outputStream != null) {
+                        LOGGER.log(Level.WARNING, "error occurred when update module parameters", t);
+                        Packet error = new Packet(PacketType.ERROR, t.getMessage());
+                        Codec.INSTANCE.encode(outputStream, error);
+                    }
+                } catch (Exception e1) {
+                    // ignore
                 }
             } finally {
                 closeQuietly(inputStream, outputStream, socket);

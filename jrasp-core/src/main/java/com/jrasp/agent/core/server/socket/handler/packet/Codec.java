@@ -20,9 +20,9 @@ public enum Codec {
      *
      * @param out    输出流
      * @param packet 消息
-     * @throws Throwable 异常
+     * @throws Exception 异常
      */
-    public void encode(DataOutputStream out, Packet packet) throws Throwable {
+    public void encode(DataOutputStream out, Packet packet) throws Exception {
         int bodySize = packet.getData().length();
         PacketType packetType = packet.getType();
         out.write(MAGIC_BYTES);
@@ -39,7 +39,7 @@ public enum Codec {
 
     // |<---magic(3byte)--->|<-version(1byte)->|<-type(1byte)->|<----bodysize---->|<----time(8bytes)---->|
     // |<---sig(128)------------------->|<----------------------------------body------------------->|
-    public Packet decode(DataInputStream inputStream) throws Throwable {
+    public Packet decode(DataInputStream inputStream) throws Exception {
         byte[] magicHead = new byte[3];
         inputStream.readFully(magicHead);
         verifyMagicHead(magicHead);

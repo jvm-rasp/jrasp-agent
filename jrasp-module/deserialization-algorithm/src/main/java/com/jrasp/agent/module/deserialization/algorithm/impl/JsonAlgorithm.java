@@ -25,10 +25,10 @@ public class JsonAlgorithm implements Algorithm {
     private Integer jsonBlackListAction = 0;
 
     // json反序列化类白名单
-    private Set<String> jsonWhiteClassList = new HashSet<String>();
+    private Set<String> jsonWhiteClassSet = new HashSet<String>();
 
     // json反序列化类黑名单
-    private Set<String> jsonBlackClassList = new HashSet<String>(Arrays.asList(
+    private Set<String> jsonBlackClassSet = new HashSet<String>(Arrays.asList(
             "org.apache.commons.collections.Transformer",
             "java.lang.Thread",
             "java.net.Socket",
@@ -48,7 +48,7 @@ public class JsonAlgorithm implements Algorithm {
     ));
 
     // json反序列化包黑名单
-    private Set<String> jsonBlackPackageList = new HashSet<String>(Arrays.asList(
+    private Set<String> jsonBlackPackageSet = new HashSet<String>(Arrays.asList(
             "org.apache.commons.collections.functors",
             "org.apache.commons.collections4.functors",
             "org.apache.commons.collections4.comparators",
@@ -95,7 +95,10 @@ public class JsonAlgorithm implements Algorithm {
 
     public JsonAlgorithm(RaspLog logger, Map<String, String> configMaps) {
         this.logger = logger;
-        this.jsonBlackListAction = ParamSupported.getParameter(configMaps, "jsonBlackListAction", Integer.class, jsonBlackListAction);
+        this.jsonBlackListAction = ParamSupported.getParameter(configMaps, "json_black_list_action", Integer.class, jsonBlackListAction);
+        this.jsonWhiteClassSet = ParamSupported.getParameter(configMaps, "json_white_class_list", Set.class, jsonWhiteClassSet);
+        this.jsonBlackClassSet = ParamSupported.getParameter(configMaps, "json_black_class_list", Set.class, jsonBlackClassSet);
+        this.jsonBlackPackageSet = ParamSupported.getParameter(configMaps, "json_black_package_list", Set.class, jsonBlackPackageSet);
     }
 
     @Override
@@ -105,24 +108,25 @@ public class JsonAlgorithm implements Algorithm {
 
     @Override
     public void check(Context context, Object... parameters) throws Exception {
-        if (parameters != null && parameters.length >= 1) {
-            String className = (String) parameters[0];
-            if (jsonWhiteClassList.contains(className)) {
-                return;
-            }
-            // 类名称匹配
-            if (jsonBlackClassList.contains(className)) {
-                doCheck(context, className, jsonBlackListAction, "deserialization class hit black list, class: " + className, 90);
-                return;
-            }
-            // 包名称匹配
-            String pkg = StringUtils.isContainsPackage(className, jsonBlackPackageList);
-            if (pkg != null) {
-                doCheck(context, className, jsonBlackListAction, "deserialization class hit black list, package: " + pkg, 80);
-                return;
+        if (jsonBlackListAction > -1) {
+            if (parameters != null && parameters.length >= 1) {
+                String className = (String) parameters[0];
+                if (jsonWhiteClassSet.contains(className)) {
+                    return;
+                }
+                // 类名称匹配
+                if (jsonBlackClassSet.contains(className)) {
+                    doCheck(context, className, jsonBlackListAction, "deserialization class hit black list, class: " + className, 90);
+                    return;
+                }
+                // 包名称匹配
+                String pkg = StringUtils.isContainsPackage(className, jsonBlackPackageSet);
+                if (pkg != null) {
+                    doCheck(context, className, jsonBlackListAction, "deserialization class hit black list, package: " + pkg, 80);
+                    return;
+                }
             }
         }
-        return;
     }
 
     @Override

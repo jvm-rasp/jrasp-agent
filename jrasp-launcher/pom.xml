@@ -5,11 +5,18 @@
     <parent>
         <artifactId>jrasp-agent</artifactId>
         <groupId>com.jrasp.agent</groupId>
-        <version>1.1.0</version>
+        <version>1.1.1</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>jrasp-launcher</artifactId>
+
+    <dependencies>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+        </dependency>
+    </dependencies>
 
     <build>
         <plugins>

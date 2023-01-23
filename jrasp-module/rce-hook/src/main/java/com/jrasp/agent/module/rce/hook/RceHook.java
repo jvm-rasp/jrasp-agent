@@ -17,6 +17,8 @@ import org.kohsuke.MetaInfServices;
 
 import java.util.*;
 
+import static com.jrasp.agent.api.util.ParamSupported.getParameter;
+
 /**
  * 命令执行方法hook模块
  * hook类是最底层的native方法,不可能绕过
@@ -41,9 +43,7 @@ public class RceHook extends ModuleLifecycleAdapter implements Module, LoadCompl
 
     @Override
     public boolean update(Map<String, String> configMaps) {
-        // 是否禁用hook点
-        String disableHookStr = configMaps.get("disable");
-        this.disable = Boolean.valueOf(disableHookStr);
+        this.disable = getParameter(configMaps, "disable", Boolean.class, disable);
         return true;
     }
 
@@ -81,12 +81,15 @@ public class RceHook extends ModuleLifecycleAdapter implements Module, LoadCompl
             byte[] argBlock = (byte[]) advice.getParameterArray()[3]; // 参数
             String cmd = getCommand(prog);
             String args = getArgs(argBlock);
-            algorithmManager.doCheck(TYPE, context.get(), cmd + " " + args);
+            // 部分命令的参数为空
+            if (args != null && args.length() > 0) {
+                cmd += " " + args;
+            }
+            algorithmManager.doCheck(TYPE, context.get(), cmd);
         }
 
         @Override
         protected void afterThrowing(Advice advice) throws Throwable {
-            // 方法调用完成，如果抛出异常（插桩的代码bug导致的异常或者主动阻断的异常）将清除上下文环境变量
             context.remove();
         }
     }
@@ -103,7 +106,6 @@ public class RceHook extends ModuleLifecycleAdapter implements Module, LoadCompl
 
         @Override
         protected void afterThrowing(Advice advice) throws Throwable {
-            // 方法调用完成，如果抛出异常（插桩的代码bug导致的异常或者主动阻断的异常）将清除上下文环境变量
             context.remove();
         }
     }

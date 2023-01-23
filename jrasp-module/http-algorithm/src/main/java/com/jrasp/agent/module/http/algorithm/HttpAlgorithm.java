@@ -10,12 +10,13 @@ import com.jrasp.agent.api.annotation.RaspResource;
 import com.jrasp.agent.api.log.RaspLog;
 import com.jrasp.agent.api.request.AttackInfo;
 import com.jrasp.agent.api.request.Context;
+import com.jrasp.agent.api.util.ParamSupported;
 import org.kohsuke.MetaInfServices;
 
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArraySet;
 
 /**
  * 主要是防护扫描器、ip、url
@@ -30,70 +31,49 @@ public class HttpAlgorithm extends ModuleLifecycleAdapter implements Module, Alg
     @RaspResource
     private RaspLog logger;
 
-    /**
-     * hook开关，默认开启，可以在管理端统一配置
-     */
-    private volatile Boolean disable = false;
+    private volatile Integer ipBlackListAction = 0;
+
+    private volatile Integer urlBlackListAction = 0;
+
+    private volatile Integer scanListAction = 0;
 
     /**
-     * ip 白名单（true）、黑名单（false）
+     * ip 黑名单
      */
-    private Map<String, Boolean> ipBlackMap = new ConcurrentHashMap<String, Boolean>() {
-        {
-            //put("0:0:0:0:0:0:0:1", false);
-        }
-    };
+    private Set<String> ipBlackSet = new HashSet<String>();
 
     /**
      * URL 黑名单
      */
-    private Set<String> urlBlackSet = new CopyOnWriteArraySet<String>();
+    private Set<String> urlBlackSet = new HashSet<String>();
 
     /**
      * 扫描器特征：url
      */
-    private Map<String/*特征*/, String/*扫描器名称*/> scanUrl = new ConcurrentHashMap(32) {
-        {
+    private Set<String/*特征*/> scanUrlSet = new HashSet<String>(Arrays.asList(
             // awvs
-            put("acunetix-wvs-test-for-some-inexistent-file", "nessus");
-            put("by_wvs", "nessus");
-            put("acunetix_wvs_security_test", "nessus");
-            put("acunetix", "nessus");
-            put("acunetix_wvs", "nessus");
-            put("acunetix_test", "nessus");
+            "acunetix-wvs-test-for-some-inexistent-file",
+            "by_wvs",
+            "acunetix_wvs_security_test",
+            "acunetix",
+            "acunetix_wvs",
+            "acunetix_test",
             // nessus
-            put("nessus", "nessus");
-            put("Nessus", "nessus");
+            "nessus",
+            "Nessus",
             // appscan
-            put("Appscan", "appscan");
+            "Appscan",
             // Rsas
-            put("nsfocus", "Rsas");
+            "nsfocus",
             // sqlmap
-            put("sqlmap", "sqlmap");
-        }
-    };
+            "sqlmap"
+    ));
 
     /**
      * 扫描器特征：headers
-     */
-    private Map<String, String> scanHeaders = new ConcurrentHashMap() {
-        {
-            put("sqlmap", "sqlmap");
-            put("appscan", "appscan");
-            put("nessus", "nessus");
-        }
-    };
-
-    /**
      * 扫描器特征：body 暂不用
      */
-    private Map<String, String> scanBody = new ConcurrentHashMap() {
-        {
-            put("sqlmap", "sqlmap");
-            put("appscan", "appscan");
-            put("nessus", "nessus");
-        }
-    };
+    private Set<String> scanHeadersOrBody = new HashSet<String>(Arrays.asList("sqlmap", "appscan", "nessus"));
 
     @Override
     public void loadCompleted() {
@@ -102,9 +82,12 @@ public class HttpAlgorithm extends ModuleLifecycleAdapter implements Module, Alg
 
     @Override
     public boolean update(Map<String, String> configMaps) {
-        // 是否禁用检测
-        String disableCheckStr = configMaps.get("disable");
-        this.disable = Boolean.valueOf(disableCheckStr);
+        this.ipBlackListAction = ParamSupported.getParameter(configMaps, "ip_black_list_action", Integer.class, ipBlackListAction);
+        this.urlBlackListAction = ParamSupported.getParameter(configMaps, "url_black_list_action", Integer.class, urlBlackListAction);
+        this.scanListAction = ParamSupported.getParameter(configMaps, "scan_list_action", Integer.class, scanListAction);
+        this.ipBlackSet = ParamSupported.getParameter(configMaps, "ip_black_list", Set.class, ipBlackSet);
+        this.urlBlackSet = ParamSupported.getParameter(configMaps, "url_black_set", Set.class, urlBlackSet);
+        this.scanUrlSet = ParamSupported.getParameter(configMaps, "scan_url_set", Set.class, scanUrlSet);
         return true;
     }
 
@@ -115,50 +98,65 @@ public class HttpAlgorithm extends ModuleLifecycleAdapter implements Module, Alg
 
     @Override
     public void check(Context context, Object... parameters) throws Exception {
-        if (disable) {
-            return;
-        }
         if (context != null) {
             // ip 禁用
-            String remoteHost = context.getRemoteHost();
-            if (remoteHost != null) {
-                // todo 需要加强，支持正则表达式
-                if (ipBlackMap.containsKey(remoteHost)) {
-                    AttackInfo attackInfo = new AttackInfo(context, remoteHost, true, "black ip", getDescribe(), "black ip: " + remoteHost, 95);
-                    logger.attack(attackInfo);
-                    ProcessControlException.throwThrowsImmediately(new RuntimeException("hit black ip: " + remoteHost));
+            if (ipBlackListAction > -1) {
+                String remoteHost = context.getRemoteHost();
+                if (remoteHost != null) {
+                    // todo 需要加强，支持正则表达式
+                    if (ipBlackSet.contains(remoteHost)) {
+                        boolean canBlock = ipBlackListAction == 1;
+                        AttackInfo attackInfo = new AttackInfo(context, remoteHost, canBlock, "black ip", getDescribe(), "black ip: " + remoteHost, 95);
+                        logger.attack(attackInfo);
+                        if (canBlock) {
+                            ProcessControlException.throwThrowsImmediately(new RuntimeException("hit black ip: " + remoteHost));
+                        }
+                    }
                 }
             }
 
             // 扫描器url特征
-            String requestURL = context.getRequestURL();
-            for (String key : scanUrl.keySet()) {
-                if (requestURL.contains(key)) {
-                    AttackInfo attackInfo = new AttackInfo(context, key, true, "scan url", getDescribe(), "scan url: " + key, 50);
-                    logger.attack(attackInfo);
-                    ProcessControlException.throwThrowsImmediately(new RuntimeException("hit url scan feature: " + requestURL));
-                }
-            }
-
-            // 扫描器header特征
-            String headerStr = context.getHeaderString();
-            if (headerStr != null) {
-                for (String key : scanHeaders.keySet()) {
-                    if (headerStr.contains(key)) {
-                        AttackInfo attackInfo = new AttackInfo(context, key, true, "scan header", getDescribe(), "scan header: " + key, 50);
+            if (scanListAction > -1) {
+                String requestURL = context.getRequestURL();
+                for (String key : scanUrlSet) {
+                    if (requestURL.contains(key)) {
+                        boolean canBlock = scanListAction == 1;
+                        AttackInfo attackInfo = new AttackInfo(context, key, canBlock, "scan url", getDescribe(), "scan url: " + key, 50);
                         logger.attack(attackInfo);
-                        ProcessControlException.throwThrowsImmediately(new RuntimeException("hit header scan feature: " + key));
+                        if (canBlock) {
+                            ProcessControlException.throwThrowsImmediately(new RuntimeException("hit url scan feature: " + requestURL));
+                        }
+                    }
+                }
+
+                // 扫描器header特征
+                String headerStr = context.getHeaderString();
+                if (headerStr != null) {
+                    for (String key : scanHeadersOrBody) {
+                        if (headerStr.contains(key)) {
+                            boolean canBlock = scanListAction == 1;
+                            AttackInfo attackInfo = new AttackInfo(context, key, canBlock, "scan header", getDescribe(), "scan header: " + key, 50);
+                            logger.attack(attackInfo);
+                            if (canBlock) {
+                                ProcessControlException.throwThrowsImmediately(new RuntimeException("hit header scan feature: " + key));
+                            }
+                        }
                     }
                 }
             }
 
             // 禁用 url
-            String contextRequestURL = context.getRequestURL();
-            for (String url : urlBlackSet) {
-                if (contextRequestURL.contains(url)) {
-                    AttackInfo attackInfo = new AttackInfo(context, contextRequestURL, true, "block url", getDescribe(), "block url: " + url, 50);
-                    logger.attack(attackInfo);
-                    ProcessControlException.throwThrowsImmediately(new RuntimeException("hit black url: " + contextRequestURL));
+            if (urlBlackListAction > -1) {
+                String contextRequestURL = context.getRequestURL();
+                for (String url : urlBlackSet) {
+                    if (contextRequestURL.contains(url)) {
+                        boolean canBlock = urlBlackListAction == 1;
+                        AttackInfo attackInfo = new AttackInfo(context, contextRequestURL, canBlock, "block url", getDescribe(), "block url: " + url, 50);
+                        logger.attack(attackInfo);
+                        if (canBlock) {
+                            ProcessControlException.throwThrowsImmediately(new RuntimeException("hit black url: " + contextRequestURL));
+                        }
+                    }
                 }
             }
         }

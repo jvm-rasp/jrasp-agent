@@ -34,8 +34,9 @@ public class FileReadAlgorithm implements Algorithm {
 
     public FileReadAlgorithm(Map<String, String> configMaps, RaspLog logger) {
         this.logger = logger;
-        this.travelStr = ParamSupported.getParameter(configMaps, "travelStr", String[].class, travelStr);
-        this.fileReadAction = ParamSupported.getParameter(configMaps, "fileReadAction", Integer.class, fileReadAction);
+        this.travelStr = ParamSupported.getParameter(configMaps, "travel_str", String[].class, travelStr);
+        this.fileReadAction = ParamSupported.getParameter(configMaps, "file_read_action", Integer.class, fileReadAction);
+        this.dangerDirList = ParamSupported.getParameter(configMaps, "danger_dir_list", Set.class, dangerDirList);
     }
 
     public FileReadAlgorithm(RaspLog logger) {

@@ -17,7 +17,6 @@ import (
 	"syscall"
 )
 
-
 func init() {
 	signal.Notify(defs.Sig, syscall.SIGINT, syscall.SIGTERM, syscall.SIGKILL)
 }

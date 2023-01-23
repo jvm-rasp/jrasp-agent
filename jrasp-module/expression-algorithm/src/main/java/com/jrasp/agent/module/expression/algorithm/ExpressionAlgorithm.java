@@ -40,8 +40,8 @@ public class ExpressionAlgorithm extends ModuleLifecycleAdapter implements Modul
 
     @Override
     public void loadCompleted() {
-        spelAlgorithm = new SpelAlgorithm(logger);
-        ognlAlgorithm = new OgnlAlgorithm(logger);
+        this.spelAlgorithm = new SpelAlgorithm(logger);
+        this.ognlAlgorithm = new OgnlAlgorithm(logger);
         algorithmManager.register(spelAlgorithm);
         algorithmManager.register(ognlAlgorithm);
     }

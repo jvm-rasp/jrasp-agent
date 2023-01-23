@@ -57,11 +57,11 @@ public class SpelAlgorithm implements Algorithm {
 
     public SpelAlgorithm(RaspLog logger, Map<String, String> configMaps) {
         this.logger = logger;
-        this.spelMinLength = ParamSupported.getParameter(configMaps, "spelMinLength", Integer.class, spelMinLength);
-        this.spelMaxLimitLength = ParamSupported.getParameter(configMaps, "spelMaxLimitLength", Integer.class, spelMaxLimitLength);
-        this.spelBlackListAction = ParamSupported.getParameter(configMaps, "spelBlackListAction", Integer.class, spelBlackListAction);
-        this.spelMaxLimitLengthAction = ParamSupported.getParameter(configMaps, "spelMaxLimitLengthAction", Integer.class, spelMaxLimitLengthAction);
-        this.spelBlackList = ParamSupported.getParameter(configMaps, "spelBlackArray", String[].class, spelBlackList);
+        this.spelMinLength = ParamSupported.getParameter(configMaps, "spel_min_length", Integer.class, spelMinLength);
+        this.spelMaxLimitLength = ParamSupported.getParameter(configMaps, "spel_max_limit_length", Integer.class, spelMaxLimitLength);
+        this.spelMaxLimitLengthAction = ParamSupported.getParameter(configMaps, "spel_max_limit_length_action", Integer.class, spelMaxLimitLengthAction);
+        this.spelBlackList = ParamSupported.getParameter(configMaps, "spel_black_list", String[].class, spelBlackList);
+        this.spelBlackListAction = ParamSupported.getParameter(configMaps, "spel_black_list_action", Integer.class, spelBlackListAction);
     }
 
     @Override

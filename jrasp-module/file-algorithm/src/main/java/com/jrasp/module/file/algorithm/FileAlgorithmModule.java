@@ -39,20 +39,20 @@ public class FileAlgorithmModule extends ModuleLifecycleAdapter implements Modul
 
     @Override
     public boolean update(Map<String, String> configMaps) {
-        fileDeleteAlgorithm = new FileDeleteAlgorithm(configMaps, logger);
-        fileListAlgorithm = new FileListAlgorithm(configMaps, logger);
-        fileReadAlgorithm = new FileReadAlgorithm(configMaps, logger);
-        fileUploadAlgorithm = new FileUploadAlgorithm(configMaps, logger);
+        this.fileDeleteAlgorithm = new FileDeleteAlgorithm(configMaps, logger);
+        this.fileListAlgorithm = new FileListAlgorithm(configMaps, logger);
+        this.fileReadAlgorithm = new FileReadAlgorithm(configMaps, logger);
+        this.fileUploadAlgorithm = new FileUploadAlgorithm(configMaps, logger);
         algorithmManager.register(fileListAlgorithm, fileDeleteAlgorithm, fileReadAlgorithm, fileUploadAlgorithm);
         return false;
     }
 
     @Override
     public void loadCompleted() {
-        fileDeleteAlgorithm = new FileDeleteAlgorithm(logger);
-        fileListAlgorithm = new FileListAlgorithm(logger);
-        fileReadAlgorithm = new FileReadAlgorithm(logger);
-        fileUploadAlgorithm = new FileUploadAlgorithm(logger);
+        this.fileDeleteAlgorithm = new FileDeleteAlgorithm(logger);
+        this.fileListAlgorithm = new FileListAlgorithm(logger);
+        this.fileReadAlgorithm = new FileReadAlgorithm(logger);
+        this.fileUploadAlgorithm = new FileUploadAlgorithm(logger);
         algorithmManager.register(fileListAlgorithm, fileDeleteAlgorithm, fileReadAlgorithm, fileUploadAlgorithm);
     }
 

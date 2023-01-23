@@ -1,17 +1,19 @@
 # 版本迭代
 
 ## 1.1.1 【2023-01】
-#### Enhancement
+### Enhancement
 + [module] SQL检测增加LRU缓存，相同sql仅检测一次
-#### Bugfix
-+ [attach & build] 解决windows打包脚本兼容性问题，增加windows系统编译自动打包功能；
-### TODO
 + [module] 检测模块增加自定义html
+### Bugfix
++ [attach & build] 解决windows打包脚本兼容性问题，增加windows系统编译自动打包功能；
++ [module] 解决方法参数涉及第三方类时触发类的依赖加载bug
++ [agent] 修复字符串参数转map参数丢失bug
+### TODO
 + [部署方案] 小规模服务部署
 + [module] 支持sqlserver数据库
 
 ## 1.1.0【2022-10】
-#### Enhancement
+### Enhancement
 + [attach] 新增jrasp-attach工程(Golang)，支持手动注入、查看hook类、更新模块参数和卸载RASP
 + [agent] agent依赖的bridge打包时指定，防止加载错误依赖
 + [agent] 去掉logback/sl4j，使用原生jul ，减少不安全的依赖
@@ -35,23 +37,23 @@
 + [agent] 使用InheritableThreadLocal代替ThreadLocal防止线程注入 (存在内存泄漏，暂缓)
 
 ## 1.0.8 【2022-08】（内部测试版本）
-#### Enhancement
+### Enhancement
 + [module] 增加多个安全模块
 + [daemon] 进程扫描优化
 + [daemon] 防止启动多个守护进程
 
 ## 1.0.7 【2022-07】（用户使用的稳定版本）
-#### Enhancement
+### Enhancement
 + [daemon] 上报配置更新时间
 + [daemon] daemon启动上报nacos初始化的状态和注册的服务ip
 + [daemon] 发现无法连接nacos时，自动重启，24小时检测一次
 
-#### BugFix
+### BugFix
 + [daemon] 修复软刷新panic
 + [daemon] 删除获取依赖的功能，由安全插件自行上报
 
 ## 1.0.6 【2022-06】
-#### BugFix
+### BugFix
 + [daemon] 使用 os.RemoveAll 删除Java进程文件夹
 
 ## 1.0.5 【2022-05】

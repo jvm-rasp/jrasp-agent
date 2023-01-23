@@ -11,6 +11,7 @@ import com.jrasp.agent.api.matcher.ClassMatcher;
 import com.jrasp.agent.api.matcher.EventWatchBuilder;
 import com.jrasp.agent.api.matcher.ModuleEventWatcher;
 import com.jrasp.agent.api.request.Context;
+import com.jrasp.agent.api.util.ParamSupported;
 import com.jrasp.agent.api.util.StringUtils;
 import org.kohsuke.MetaInfServices;
 
@@ -43,9 +44,7 @@ public class HttpHook extends ModuleLifecycleAdapter implements Module {
 
     @Override
     public boolean update(Map<String, String> configMaps) {
-        // 是否禁用hook点
-        String disableStr = configMaps.get("disable");
-        this.disable = Boolean.valueOf(disableStr);
+        this.disable = ParamSupported.getParameter(configMaps, "disable", Boolean.class, disable);
         return true;
     }
 
@@ -86,11 +85,12 @@ public class HttpHook extends ModuleLifecycleAdapter implements Module {
                                 if (disable) {
                                     return;
                                 }
-                                Context context = requestContext.get();
                                 io.undertow.server.HttpServerExchange exchange = (io.undertow.server.HttpServerExchange) advice.getParameterArray()[0];
-                                storeRequestInfo(context, exchange);
+                                io.undertow.servlet.handlers.ServletRequestContext context = (io.undertow.servlet.handlers.ServletRequestContext) advice.getParameterArray()[1];
+                                requestContext.get().setResponse(context.getOriginalResponse());
+                                storeRequestInfo(requestContext.get(), exchange);
                                 // 参数检查
-                                algorithmManager.doCheck(TYPE, context, null);
+                                algorithmManager.doCheck(TYPE, requestContext.get(), null);
                             }
 
                             @Override
@@ -190,6 +190,9 @@ public class HttpHook extends ModuleLifecycleAdapter implements Module {
                                 }
                                 Context context = requestContext.get();
                                 org.apache.catalina.connector.Request request = (org.apache.catalina.connector.Request) advice.getParameterArray()[0];
+                                // 存储 response
+                                org.apache.catalina.connector.Response response = (org.apache.catalina.connector.Response) advice.getParameterArray()[1];
+                                requestContext.get().setResponse(response);
                                 storeTomcatRequestInfo(context, request);
                                 algorithmManager.doCheck(TYPE, requestContext.get(), null);
                             }
@@ -255,7 +258,6 @@ public class HttpHook extends ModuleLifecycleAdapter implements Module {
                 )
                 /**
                  * @see org.eclipse.jetty.server.Server#handle(org.eclipse.jetty.server.HttpChannel) jetty9+
-                 * @see org.eclipse.jetty.server.Server#handle(org.eclipse.jetty.server.AbstractHttpConnection) jetty8以下
                  */
                 .onClass(new ClassMatcher("org/eclipse/jetty/server/Server")
                         .onMethod("handle(Lorg/eclipse/jetty/server/HttpChannel;)V", new AdviceListener() {
@@ -269,8 +271,10 @@ public class HttpHook extends ModuleLifecycleAdapter implements Module {
                                 org.eclipse.jetty.server.HttpChannel httpChannel = (org.eclipse.jetty.server.HttpChannel) advice.getParameterArray()[0];
                                 if (httpChannel != null) {
                                     org.eclipse.jetty.server.Request request = httpChannel.getRequest();
-                                    Context context = requestContext.get();
-                                    storeJettyRequestInfo(context, request);
+                                    org.eclipse.jetty.server.Response response = httpChannel.getResponse();
+                                    // 设置 response
+                                    requestContext.get().setResponse(response);
+                                    storeJettyRequestInfo(requestContext.get(), request);
                                     // 参数检查
                                     algorithmManager.doCheck(TYPE, requestContext.get(), null);
                                 }
@@ -313,7 +317,7 @@ public class HttpHook extends ModuleLifecycleAdapter implements Module {
                         })
                 )
                 /**
-                 * @see org.eclipse.jetty.server.Server#handle
+                 * @see org.eclipse.jetty.server.Server#handle(org.eclipse.jetty.server.AbstractHttpConnection) jetty8以下
                  */
                 .onClass(new ClassMatcher("org/eclipse/jetty/server/Server")
                         .onMethod("handle(Lorg/eclipse/jetty/server/AbstractHttpConnection;)V", new AdviceListener() {
@@ -328,6 +332,8 @@ public class HttpHook extends ModuleLifecycleAdapter implements Module {
                                 org.eclipse.jetty.server.AbstractHttpConnection connection = (org.eclipse.jetty.server.AbstractHttpConnection) advice.getParameterArray()[0];
                                 if (connection != null) {
                                     org.eclipse.jetty.server.Request request = connection.getRequest();
+                                    org.eclipse.jetty.server.Response response = connection.getResponse();
+                                    requestContext.get().setResponse(response);
                                     storeJettyRequestInfo(requestContext.get(), request);
                                 }
                             }
@@ -357,6 +363,9 @@ public class HttpHook extends ModuleLifecycleAdapter implements Module {
                                 org.sparkproject.jetty.server.HttpChannel connection = (org.sparkproject.jetty.server.HttpChannel) advice.getParameterArray()[0];
                                 if (connection != null) {
                                     org.sparkproject.jetty.server.Request request = connection.getRequest();
+                                    org.sparkproject.jetty.server.Response response = connection.getResponse();
+                                    // 设置 response
+                                    requestContext.get().setResponse(response);
                                     storeSparkJettyRequestInfo(requestContext.get(), request);
                                 }
                             }
@@ -400,8 +409,10 @@ public class HttpHook extends ModuleLifecycleAdapter implements Module {
                 .build();
     }
 
+    // bugfix: 方法参数不得涉及第三方类
+    public static void storeJettyRequestInfo(Context context, Object object) {
+        org.eclipse.jetty.server.Request request = (org.eclipse.jetty.server.Request) object;
 
-    public static void storeJettyRequestInfo(Context context, org.eclipse.jetty.server.Request request) {
         // 本机地址
         String localAddr = request.getLocalAddr();
         context.setLocalAddr(localAddr);
@@ -417,6 +428,13 @@ public class HttpHook extends ModuleLifecycleAdapter implements Module {
         // content-type
         String contentType = request.getContentType();
         context.setContentType(contentType);
+
+        // 获取responseContentType
+        String responseContentType = request.getHeader("Accept");
+        if (StringUtils.isBlank(responseContentType)) {
+            responseContentType = request.getHeader("accept");
+        }
+        context.setResponseContentType(responseContentType);
 
         // query
         context.setQueryString(request.getQueryString());
@@ -459,7 +477,8 @@ public class HttpHook extends ModuleLifecycleAdapter implements Module {
         context.setHeader(header);
     }
 
-    public static void storeTomcatRequestInfo(Context context, org.apache.catalina.connector.Request request) {
+    public static void storeTomcatRequestInfo(Context context, Object object) {
+        org.apache.catalina.connector.Request request = (org.apache.catalina.connector.Request) object;
         // 本机地址
         String localAddr = request.getLocalAddr();
         context.setLocalAddr(localAddr);
@@ -475,6 +494,13 @@ public class HttpHook extends ModuleLifecycleAdapter implements Module {
         // content-type
         String contentType = request.getContentType();
         context.setContentType(contentType);
+
+        // 获取responseContentType
+        String responseContentType = request.getHeader("Accept");
+        if (StringUtils.isBlank(responseContentType)) {
+            responseContentType = request.getHeader("accept");
+        }
+        context.setResponseContentType(responseContentType);
 
         // query
         context.setQueryString(request.getQueryString());
@@ -517,7 +543,8 @@ public class HttpHook extends ModuleLifecycleAdapter implements Module {
         context.setHeader(header);
     }
 
-    public void storeRequestInfo(Context context, io.undertow.server.HttpServerExchange exchange) {
+    public void storeRequestInfo(Context context, Object request) {
+        io.undertow.server.HttpServerExchange exchange = (io.undertow.server.HttpServerExchange) request;
         // 本机地址
         String localAddr = exchange.getDestinationAddress().getAddress().getHostAddress();
         context.setLocalAddr(localAddr);
@@ -549,6 +576,11 @@ public class HttpHook extends ModuleLifecycleAdapter implements Module {
         Map<String, String> header = new HashMap<String, String>(32);
         io.undertow.util.HeaderMap requestHeaders = exchange.getRequestHeaders();
         if (requestHeaders != null) {
+            // 获取responseContentType
+            io.undertow.util.HeaderValues accept = requestHeaders.get("Accept");
+            if (accept != null) {
+                context.setResponseContentType(accept.toString());
+            }
             Iterator<io.undertow.util.HeaderValues> iterator = requestHeaders.iterator();
             while (iterator.hasNext()) {
                 io.undertow.util.HeaderValues next = iterator.next();
@@ -558,7 +590,9 @@ public class HttpHook extends ModuleLifecycleAdapter implements Module {
         context.setHeader(header);
     }
 
-    public static void storeSparkJettyRequestInfo(Context context, org.sparkproject.jetty.server.Request request) {
+    public static void storeSparkJettyRequestInfo(Context context, Object object) {
+        org.sparkproject.jetty.server.Request request = (org.sparkproject.jetty.server.Request) object;
+
         // 本机地址
         String localAddr = request.getLocalAddr();
         context.setLocalAddr(localAddr);
@@ -574,6 +608,13 @@ public class HttpHook extends ModuleLifecycleAdapter implements Module {
         // content-type
         String contentType = request.getContentType();
         context.setContentType(contentType);
+
+        // 获取responseContentType
+        String responseContentType = request.getHeader("Accept");
+        if (StringUtils.isBlank(responseContentType)) {
+            responseContentType = request.getHeader("accept");
+        }
+        context.setResponseContentType(responseContentType);
 
         // query
         context.setQueryString(request.getQueryString());

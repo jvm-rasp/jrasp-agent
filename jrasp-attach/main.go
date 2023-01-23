@@ -16,7 +16,7 @@ import (
 )
 
 const AGENT_NAME = "jrasp-launcher"
-const AGENT_VERSION = "1.1.0"
+const AGENT_VERSION = "1.1.1"
 
 var (
 	version bool
@@ -25,15 +25,17 @@ var (
 	list    bool
 	data    string
 	unload  string
+	config  string
 )
 
 func init() {
-	flag.BoolVar(&version, "v", false, "usage for inject version. example: ./attach -v")
+	flag.BoolVar(&version, "v", false, "usage for attach version. example: ./attach -v")
 	flag.IntVar(&pid, "p", -1, "usage for attach java pid. example: ./attach -p <pid>")
 	flag.BoolVar(&stop, "s", false, "usage for stop agent. example: ./attach -p <pid> -s")
 	flag.BoolVar(&list, "l", false, "usage for list transform class. example: ./attach -p <pid> -l")
 	flag.StringVar(&data, "d", "", "usage for update module data. example: ./attach -p <pid> -d rce-hook:k1=v1;k2=v2;k3=v31,v32,v33")
 	flag.StringVar(&unload, "u", "", "usage for unload module. example: ./attach -p <pid> -u rce-hook")
+	flag.StringVar(&config, "c", "", "usage for update global config. example: ./attach -p <pid> -c k=v")
 }
 
 func main() {
@@ -53,7 +55,7 @@ func main() {
 		// attach
 		log.Printf("attach java process,pid: %d", pid)
 
-		// jattach pid load instrument false jrasp-launcher-1.1.0.jar
+		// jattach pid load instrument false jrasp-launcher-1.1.1.jar
 		// 读取版本号
 		version, err := readVsersion(raspHome)
 		if err != nil || version == "" {
@@ -95,7 +97,7 @@ func main() {
 		}
 		log.Printf("command socket init success: [%s:%s]", ip, port)
 
-		if stop == false && list == false && data == "" && unload == "" {
+		if stop == false && list == false && data == "" && unload == "" && config == "" {
 			log.Println("attach jvm success")
 			return
 		} else if stop == true {
@@ -122,6 +124,12 @@ func main() {
 			sock := socket.NewSocketClient(ip, port)
 			sock.UnloadModule(unload)
 			return
+		} else if config != "" {
+		    // unload module
+            log.Println("update agent config: " + config)
+            sock := socket.NewSocketClient(ip, port)
+            sock.UpdateAgentConfig(config)
+            return
 		}
 	}
 }

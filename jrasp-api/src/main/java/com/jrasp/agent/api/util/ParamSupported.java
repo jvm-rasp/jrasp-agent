@@ -30,13 +30,21 @@ public class ParamSupported {
 
     static {
 
-        // 转换为字符串
-        regConverter(new Converter<String>() {
+        // 转换为boolean
+        regConverter(new Converter<Boolean>() {
             @Override
-            public String convert(String string) {
-                return string;
+            public Boolean convert(String string) {
+                return Boolean.valueOf(string);
             }
-        }, String.class);
+        }, boolean.class, Boolean.class);
+
+        // 转换为Integer
+        regConverter(new Converter<Integer>() {
+            @Override
+            public Integer convert(String string) {
+                return Integer.valueOf(string);
+            }
+        }, int.class, Integer.class);
 
         // 转换为Long
         regConverter(new Converter<Long>() {
@@ -44,7 +52,7 @@ public class ParamSupported {
             public Long convert(String string) {
                 return Long.valueOf(string);
             }
-        }, long.class, Long.class);
+        }, Long.class, Long.class);
 
         // 转换为Double
         regConverter(new Converter<Double>() {
@@ -54,13 +62,13 @@ public class ParamSupported {
             }
         }, double.class, Double.class);
 
-        // 转换为Integer
-        regConverter(new Converter<Integer>() {
+        // 转换为字符串
+        regConverter(new Converter<String>() {
             @Override
-            public Integer convert(String string) {
-                return Integer.valueOf(string);
+            public String convert(String string) {
+                return string;
             }
-        }, int.class, Integer.class);
+        }, String.class);
 
         // 转换为字符串数组
         regConverter(new Converter<String[]>() {
@@ -77,6 +85,14 @@ public class ParamSupported {
                 return Arrays.asList(string.split(","));
             }
         }, List.class, List.class);
+
+        // 转换set
+        regConverter(new Converter<Set>() {
+            @Override
+            public Set<String> convert(String string) {
+                return new HashSet<String>(Arrays.asList(string.split(",")));
+            }
+        }, Set.class, Set.class);
     }
 
     /**

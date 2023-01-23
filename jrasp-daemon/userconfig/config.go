@@ -2,16 +2,17 @@ package userconfig
 
 import (
 	"fmt"
-	"github.com/spf13/viper"
 	"jrasp-daemon/defs"
 	"time"
+
+	"github.com/spf13/viper"
 )
 
 // AgentMode 运行模式
 type AgentMode string
 
 const (
-	VERSION string    = "1.1.0"
+	VERSION string    = "1.1.1"
 	STATIC  AgentMode = "static"  // static模式：  被动注入
 	DYNAMIC AgentMode = "dynamic" // dynamic模式： 主动注入
 	DISABLE AgentMode = "disable" // disbale模式: (主动/被动)注入的退出、禁止注入
@@ -57,10 +58,13 @@ type Config struct {
 	BinFileHash string `json:"binFileHash"` // hash
 
 	// module列表
-	ModuleConfigMap map[string]ModuleConfig `json:"moduleConfigMap"` // 模块配置
+	ModuleConfigs []ModuleConfig `json:"moduleConfigs"` // 模块配置
 
 	// 模块更新
 	ModuleAutoUpdate bool `json:"moduleAutoUpdate"` // 本地磁盘没有缓存，模块对象存储服务上下载
+
+	// agent参数更新
+	AgentConfigs map[string]interface{} `json:"agentConfigs"`
 
 	// EnablePid
 	EnablePid bool `json:"enablePid"` // 是否允许创建pid文件，防止重复启动
@@ -68,11 +72,12 @@ type Config struct {
 
 // ModuleConfig module信息
 type ModuleConfig struct {
-	ModuleName  string            `json:"moduleName"`  // 名称，如tomcat-hook
-	ModuleType  string            `json:"moduleType"`  // 模块类型：hook、algorithm
-	DownLoadURL string            `json:"downLoadURL"` // 下载链接
-	Md5         string            `json:"md5"`         // 插件hash
-	Parameters  map[string]string `json:"parameters"`  // 参数列表
+	ModuleName  string `json:"moduleName"`  // 名称，如tomcat-hook
+	ModuleType  string `json:"moduleType"`  // 模块类型：hook、algorithm
+	DownLoadURL string `json:"downLoadURL"` // 下载链接
+	Md5         string `json:"md5"`         // 插件hash
+	// TODO 参数类型使用interface{}, 尽量保存原始类型
+	Parameters map[string][]interface{} `json:"parameters"` // 参数列表
 }
 
 func InitConfig() (*Config, error) {

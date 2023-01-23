@@ -23,10 +23,10 @@ public class OisAlgorithm implements Algorithm {
     private Integer oisBlackListAction = 0;
 
     // jdk反序列化类白名单
-    private Set<String> whiteClassList = new HashSet<String>();
+    private Set<String> whiteClassSet = new HashSet<String>();
 
     // jdk反序列化类黑名单
-    private Set<String> oisBlackClassList = new HashSet<String>(Arrays.asList(
+    private Set<String> oisBlackClassSet = new HashSet<String>(Arrays.asList(
             "org.codehaus.groovy.runtime.ConvertedClosure",
             "org.codehaus.groovy.runtime.ConversionHandler",
             "org.codehaus.groovy.runtime.MethodClosure",
@@ -73,7 +73,7 @@ public class OisAlgorithm implements Algorithm {
     ));
 
     // 反序列化包黑名单
-    private Set<String> oisBlackPackageList = new HashSet<String>(Arrays.asList(
+    private Set<String> oisBlackPackageSet = new HashSet<String>(Arrays.asList(
             "org.apache.commons.collections.functors",
             "org.apache.commons.collections4.functors",
             "com.sun.org.apache.xalan.internal.xsltc.trax",
@@ -110,7 +110,9 @@ public class OisAlgorithm implements Algorithm {
 
     public OisAlgorithm(RaspLog logger, Map<String, String> configMaps) {
         this.logger = logger;
-        this.oisBlackListAction = ParamSupported.getParameter(configMaps, "oisBlackListAction", Integer.class, oisBlackListAction);
+        this.oisBlackListAction = ParamSupported.getParameter(configMaps, "ois_black_list_action", Integer.class, oisBlackListAction);
+        this.oisBlackClassSet = ParamSupported.getParameter(configMaps, "ois_black_class_list", Set.class, oisBlackClassSet);
+        this.oisBlackPackageSet = ParamSupported.getParameter(configMaps, "ois_black_package_list", Set.class, oisBlackPackageSet);
     }
 
     @Override
@@ -120,24 +122,25 @@ public class OisAlgorithm implements Algorithm {
 
     @Override
     public void check(Context context, Object... parameters) throws Exception {
-        if (parameters != null && parameters.length >= 1) {
-            String className = (String) parameters[0];
-            if (whiteClassList.contains(className)) {
-                return;
-            }
-            // 类名称匹配
-            if (oisBlackClassList.contains(className)) {
-                doCheck(context, className, oisBlackListAction, "deserialization class hit black list, class: " + className, 90);
-                return;
-            }
-            // 包名称匹配
-            String pkg = StringUtils.isContainsPackage(className, oisBlackPackageList);
-            if (pkg != null) {
-                doCheck(context, className, oisBlackListAction, "deserialization class hit black list, package: " + pkg, 80);
-                return;
+        if (oisBlackListAction > -1) {
+            if (parameters != null && parameters.length >= 1) {
+                String className = (String) parameters[0];
+                if (whiteClassSet.contains(className)) {
+                    return;
+                }
+                // 类名称匹配
+                if (oisBlackClassSet.contains(className)) {
+                    doCheck(context, className, oisBlackListAction, "deserialization class hit black list, class: " + className, 90);
+                    return;
+                }
+                // 包名称匹配
+                String pkg = StringUtils.isContainsPackage(className, oisBlackPackageSet);
+                if (pkg != null) {
+                    doCheck(context, className, oisBlackListAction, "deserialization class hit black list, package: " + pkg, 80);
+                    return;
+                }
             }
         }
-        return;
     }
 
     @Override

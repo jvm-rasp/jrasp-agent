@@ -1,7 +1,7 @@
 # jrasp-agent
 
 ![Build Status](https://img.shields.io/badge/Build-passing-brightgreen)
-![Version](https://img.shields.io/badge/Version-1.1.0-informational)
+![Version](https://img.shields.io/badge/Version-1.1.1-informational)
 ![Go Guild Version](https://img.shields.io/badge/Go-v1.16+-blue)
 ![Maven Version](https://img.shields.io/badge/Maven-v3.25-blue)
 ![Java Build Version](https://img.shields.io/badge/Java-v1.6+-blue)
@@ -111,7 +111,7 @@ agent 初始化日志在`jrasp/logs`目录下的 jrasp-agent-0.log
   _   | | |  _  /    / /\ \    \___ \  |  ___/ 
  | |__| | | | \ \   / ____ \   ____) | | |   
   \____/  |_|  \_\ /_/    \_\ |_____/  |_|
-:: JVM RASP ::        (v1.1.0.RELEASE) https://www.jrasp.com
+:: JVM RASP ::        (v1.1.1.RELEASE) https://www.jrasp.com
 {"level":"INFO","ts":"2023-01-08 22:30:21.150","caller":"jrasp-daemon/main.go:55","msg":"daemon startup","logId":1000,"ip":"192.168.8.145","hostName":"MacBook-Pro","pid":20333,"detail":"{\"agentMode\":\"dynamic\"}"}
 {"level":"INFO","ts":"2023-01-08 22:30:21.150","caller":"jrasp-daemon/main.go:57","msg":"config id","logId":1030,"ip":"192.168.8.145","hostName":"MacBook-Pro","pid":20333,"detail":"{\"configId\":1}"}
 ```
@@ -156,7 +156,7 @@ bash packages_darwin.sh
 ```
 ## 06 版本记录
 
-[v1.1.0.RELEASE](CHANGELOG.md)
+[RELEASE](CHANGELOG.md)
 
 ## 07 技术交流群
 

@@ -1,5 +1,8 @@
 package com.jrasp.agent.api;
 
+import com.jrasp.agent.api.request.Context;
+import com.jrasp.agent.api.request.HttpServletResponse;
+
 import static com.jrasp.agent.api.ProcessControlException.State.*;
 import static com.jrasp.agent.api.ProcessControlException.throwReturnImmediately;
 import static com.jrasp.agent.api.ProcessControlException.throwThrowsImmediately;
@@ -36,6 +39,24 @@ public final class ProcessController {
      */
     public static void throwsImmediately(final Throwable throwable) throws ProcessControlException {
         throwThrowsImmediately(throwable);
+    }
+
+    /**
+     * 修改response
+     * @param context
+     * @param config
+     * @param throwable
+     * @throws ProcessControlException
+     */
+    public static void throwThrowsImmediatelyAndSendResponse(Context context, RaspConfig config, Throwable throwable) throws ProcessControlException {
+        try {
+            HttpServletResponse response = new HttpServletResponse(context.getResponse());
+            response.sendError(context, config);
+        } catch (Exception e) {
+            // todo 异常处理
+            // 先 ignore
+        }
+        throw new ProcessControlException(ProcessControlException.State.THROWS_IMMEDIATELY, throwable);
     }
 
     /**

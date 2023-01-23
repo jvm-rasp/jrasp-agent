@@ -60,8 +60,6 @@ public class OgnlAlgorithm implements Algorithm {
             "com.opensymphony.xwork2.ActionContext"
     };
 
-    public static final String OGNL_BLOCK_MESSAGE = "";
-
     private final RaspLog logger;
 
     public OgnlAlgorithm(RaspLog logger) {
@@ -70,11 +68,11 @@ public class OgnlAlgorithm implements Algorithm {
 
     public OgnlAlgorithm(RaspLog logger, Map<String, String> configMaps) {
         this.logger = logger;
-        this.ognlMinLength = ParamSupported.getParameter(configMaps, "ognlMinLength", Integer.class, ognlMinLength);
-        this.ognlMaxLimitLength = ParamSupported.getParameter(configMaps, "ognlMaxLimitLength", Integer.class, ognlMaxLimitLength);
-        this.ognlBlackListAction = ParamSupported.getParameter(configMaps, "ognlBlackListAction", Integer.class, ognlBlackListAction);
-        this.ognlMaxLimitLengthAction = ParamSupported.getParameter(configMaps, "ognlMaxLimitLengthAction", Integer.class, ognlMaxLimitLengthAction);
-        this.ognlBlackList = ParamSupported.getParameter(configMaps, "ognlBlackList", String[].class, ognlBlackList);
+        this.ognlMinLength = ParamSupported.getParameter(configMaps, "ognl_min_length", Integer.class, ognlMinLength);
+        this.ognlMaxLimitLength = ParamSupported.getParameter(configMaps, "ognl_max_limit_length", Integer.class, ognlMaxLimitLength);
+        this.ognlBlackListAction = ParamSupported.getParameter(configMaps, "ognl_black_list_action", Integer.class, ognlBlackListAction);
+        this.ognlMaxLimitLengthAction = ParamSupported.getParameter(configMaps, "ognl_max_limit_length_action", Integer.class, ognlMaxLimitLengthAction);
+        this.ognlBlackList = ParamSupported.getParameter(configMaps, "ognl_black_list", String[].class, ognlBlackList);
     }
 
     @Override

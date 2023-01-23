@@ -15,6 +15,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"strconv"
 	"strings"
 	"time"
 
@@ -63,7 +64,10 @@ type JavaProcess struct {
 	needUpdateModules bool // 是否需要刷新模块
 
 	// 模块配置信息
-	moduleConfigMap map[string]userconfig.ModuleConfig
+	moduleConfigs []userconfig.ModuleConfig
+
+	// agent 配置参数
+	agentConfigs map[string]interface{}
 }
 
 func NewJavaProcess(p *process.Process, cfg *userconfig.Config, env *environ.Environ) *JavaProcess {
@@ -73,7 +77,8 @@ func NewJavaProcess(p *process.Process, cfg *userconfig.Config, env *environ.Env
 		env:                  env,
 		cfg:                  cfg,
 		AgentMode:            cfg.AgentMode,
-		moduleConfigMap:      cfg.ModuleConfigMap,
+		moduleConfigs:        cfg.ModuleConfigs,
+		agentConfigs:         cfg.AgentConfigs,
 		needUpdateParameters: true,
 		needUpdateModules:    true,
 	}
@@ -100,7 +105,7 @@ func (jp *JavaProcess) Attach() error {
 func (jp *JavaProcess) execCmd() error {
 	zlog.Infof(defs.ATTACH_DEFAULT, "[Attach]", "attach to jvm[%d] start...", jp.JavaPid)
 	// 通过attach 传递给目标jvm的参数
-	agentArgs := fmt.Sprintf("raspHome=%s;coreVersion=%s", jp.env.InstallDir,jp.cfg.Version)
+	agentArgs := fmt.Sprintf("raspHome=%s;coreVersion=%s", jp.env.InstallDir, jp.cfg.Version)
 	// jattach pid load instrument false jrasp-launcher.jar
 	cmd := exec.Command(
 		filepath.Join(jp.env.InstallDir, "bin", getJattachExe()),
@@ -184,17 +189,80 @@ func splitContent(tokenFilePath string) (string, string, error) {
 // UpdateParameters 更新模块参数
 func (jp *JavaProcess) UpdateParameters() bool {
 	client := socket.NewSocketClient(jp.ServerIp, jp.ServerPort)
-	for _, v := range jp.moduleConfigMap {
+	// 更新全局参数
+	var config string = ""
+	for k, v := range jp.agentConfigs {
+		if k != "" {
+			config += k + "=" + join2(v) + ";"
+		}
+	}
+	client.UpdateAgentConfig(config)
+	zlog.Infof(defs.UPDATE_MODULE_PARAMETERS, "[update agent config]", "config: %s", config)
+
+	// 更新模块参数
+	for _, v := range jp.moduleConfigs {
 		if v.Parameters != nil && len(v.Parameters) > 0 {
 			var param = v.ModuleName + ":"
 			for key, value := range v.Parameters {
-				param += key + "=" + value + ";"
+				param += key + "=" + join(value) + ";"
 			}
-			zlog.Infof(defs.UPDATE_MODULE_PARAMETERS, "[update param]", "param: %s", param)
 			client.SendParameters(param)
+			zlog.Infof(defs.UPDATE_MODULE_PARAMETERS, "[update module config]", "param: %s", param)
 		}
 	}
 	return true
+}
+
+func join(params []interface{}) string {
+	var paramSlice []string
+	for _, param := range params {
+		switch param.(type) {
+		case string:
+			paramSlice = append(paramSlice, param.(string))
+		case bool:
+			paramSlice = append(paramSlice, strconv.FormatBool(param.(bool)))
+		case []string:
+			paramSlice = append(paramSlice, strings.Join(param.([]string), ","))
+		case int8, int16, int32, int, int64, uint8, uint16, uint32, uint, uint64:
+			paramSlice = append(paramSlice, strconv.Itoa(param.(int)))
+		case float64:
+			strV := strconv.FormatFloat(param.(float64), 'f', -1, 64)
+			paramSlice = append(paramSlice, strV)
+		case float32:
+			ft := param.(float32)
+			strV := strconv.FormatFloat(float64(ft), 'f', -1, 64)
+			paramSlice = append(paramSlice, strV)
+		// TODO 其他类型
+		default:
+			zlog.Errorf(defs.UPDATE_MODULE_PARAMETERS, "[data type not support]", "param: %s", param)
+		}
+	}
+	return strings.Join(paramSlice, ",")
+}
+
+func join2(param interface{}) string {
+	var paramSlice []string
+	switch param.(type) {
+	case string:
+		paramSlice = append(paramSlice, param.(string))
+	case bool:
+		paramSlice = append(paramSlice, strconv.FormatBool(param.(bool)))
+	case []string:
+		paramSlice = append(paramSlice, strings.Join(param.([]string), ","))
+	case int8, int16, int32, int, int64, uint8, uint16, uint32, uint, uint64:
+		paramSlice = append(paramSlice, strconv.Itoa(param.(int)))
+	case float64:
+		strV := strconv.FormatFloat(param.(float64), 'f', -1, 64)
+		paramSlice = append(paramSlice, strV)
+	case float32:
+		ft := param.(float32)
+		strV := strconv.FormatFloat(float64(ft), 'f', -1, 64)
+		paramSlice = append(paramSlice, strV)
+	// TODO 其他类型
+	default:
+		zlog.Errorf(defs.UPDATE_MODULE_PARAMETERS, "[data type not support]", "param: %s", param)
+	}
+	return strings.Join(paramSlice, ",")
 }
 
 func (jp *JavaProcess) IsInject() bool {

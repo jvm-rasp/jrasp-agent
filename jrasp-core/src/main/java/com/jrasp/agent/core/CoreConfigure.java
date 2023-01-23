@@ -1,5 +1,6 @@
 package com.jrasp.agent.core;
 
+import com.jrasp.agent.api.RaspConfig;
 import com.jrasp.agent.api.annotation.Information;
 import com.jrasp.agent.core.util.FeatureCodec;
 import com.jrasp.agent.core.util.ProcessHelper;
@@ -17,7 +18,7 @@ import java.util.Map;
  * 内核启动配置
  * Created by luanjia@taobao.com on 16/10/2.
  */
-public class CoreConfigure {
+public class CoreConfigure implements RaspConfig {
 
     private static final String KEY_NAMESPACE = "namespace";
     private static final String DEFAULT_VAL_NAMESPACE = "default";
@@ -39,6 +40,19 @@ public class CoreConfigure {
 
     // 技术支持链接
     public static final String JRASP_SUPPORT_URL = "https://www.jrasp.com";
+
+    // go viper 不区分大小写, java为了便于区分，这里使用下划线命名规则
+    private volatile int block_status_code = 302;
+
+    private volatile boolean check_disable = false;
+
+    private volatile String redirect_url = "https://www.jrasp.com/block.html";
+
+    private volatile String json_block_content = "{\"error\":true, \"reason\": \"Request blocked by JRASP (https://www.jrasp.com)\"}";
+
+    private volatile String xml_block_content = "<?xml version=\"1.0\"?><doc><error>true</error><reason>Request blocked by JRASP</reason></doc>";
+
+    private volatile String html_block_content = "</script><script>location.href=\"https://www.jrasp.com/block.html\"</script>";
 
     private static final FeatureCodec codec = new FeatureCodec(';', '=');
 
@@ -193,6 +207,66 @@ public class CoreConfigure {
     //  获取进程运行时pid/
     public String getRuntimeTokenPath() {
         return getProcessPidPath() + File.separatorChar + TOKEN_FILE_NAME;
+    }
+
+    @Override
+    public boolean isCheckDisable() {
+        return check_disable;
+    }
+
+    @Override
+    public void setCheckDisable(boolean checkDisable) {
+        this.check_disable = checkDisable;
+    }
+
+    @Override
+    public String getRedirectUrl() {
+        return this.redirect_url;
+    }
+
+    @Override
+    public String getJsonBlockContent() {
+        return json_block_content;
+    }
+
+    @Override
+    public String getXmlBlockContent() {
+        return xml_block_content;
+    }
+
+    @Override
+    public String getHtmlBlockContent() {
+        return html_block_content;
+    }
+
+    @Override
+    public void setRedirectUrl(String redirectUrl) {
+        this.redirect_url = redirectUrl;
+    }
+
+    @Override
+    public void setJsonBlockContent(String jsonBlockContent) {
+        this.json_block_content = jsonBlockContent;
+    }
+
+    @Override
+    public void setXmlBlockContent(String xmlBlockContent) {
+        this.xml_block_content = xmlBlockContent;
+    }
+
+    @Override
+    public void setHtmlBlockContent(String htmlBlockContent) {
+        this.html_block_content = htmlBlockContent;
+    }
+
+    @Override
+    public int getBlockStatusCode() {
+        return block_status_code;
+    }
+
+    @Override
+    public void setBlockStatusCode(int blockStatusCode) {
+        this.block_status_code = blockStatusCode;
     }
 
 }

@@ -1,10 +1,9 @@
 package com.jrasp.agent.module.rce.algorithm;
 
+import com.jrasp.agent.api.*;
+import com.jrasp.agent.api.Module;
 import com.jrasp.agent.api.algorithm.AlgorithmManager;
 import com.jrasp.agent.api.annotation.Information;
-import com.jrasp.agent.api.Module;
-import com.jrasp.agent.api.ModuleLifecycleAdapter;
-import com.jrasp.agent.api.ProcessControlException;
 import com.jrasp.agent.api.algorithm.Algorithm;
 import com.jrasp.agent.api.annotation.RaspResource;
 import com.jrasp.agent.api.log.RaspLog;
@@ -25,6 +24,10 @@ public class RceAlgorithm extends ModuleLifecycleAdapter implements Module, Algo
 
     @RaspResource
     private RaspLog logger;
+
+
+    @RaspResource
+    private RaspConfig raspConfig;
 
     private volatile Integer rceAction = 0;
 
@@ -91,7 +94,7 @@ public class RceAlgorithm extends ModuleLifecycleAdapter implements Module, Algo
 
     @Override
     public void check(Context context, Object... parameters) throws Exception {
-        if (rceAction > -1) {
+        if (!raspConfig.isCheckDisable() && rceAction > -1) {
             // 命令执行白名单
             String cmd = (String) parameters[0];
             List<String> tokens = getTokens(cmd);
@@ -153,7 +156,7 @@ public class RceAlgorithm extends ModuleLifecycleAdapter implements Module, Algo
             AttackInfo attackInfo = new AttackInfo(context, cmd, enableBlock, getType(), checkType, message, level);
             logger.attack(attackInfo);
             if (enableBlock) {
-                ProcessControlException.throwThrowsImmediately(new RuntimeException("rce block by rasp."));
+                ProcessController.throwThrowsImmediatelyAndSendResponse(context,raspConfig,new RuntimeException("rce block by jrasp."));
             }
         }
     }

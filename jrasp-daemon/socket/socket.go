@@ -19,6 +19,7 @@ const UPDATE byte = 0x05
 const UNLOAD byte = 0x06
 const ACTIVE byte = 0x07
 const FROZEN byte = 0x08
+const CONFIG byte = 0x09
 
 type SocketClient struct {
 	Ip   string
@@ -91,4 +92,8 @@ func (this *SocketClient) SendParameters(message string) {
 
 func (this *SocketClient) SendFlush(isForceFlush string) {
 	this.Send(isForceFlush, FLUSH)
+}
+
+func (this *SocketClient) UpdateAgentConfig(message string) {
+	this.Send(message, CONFIG)
 }

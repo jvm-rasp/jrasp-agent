@@ -206,6 +206,9 @@ public class DefaultCoreModuleManager {
                     // 这里使用注入的原因是
                     // 为了兼容tomcat的日志格式,tomcat 使用的getlogger与类加载器有关
                     writeField(resourceField, module, Loggging.INSTANCE, true);
+                } else if (RaspConfig.class.isAssignableFrom(fieldType)) {
+                    // 全局配置
+                    writeField(resourceField, module, CoreConfigure.getInstance(), true);
                 } else {
                     // 其他情况需要输出日志警告
                     logger.log(Level.WARNING, "module inject @RaspResource ignored: field not found. module={0};class={1};type={2};field={3};",
@@ -338,8 +341,9 @@ public class DefaultCoreModuleManager {
 
     /**
      * 在 rasp 退出时清理线程变量，这里使用 inheritableThreadLocals 应该清除 inheritableThreadLocals
-     * @see Thread.inheritableThreadLocals
-     * @see Thread.threadLocals
+     *
+     * @see // Thread.inheritableThreadLocals
+     * @see // Thread.threadLocals
      */
     private void cleanThreadLocals(Thread thread) {
         Object threadLocals = RaspReflectUtils.unCaughtGetClassDeclaredJavaFieldValue(Thread.class, "threadLocals", thread);

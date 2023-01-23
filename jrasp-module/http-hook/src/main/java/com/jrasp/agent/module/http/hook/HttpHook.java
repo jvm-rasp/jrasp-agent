@@ -13,7 +13,6 @@ import com.jrasp.agent.api.matcher.ModuleEventWatcher;
 import com.jrasp.agent.api.request.Context;
 import com.jrasp.agent.api.util.ParamSupported;
 import com.jrasp.agent.api.util.StringUtils;
-import io.undertow.util.HeaderValues;
 import org.kohsuke.MetaInfServices;
 
 import java.io.InputStream;
@@ -86,11 +85,12 @@ public class HttpHook extends ModuleLifecycleAdapter implements Module {
                                 if (disable) {
                                     return;
                                 }
-                                Context context = requestContext.get();
                                 io.undertow.server.HttpServerExchange exchange = (io.undertow.server.HttpServerExchange) advice.getParameterArray()[0];
-                                storeRequestInfo(context, exchange);
+                                io.undertow.servlet.handlers.ServletRequestContext context = (io.undertow.servlet.handlers.ServletRequestContext) advice.getParameterArray()[1];
+                                requestContext.get().setResponse(context.getOriginalResponse());
+                                storeRequestInfo(requestContext.get(), exchange);
                                 // 参数检查
-                                algorithmManager.doCheck(TYPE, context, null);
+                                algorithmManager.doCheck(TYPE, requestContext.get(), null);
                             }
 
                             @Override
@@ -258,7 +258,6 @@ public class HttpHook extends ModuleLifecycleAdapter implements Module {
                 )
                 /**
                  * @see org.eclipse.jetty.server.Server#handle(org.eclipse.jetty.server.HttpChannel) jetty9+
-                 * @see org.eclipse.jetty.server.Server#handle(org.eclipse.jetty.server.AbstractHttpConnection) jetty8以下
                  */
                 .onClass(new ClassMatcher("org/eclipse/jetty/server/Server")
                         .onMethod("handle(Lorg/eclipse/jetty/server/HttpChannel;)V", new AdviceListener() {
@@ -272,8 +271,10 @@ public class HttpHook extends ModuleLifecycleAdapter implements Module {
                                 org.eclipse.jetty.server.HttpChannel httpChannel = (org.eclipse.jetty.server.HttpChannel) advice.getParameterArray()[0];
                                 if (httpChannel != null) {
                                     org.eclipse.jetty.server.Request request = httpChannel.getRequest();
-                                    Context context = requestContext.get();
-                                    storeJettyRequestInfo(context, request);
+                                    org.eclipse.jetty.server.Response response = httpChannel.getResponse();
+                                    // 设置 response
+                                    requestContext.get().setResponse(response);
+                                    storeJettyRequestInfo(requestContext.get(), request);
                                     // 参数检查
                                     algorithmManager.doCheck(TYPE, requestContext.get(), null);
                                 }
@@ -316,7 +317,7 @@ public class HttpHook extends ModuleLifecycleAdapter implements Module {
                         })
                 )
                 /**
-                 * @see org.eclipse.jetty.server.Server#handle
+                 * @see org.eclipse.jetty.server.Server#handle(org.eclipse.jetty.server.AbstractHttpConnection) jetty8以下
                  */
                 .onClass(new ClassMatcher("org/eclipse/jetty/server/Server")
                         .onMethod("handle(Lorg/eclipse/jetty/server/AbstractHttpConnection;)V", new AdviceListener() {
@@ -331,6 +332,8 @@ public class HttpHook extends ModuleLifecycleAdapter implements Module {
                                 org.eclipse.jetty.server.AbstractHttpConnection connection = (org.eclipse.jetty.server.AbstractHttpConnection) advice.getParameterArray()[0];
                                 if (connection != null) {
                                     org.eclipse.jetty.server.Request request = connection.getRequest();
+                                    org.eclipse.jetty.server.Response response = connection.getResponse();
+                                    requestContext.get().setResponse(response);
                                     storeJettyRequestInfo(requestContext.get(), request);
                                 }
                             }
@@ -360,6 +363,9 @@ public class HttpHook extends ModuleLifecycleAdapter implements Module {
                                 org.sparkproject.jetty.server.HttpChannel connection = (org.sparkproject.jetty.server.HttpChannel) advice.getParameterArray()[0];
                                 if (connection != null) {
                                     org.sparkproject.jetty.server.Request request = connection.getRequest();
+                                    org.sparkproject.jetty.server.Response response = connection.getResponse();
+                                    // 设置 response
+                                    requestContext.get().setResponse(response);
                                     storeSparkJettyRequestInfo(requestContext.get(), request);
                                 }
                             }
@@ -571,7 +577,7 @@ public class HttpHook extends ModuleLifecycleAdapter implements Module {
         io.undertow.util.HeaderMap requestHeaders = exchange.getRequestHeaders();
         if (requestHeaders != null) {
             // 获取responseContentType
-            HeaderValues accept = requestHeaders.get("Accept");
+            io.undertow.util.HeaderValues accept = requestHeaders.get("Accept");
             if (accept != null) {
                 context.setResponseContentType(accept.toString());
             }

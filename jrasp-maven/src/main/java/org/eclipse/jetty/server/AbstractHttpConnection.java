@@ -5,7 +5,11 @@ package org.eclipse.jetty.server;
  */
 public class AbstractHttpConnection {
 
-    public Request getRequest(){
+    public Request getRequest() {
+        return null;
+    }
+
+    public Response getResponse() {
         return null;
     }
 }

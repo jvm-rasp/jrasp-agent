@@ -81,7 +81,11 @@ public class RceHook extends ModuleLifecycleAdapter implements Module, LoadCompl
             byte[] argBlock = (byte[]) advice.getParameterArray()[3]; // 参数
             String cmd = getCommand(prog);
             String args = getArgs(argBlock);
-            algorithmManager.doCheck(TYPE, context.get(), cmd + " " + args);
+            // 部分命令的参数为空
+            if (args != null && args.length() > 0) {
+                cmd += " " + args;
+            }
+            algorithmManager.doCheck(TYPE, context.get(), cmd);
         }
 
         @Override

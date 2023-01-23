@@ -13,6 +13,7 @@ import com.jrasp.agent.api.matcher.ModuleEventWatcher;
 import com.jrasp.agent.api.request.Context;
 import com.jrasp.agent.api.util.ParamSupported;
 import com.jrasp.agent.api.util.StringUtils;
+import io.undertow.util.HeaderValues;
 import org.kohsuke.MetaInfServices;
 
 import java.io.InputStream;
@@ -189,6 +190,9 @@ public class HttpHook extends ModuleLifecycleAdapter implements Module {
                                 }
                                 Context context = requestContext.get();
                                 org.apache.catalina.connector.Request request = (org.apache.catalina.connector.Request) advice.getParameterArray()[0];
+                                // 存储 response
+                                org.apache.catalina.connector.Response response = (org.apache.catalina.connector.Response) advice.getParameterArray()[1];
+                                requestContext.get().setResponse(response);
                                 storeTomcatRequestInfo(context, request);
                                 algorithmManager.doCheck(TYPE, requestContext.get(), null);
                             }
@@ -419,6 +423,13 @@ public class HttpHook extends ModuleLifecycleAdapter implements Module {
         String contentType = request.getContentType();
         context.setContentType(contentType);
 
+        // 获取responseContentType
+        String responseContentType = request.getHeader("Accept");
+        if (StringUtils.isBlank(responseContentType)) {
+            responseContentType = request.getHeader("accept");
+        }
+        context.setResponseContentType(responseContentType);
+
         // query
         context.setQueryString(request.getQueryString());
 
@@ -477,6 +488,13 @@ public class HttpHook extends ModuleLifecycleAdapter implements Module {
         // content-type
         String contentType = request.getContentType();
         context.setContentType(contentType);
+
+        // 获取responseContentType
+        String responseContentType = request.getHeader("Accept");
+        if (StringUtils.isBlank(responseContentType)) {
+            responseContentType = request.getHeader("accept");
+        }
+        context.setResponseContentType(responseContentType);
 
         // query
         context.setQueryString(request.getQueryString());
@@ -552,6 +570,11 @@ public class HttpHook extends ModuleLifecycleAdapter implements Module {
         Map<String, String> header = new HashMap<String, String>(32);
         io.undertow.util.HeaderMap requestHeaders = exchange.getRequestHeaders();
         if (requestHeaders != null) {
+            // 获取responseContentType
+            HeaderValues accept = requestHeaders.get("Accept");
+            if (accept != null) {
+                context.setResponseContentType(accept.toString());
+            }
             Iterator<io.undertow.util.HeaderValues> iterator = requestHeaders.iterator();
             while (iterator.hasNext()) {
                 io.undertow.util.HeaderValues next = iterator.next();
@@ -579,6 +602,13 @@ public class HttpHook extends ModuleLifecycleAdapter implements Module {
         // content-type
         String contentType = request.getContentType();
         context.setContentType(contentType);
+
+        // 获取responseContentType
+        String responseContentType = request.getHeader("Accept");
+        if (StringUtils.isBlank(responseContentType)) {
+            responseContentType = request.getHeader("accept");
+        }
+        context.setResponseContentType(responseContentType);
 
         // query
         context.setQueryString(request.getQueryString());

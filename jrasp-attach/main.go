@@ -16,7 +16,7 @@ import (
 )
 
 const AGENT_NAME = "jrasp-launcher"
-const AGENT_VERSION = "1.1.0"
+const AGENT_VERSION = "1.1.1"
 
 var (
 	version bool
@@ -55,7 +55,7 @@ func main() {
 		// attach
 		log.Printf("attach java process,pid: %d", pid)
 
-		// jattach pid load instrument false jrasp-launcher-1.1.0.jar
+		// jattach pid load instrument false jrasp-launcher-1.1.1.jar
 		// 读取版本号
 		version, err := readVsersion(raspHome)
 		if err != nil || version == "" {

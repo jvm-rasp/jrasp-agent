@@ -152,9 +152,9 @@ public class AttackInfo {
                 .append(context.toJSON());
         sb.append(",\"stackTrace\":\"")
                 .append(array2String(stackTrace)).append('\"');
-        sb.append(",\"payload\":\"")
+        sb.append(",\"payload\":")
                 // 转义符号
-                .append(EscapeUtil.quote(payload)).append('\"');
+                .append(EscapeUtil.quote(payload));
         sb.append(",\"isBlocked\":")
                 .append(isBlocked);
         sb.append(",\"attackType\":\"")

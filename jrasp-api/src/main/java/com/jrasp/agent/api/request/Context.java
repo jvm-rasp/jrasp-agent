@@ -339,22 +339,22 @@ public class Context {
                 .append(localAddr).append('\"');
         sb.append(",\"remoteHost\":\"")
                 .append(remoteHost).append('\"');
-        sb.append(",\"requestURL\":\"")
-                .append(EscapeUtil.quote(requestURL)).append('\"');
-        sb.append(",\"requestURI\":\"")
-                .append(EscapeUtil.quote(requestURI)).append('\"');
+        sb.append(",\"requestURL\":")
+                .append(EscapeUtil.quote(requestURL));
+        sb.append(",\"requestURI\":")
+                .append(EscapeUtil.quote(requestURI));
         sb.append(",\"contentType\":\"")
                 .append(contentType).append('\"');
         sb.append(",\"contentLength\":")
                 .append(contentLength);
         sb.append(",\"characterEncoding\":\"")
                 .append(characterEncoding).append('\"');
-        sb.append(",\"parameters\":\"")
-                .append(EscapeUtil.quote(getParametersString())).append('\"');
-        sb.append(",\"header\":\"")
-                .append(EscapeUtil.quote(getHeaderString())).append('\"');
-        sb.append(",\"queryString\":\"")
-                .append(EscapeUtil.quote(getQueryString())).append('\"');
+        sb.append(",\"parameters\":")
+                .append(EscapeUtil.quote(getParametersString()));
+        sb.append(",\"header\":")
+                .append(EscapeUtil.quote(getHeaderString()));
+        sb.append(",\"queryString\":")
+                .append(EscapeUtil.quote(getQueryString()));
         sb.append(",\"marks\":\"")
                 .append(getMarks()).append('\"');
         // 直接输出byte[]

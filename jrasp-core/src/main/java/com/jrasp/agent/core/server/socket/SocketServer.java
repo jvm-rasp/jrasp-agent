@@ -254,18 +254,14 @@ public class SocketServer implements CoreServer {
                 Packet response = new Packet(request.getType(), handler.run(request.getData()));
                 Codec.INSTANCE.encode(outputStream, response);
             } catch (Throwable t) {
-                if (t instanceof Exception) {
-                    try {
-                        if (outputStream != null) {
-                            LOGGER.log(Level.WARNING, "exception occurred when update module parameters", t);
-                            Packet error = new Packet(PacketType.ERROR, t.getMessage());
-                            Codec.INSTANCE.encode(outputStream, error);
-                        }
-                    } catch (Exception e1) {
-                        // ignore
+                try {
+                    if (outputStream != null) {
+                        LOGGER.log(Level.WARNING, "error occurred when update module parameters", t);
+                        Packet error = new Packet(PacketType.ERROR, t.getMessage());
+                        Codec.INSTANCE.encode(outputStream, error);
                     }
-                } else if (t instanceof java.lang.Error) {
-                    LOGGER.log(Level.WARNING, "error occurred when update module parameters,message:{0}", t.getMessage());
+                } catch (Exception e1) {
+                    // ignore
                 }
             } finally {
                 closeQuietly(inputStream, outputStream, socket);

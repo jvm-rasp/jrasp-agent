@@ -161,7 +161,7 @@ func (w *Watch) getJavaProcessInfo(procss *process.Process) {
 	// IDEA
 	for _, v := range javaProcess.CmdLines {
 		if strings.Contains(v, "IDEA") || strings.Contains(v, "vscode") {
-			zlog.Warnf(defs.WATCH_DEFAULT, "idea or vscode process, java process ignore.", "javaPid:%d", procss.Pid)
+			zlog.Debugf(defs.WATCH_DEFAULT, "idea or vscode process, java process ignore.", "javaPid:%d", procss.Pid)
 			return
 		}
 	}

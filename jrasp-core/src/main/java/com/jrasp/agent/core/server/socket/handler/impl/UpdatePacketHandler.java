@@ -5,10 +5,10 @@ import com.jrasp.agent.core.CoreModule;
 import com.jrasp.agent.core.manager.DefaultCoreModuleManager;
 import com.jrasp.agent.core.server.socket.handler.PacketHandler;
 import com.jrasp.agent.core.server.socket.handler.packet.PacketType;
-import com.jrasp.agent.core.util.FeatureCodec;
 import com.jrasp.agent.core.util.string.RaspStringUtils;
 
 import java.lang.reflect.Method;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -24,8 +24,6 @@ public class UpdatePacketHandler implements PacketHandler {
 
     private final DefaultCoreModuleManager coreModuleManager;
 
-    private static final FeatureCodec kv = new FeatureCodec(';', '=');
-
     public UpdatePacketHandler(DefaultCoreModuleManager coreModuleManager) {
         this.coreModuleManager = coreModuleManager;
     }
@@ -40,7 +38,7 @@ public class UpdatePacketHandler implements PacketHandler {
         // 模块名称:k1=v1;k2=v2;k2=v21,v22,v23;
         LOGGER.log(Level.INFO, "data:{0}", data);
         if (RaspStringUtils.isNotBlank(data)) {
-            String[] moduleAndValue = data.split(":",2);
+            String[] moduleAndValue = data.split(":", 2);
             if (moduleAndValue.length == 2) {
                 String moduleName = moduleAndValue[0].trim();
                 String parameters = moduleAndValue[1].trim();
@@ -52,7 +50,28 @@ public class UpdatePacketHandler implements PacketHandler {
                 if (module == null) {
                     return "module is null," + moduleName;
                 }
-                Map<String, String> parametersMap = kv.toMap(parameters);
+                String[] kvArray = parameters.split(";");
+                Map<String, String> parametersMap = new HashMap<String, String>();
+                for (String kv : kvArray) {
+                    String[] kAndV = kv.split("=", 2);
+                    if (kAndV.length == 2) {
+                        parametersMap.put(kAndV[0], kAndV[1]);
+                    } else {
+                        throw new RuntimeException("update module config failed. split kv array length not equal to 2, kv: " + kv);
+                    }
+                }
+
+                // bugfix 输入参数存在不确定性字符，字符串转为map之后，需要校验转换的结果是否正确
+                StringBuilder resultStr = new StringBuilder();
+                resultStr.append(moduleName + ":");
+                for (Map.Entry<String, String> entry : parametersMap.entrySet()) {
+                    resultStr.append(entry.getKey() );
+                    resultStr.append("=");
+                    resultStr.append(entry.getValue());
+                    resultStr.append(";");
+                }
+                assert data.equals(resultStr.toString());
+
                 Method update = module.getClass().getDeclaredMethod("update", Map.class);
                 Boolean result = (Boolean) update.invoke(module, parametersMap);
                 return result.toString();

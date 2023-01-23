@@ -6,6 +6,7 @@
 ### Bugfix
 + [attach & build] 解决windows打包脚本兼容性问题，增加windows系统编译自动打包功能；
 + [module] 解决方法参数涉及第三方类时触发类的依赖加载bug
++ [agent] 修复字符串参数转map参数丢失bug
 ### TODO
 + [module] 检测模块增加自定义html
 + [部署方案] 小规模服务部署

@@ -43,7 +43,12 @@ public enum PacketType {
     /**
      * 冻结模块
      */
-    FROZEN(0x08);
+    FROZEN(0x08),
+
+    /**
+     * 更新参数
+     */
+    CONFIG(0x09);
 
     private final int value;
 

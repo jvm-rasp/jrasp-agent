@@ -211,6 +211,7 @@ public class SocketServer implements CoreServer {
         handlerMap.put(UNLOAD, new UnloadModuleHandler(coreModuleManager));
         handlerMap.put(ACTIVE, new ActiveModuleHandler(coreModuleManager));
         handlerMap.put(FROZEN, new FrozenModuleHandler(coreModuleManager));
+        handlerMap.put(CONFIG, new UpdateConfigPacketHandler());
     }
 
     private void runServer() {

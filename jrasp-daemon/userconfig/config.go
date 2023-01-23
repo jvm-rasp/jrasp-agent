@@ -63,6 +63,9 @@ type Config struct {
 	// 模块更新
 	ModuleAutoUpdate bool `json:"moduleAutoUpdate"` // 本地磁盘没有缓存，模块对象存储服务上下载
 
+	// agent参数更新
+	AgentConfigs map[string]interface{} `json:"agentConfigs"`
+
 	// EnablePid
 	EnablePid bool `json:"enablePid"` // 是否允许创建pid文件，防止重复启动
 }

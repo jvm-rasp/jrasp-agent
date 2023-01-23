@@ -38,11 +38,12 @@ public class UpdateConfigPacketHandler implements PacketHandler {
                 if (RaspStringUtils.isNotBlank(kvString)) {
                     String[] kv = kvString.split("=", 2);
                     if (kv != null && kv.length == 2) {
-                        // TODO 仅支持字符串类型字段
                         String fieldName = kv[0].trim();
-                        String value = kv[1].trim();
+                        String valueString = kv[1].trim();
                         Field field = clazz.getDeclaredField(fieldName);
-                        field.set(CoreConfigure.getInstance(), value);
+                        Object originValue = transformType(field, valueString);
+                        field.setAccessible(true);
+                        field.set(CoreConfigure.getInstance(), originValue);
                     } else {
                         throw new RuntimeException("update agent config failed. split kv array length not equal to 2, kv: " + kv);
                     }
@@ -52,5 +53,20 @@ public class UpdateConfigPacketHandler implements PacketHandler {
         } else {
             return "parameters is blank";
         }
+    }
+
+    // TODO 目前仅支持boolean、int、String
+    private Object transformType(Field field, String value) {
+        String typeName = field.getType().getName();
+        if ("boolean".equals(typeName) || "java.lang.Boolean".equals(typeName)) {
+            return Boolean.parseBoolean(value);
+        }
+        if ("int".equals(typeName) || "java.lang.Integer".equals(typeName)) {
+            return Integer.parseInt(value);
+        }
+        if ("java.lang.String".equals(typeName)) {
+            return value;
+        }
+        return null;
     }
 }

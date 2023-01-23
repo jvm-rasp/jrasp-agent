@@ -65,6 +65,9 @@ type JavaProcess struct {
 
 	// 模块配置信息
 	moduleConfigs []userconfig.ModuleConfig
+
+	// agent 配置参数
+	agentConfigs map[string]interface{}
 }
 
 func NewJavaProcess(p *process.Process, cfg *userconfig.Config, env *environ.Environ) *JavaProcess {
@@ -75,6 +78,7 @@ func NewJavaProcess(p *process.Process, cfg *userconfig.Config, env *environ.Env
 		cfg:                  cfg,
 		AgentMode:            cfg.AgentMode,
 		moduleConfigs:        cfg.ModuleConfigs,
+		agentConfigs:         cfg.AgentConfigs,
 		needUpdateParameters: true,
 		needUpdateModules:    true,
 	}
@@ -185,6 +189,17 @@ func splitContent(tokenFilePath string) (string, string, error) {
 // UpdateParameters 更新模块参数
 func (jp *JavaProcess) UpdateParameters() bool {
 	client := socket.NewSocketClient(jp.ServerIp, jp.ServerPort)
+	// 更新全局参数
+	var config string = ""
+	for k, v := range jp.agentConfigs {
+		if k != "" {
+			config += k + "=" + join2(v) + ";"
+		}
+	}
+	client.UpdateAgentConfig(config)
+	zlog.Infof(defs.UPDATE_MODULE_PARAMETERS, "[update agent config]", "config: %s", config)
+
+	// 更新模块参数
 	for _, v := range jp.moduleConfigs {
 		if v.Parameters != nil && len(v.Parameters) > 0 {
 			var param = v.ModuleName + ":"
@@ -219,8 +234,33 @@ func join(params []interface{}) string {
 			paramSlice = append(paramSlice, strV)
 		// TODO 其他类型
 		default:
-		    zlog.Errorf(defs.UPDATE_MODULE_PARAMETERS, "[data type not support]", "param: %s", param)
+			zlog.Errorf(defs.UPDATE_MODULE_PARAMETERS, "[data type not support]", "param: %s", param)
 		}
+	}
+	return strings.Join(paramSlice, ",")
+}
+
+func join2(param interface{}) string {
+	var paramSlice []string
+	switch param.(type) {
+	case string:
+		paramSlice = append(paramSlice, param.(string))
+	case bool:
+		paramSlice = append(paramSlice, strconv.FormatBool(param.(bool)))
+	case []string:
+		paramSlice = append(paramSlice, strings.Join(param.([]string), ","))
+	case int8, int16, int32, int, int64, uint8, uint16, uint32, uint, uint64:
+		paramSlice = append(paramSlice, strconv.Itoa(param.(int)))
+	case float64:
+		strV := strconv.FormatFloat(param.(float64), 'f', -1, 64)
+		paramSlice = append(paramSlice, strV)
+	case float32:
+		ft := param.(float32)
+		strV := strconv.FormatFloat(float64(ft), 'f', -1, 64)
+		paramSlice = append(paramSlice, strV)
+	// TODO 其他类型
+	default:
+		zlog.Errorf(defs.UPDATE_MODULE_PARAMETERS, "[data type not support]", "param: %s", param)
 	}
 	return strings.Join(paramSlice, ",")
 }

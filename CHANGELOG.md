@@ -11,6 +11,7 @@
 ### TODO
 + [部署方案] 小规模服务部署
 + [module] 支持sqlserver数据库
++ [agent] 去掉模块复制到run目录的功能
 
 ## 1.1.0【2022-10】
 ### Enhancement

@@ -51,7 +51,7 @@ type Config struct {
 	// nacos 配置
 	NamespaceId string   `json:"namespaceId"` // 命名空间
 	DataId      string   `json:"dataId"`      // 配置id
-	IpAddrs     []string `json:"ipAddrs"`     // nacos 服务端ip列表
+	NacosIps    []string `json:"nacosIps"`    // nacos 服务端ip列表
 
 	// jrasp-daemon 自身配置
 	BinFileUrl  string `json:"binFileUrl"`  // 下载链接
@@ -144,7 +144,7 @@ func setDefaultValue(vp *viper.Viper) {
 
 	// dev 环境：111.229.199.6
 	// prod 环境：139.224.220.2:8848,106.14.26.4:8848,47.101.64.183:8848
-	vp.SetDefault("IpAddrs", []string{"132.232.32.246"})
+	vp.SetDefault("NacosIps", []string{"132.232.32.246"})
 	//vp.SetDefault("IpAddrs", []string{"20.187.92.238"}) // 客户A
 	vp.SetDefault("DataId", "")
 

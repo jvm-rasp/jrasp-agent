@@ -35,16 +35,16 @@ func NacosInit(cfg *userconfig.Config, env *environ.Environ) {
 	}
 
 	info := &NacosInfo{
-		IpAddrs: cfg.IpAddrs,
+		IpAddrs: cfg.NacosIps,
 		Message: "",
 		Status:  true, // 默认为true
 	}
 
 	var serverConfigs []constant.ServerConfig
 
-	for i := 0; i < len(cfg.IpAddrs); i++ {
+	for i := 0; i < len(cfg.NacosIps); i++ {
 		serverConfig := constant.ServerConfig{
-			IpAddr:      cfg.IpAddrs[i],
+			IpAddr:      cfg.NacosIps[i],
 			ContextPath: "/nacos",
 			Port:        8848,
 			Scheme:      "http",
@@ -73,7 +73,7 @@ func NacosInit(cfg *userconfig.Config, env *environ.Environ) {
 		GroupName:   "DEFAULT_GROUP", // 默认值DEFAULT_GROUP
 	})
 	if err != nil {
-		zlog.Errorf(defs.NACOS_INIT, "[registerStatus]", "registerStatus:%t,nacos server:%v,err:%v", registerStatus, cfg.IpAddrs, err)
+		zlog.Errorf(defs.NACOS_INIT, "[registerStatus]", "registerStatus:%t,nacos server:%v,err:%v", registerStatus, cfg.NacosIps, err)
 		info.Message += err.Error()
 		info.Status = false
 	}

@@ -11,11 +11,10 @@ jrasp-module/**/target
 jrasp-module/target
 jrasp-attach/bin
 
-target/jrasp-daemon
-jrasp-daemon\bin\jrasp-daemon.exe
-
 jrasp-daemon/bin/jattach_darwin
 jrasp-daemon/bin/jattach_linux
+jrasp-daemon/bin/jrasp-daemon.exe
+jrasp-daemon/bin/jrasp-daemon
 target/
 
 ## for eclipse and vscode

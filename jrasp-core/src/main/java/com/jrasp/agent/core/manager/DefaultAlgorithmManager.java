@@ -52,7 +52,7 @@ public class DefaultAlgorithmManager implements AlgorithmManager {
     public void doCheck(String type, Context context, Object... parameters) throws Exception {
         // 对于hook和algorithm不在一个jar包的场景，全局检测开关有效
         // 约定：如果在同一个jar包中，需要单独增加全局关闭开关
-        RaspConfig raspConfig = CoreConfigure.getInstance();
+        RaspConfig raspConfig = RaspConfigImpl.getInstance();
         if (raspConfig.isCheckDisable()) {
             return;
         }

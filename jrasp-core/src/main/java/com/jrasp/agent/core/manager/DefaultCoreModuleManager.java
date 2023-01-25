@@ -208,7 +208,7 @@ public class DefaultCoreModuleManager {
                     writeField(resourceField, module, Loggging.INSTANCE, true);
                 } else if (RaspConfig.class.isAssignableFrom(fieldType)) {
                     // 全局配置
-                    writeField(resourceField, module, CoreConfigure.getInstance(), true);
+                    writeField(resourceField, module, RaspConfigImpl.getInstance(), true);
                 } else {
                     // 其他情况需要输出日志警告
                     logger.log(Level.WARNING, "module inject @RaspResource ignored: field not found. module={0};class={1};type={2};field={3};",

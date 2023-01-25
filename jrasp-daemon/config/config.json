@@ -6,6 +6,7 @@
   "agentConfigs":{
     "check_disable": false,
     "redirect_url": "https://www.jrasp.com/block.html",
+    "block_status_code": 302,
     "json_block_content":"{\"error\":true, \"reason\": \"Request blocked by JRASP (https://www.jrasp.com)\"}",
     "xml_block_content": "<?xml version=\"1.0\"?><doc><error>true</error><reason>Request blocked by JRASP</reason></doc>",
     "html_block_content" :"</script><script>location.href=\"https://www.jrasp.com/block.html\"</script>"

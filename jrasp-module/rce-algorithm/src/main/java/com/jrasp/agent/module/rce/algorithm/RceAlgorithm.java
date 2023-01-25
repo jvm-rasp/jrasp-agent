@@ -25,7 +25,6 @@ public class RceAlgorithm extends ModuleLifecycleAdapter implements Module, Algo
     @RaspResource
     private RaspLog logger;
 
-
     @RaspResource
     private RaspConfig raspConfig;
 

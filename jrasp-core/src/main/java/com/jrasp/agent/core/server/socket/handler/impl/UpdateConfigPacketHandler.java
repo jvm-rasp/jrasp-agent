@@ -1,6 +1,6 @@
 package com.jrasp.agent.core.server.socket.handler.impl;
 
-import com.jrasp.agent.core.CoreConfigure;
+import com.jrasp.agent.core.manager.RaspConfigImpl;
 import com.jrasp.agent.core.server.socket.handler.PacketHandler;
 import com.jrasp.agent.core.server.socket.handler.packet.PacketType;
 import com.jrasp.agent.core.util.string.RaspStringUtils;
@@ -33,7 +33,7 @@ public class UpdateConfigPacketHandler implements PacketHandler {
         LOGGER.log(Level.INFO, "config:{0}", config);
         if (RaspStringUtils.isNotBlank(config)) {
             String[] kAndvArrays = config.split(";");
-            Class<?> clazz = CoreConfigure.getInstance().getClass();
+            Class<?> clazz = RaspConfigImpl.getInstance().getClass();
             for (String kvString : kAndvArrays) {
                 if (RaspStringUtils.isNotBlank(kvString)) {
                     String[] kv = kvString.split("=", 2);
@@ -43,7 +43,7 @@ public class UpdateConfigPacketHandler implements PacketHandler {
                         Field field = clazz.getDeclaredField(fieldName);
                         Object originValue = transformType(field, valueString);
                         field.setAccessible(true);
-                        field.set(CoreConfigure.getInstance(), originValue);
+                        field.set(RaspConfigImpl.getInstance(), originValue);
                     } else {
                         throw new RuntimeException("update agent config failed. split kv array length not equal to 2, kv: " + kv);
                     }

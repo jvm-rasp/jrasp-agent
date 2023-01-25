@@ -27,11 +27,11 @@ func NacosInit(cfg *userconfig.Config, env *environ.Environ) {
 		NamespaceId:         cfg.NamespaceId,
 		TimeoutMs:           5000,
 		NotLoadCacheAtStart: true,
-		LogDir:              filepath.Join(env.InstallDir, "tmp", "nacos", "log"),
-		CacheDir:            filepath.Join(env.InstallDir, "tmp", "nacos", "cache"),
-		RotateTime:          "24h",
-		MaxAge:              3,
-		LogLevel:            "error",
+		LogDir:     filepath.Join(env.InstallDir, "tmp", "nacos", "log"),
+		CacheDir:   filepath.Join(env.InstallDir, "tmp", "nacos", "cache"),
+		RotateTime: "24h",
+		MaxAge:     3,
+		LogLevel:   "error",
 	}
 
 	info := &NacosInfo{

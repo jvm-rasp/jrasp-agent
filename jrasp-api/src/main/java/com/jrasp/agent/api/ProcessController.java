@@ -1,5 +1,6 @@
 package com.jrasp.agent.api;
 
+import com.jrasp.agent.api.request.AttackInfo;
 import com.jrasp.agent.api.request.Context;
 import com.jrasp.agent.api.request.HttpServletResponse;
 
@@ -48,10 +49,29 @@ public final class ProcessController {
      * @param throwable
      * @throws ProcessControlException
      */
-    public static void throwThrowsImmediatelyAndSendResponse(Context context, RaspConfig config, Throwable throwable) throws ProcessControlException {
+    public static void throwsImmediatelyAndSendResponse(Context context, RaspConfig config, Throwable throwable) throws ProcessControlException {
         try {
             HttpServletResponse response = new HttpServletResponse(context.getResponse());
             response.sendError(context, config);
+        } catch (Exception e) {
+            // todo 异常处理
+            // 先 ignore
+        }
+        throw new ProcessControlException(ProcessControlException.State.THROWS_IMMEDIATELY, throwable);
+    }
+
+    /**
+     * 修改response
+     * @param attackInfo
+     * @param config
+     * @param throwable
+     * @throws ProcessControlException
+     */
+    public static void throwsImmediatelyAndSendResponse(AttackInfo attackInfo, RaspConfig config, Throwable throwable) throws ProcessControlException {
+        try {
+            Context context = attackInfo.getContext();
+            HttpServletResponse response = new HttpServletResponse(context.getResponse());
+            response.sendError(attackInfo, config);
         } catch (Exception e) {
             // todo 异常处理
             // 先 ignore

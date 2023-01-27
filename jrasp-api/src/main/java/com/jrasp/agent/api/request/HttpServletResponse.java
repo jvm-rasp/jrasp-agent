@@ -172,6 +172,40 @@ public class HttpServletResponse {
         }
     }
 
+    // 把攻击类型等信息带入到返回响应内容中
+    public void sendError(AttackInfo attackInfo, RaspConfig raspConfig) throws Exception {
+        Context context = attackInfo.getContext();
+        if (context != null) {
+            Object response = context.getResponse();
+            if (response != null) {
+                int statusCode = raspConfig.getBlockStatusCode();
+                String blockUrl = raspConfig.getRedirectUrl();
+                boolean isCommitted = (Boolean) Reflection.invokeMethod(response, "isCommitted", new Class[]{});
+                String contentType = context.getResponseContentType();
+                String script;
+                if (contentType != null && contentType.contains(CONTENT_TYPE_JSON_VALUE)) {
+                    script = raspConfig.getJsonBlockContent();
+                } else if (contentType != null && (contentType.contains(CONTENT_TYPE_XML_VALUE) || contentType.contains(CONTENT_TYPE_TEXT_XML))) {
+                    script = raspConfig.getXmlBlockContent();
+                } else {
+                    script = raspConfig.getHtmlBlockContent();
+                }
+                // 插入当前攻击类型和时间戳
+                script = script.replace("%attack_name%", attackInfo.getAttackType());
+                script = script.replace("%attack_time%", String.valueOf(attackInfo.getAttackTime()));
+                if (!isCommitted) {
+                    resetBuffer();
+                    Reflection.invokeMethod(response, "setStatus", new Class[]{int.class}, statusCode);
+                    if (statusCode >= 300 && statusCode <= 399) {
+                        setHeader("Location", blockUrl);
+                    }
+                    setIntHeader(CONTENT_LENGTH_HEADER_KEY, script.getBytes().length);
+                }
+                sendContent(script, true);
+            }
+        }
+    }
+
     /**
      * 发送自定义错误处理脚本
      */

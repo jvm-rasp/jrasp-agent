@@ -2,6 +2,7 @@ package com.jrasp.agent.module.sql.algorithm.impl;
 
 import com.alibaba.druid.wall.WallUtils;
 import com.jrasp.agent.api.ProcessController;
+import com.jrasp.agent.api.RaspConfig;
 import com.jrasp.agent.api.algorithm.Algorithm;
 import com.jrasp.agent.api.log.RaspLog;
 import com.jrasp.agent.api.request.AttackInfo;
@@ -39,16 +40,20 @@ public class MySqlAlgorithm implements Algorithm {
 
     private LRUCache<String, Object> SQL_LRU_CACHE = new LRUCache<String, Object>(1024);
 
-    public MySqlAlgorithm(Map<String, String> configMaps, RaspLog logger) {
+    private RaspConfig raspConfig;
+
+    public MySqlAlgorithm(Map<String, String> configMaps, RaspConfig raspConfig, RaspLog logger) {
         this.logger = logger;
         this.minSqlLimitLength = ParamSupported.getParameter(configMaps, "mysql_min_limit_length", Integer.class, minSqlLimitLength);
         this.maxSqlLimitLength = ParamSupported.getParameter(configMaps, "mysql_max_limit_length", Integer.class, maxSqlLimitLength);
         this.mysqlBlockAction = ParamSupported.getParameter(configMaps, "mysql_block_action", Integer.class, mysqlBlockAction);
         this.mysqlWhiteSet = ParamSupported.getParameter(configMaps, "mysql_white_list", Set.class, mysqlWhiteSet);
+        this.raspConfig = raspConfig;
     }
 
-    public MySqlAlgorithm(RaspLog logger) {
+    public MySqlAlgorithm(RaspConfig raspConfig, RaspLog logger) {
         this.logger = logger;
+        this.raspConfig = raspConfig;
     }
 
     @Override
@@ -103,7 +108,7 @@ public class MySqlAlgorithm implements Algorithm {
             // 记录日志日志
             logger.attack(attackInfo);
             if (enableBlock) {
-                ProcessController.throwsImmediately(new RuntimeException("sql inject block by rasp."));
+                ProcessController.throwsImmediatelyAndSendResponse(attackInfo, raspConfig, new RuntimeException("sql inject block by rasp."));
             }
         }
     }

@@ -2,6 +2,7 @@ package com.jrasp.agent.module.sql.algorithm;
 
 import com.jrasp.agent.api.Module;
 import com.jrasp.agent.api.ModuleLifecycleAdapter;
+import com.jrasp.agent.api.RaspConfig;
 import com.jrasp.agent.api.algorithm.AlgorithmManager;
 import com.jrasp.agent.api.annotation.Information;
 import com.jrasp.agent.api.annotation.RaspResource;
@@ -26,19 +27,22 @@ public class SqlAlgorithm extends ModuleLifecycleAdapter implements Module {
     @RaspResource
     private AlgorithmManager algorithmManager;
 
+    @RaspResource
+    private RaspConfig raspConfig;
+
     private volatile MySqlAlgorithm mySqlAlgorithm;
 
     // 其他算法实例这里添加
     @Override
     public boolean update(Map<String, String> configMaps) {
-        mySqlAlgorithm = new MySqlAlgorithm(configMaps, logger);
+        mySqlAlgorithm = new MySqlAlgorithm(configMaps, raspConfig, logger);
         algorithmManager.register(mySqlAlgorithm);
         return false;
     }
 
     @Override
     public void loadCompleted() {
-        mySqlAlgorithm = new MySqlAlgorithm(logger);
+        mySqlAlgorithm = new MySqlAlgorithm(raspConfig, logger);
         algorithmManager.register(mySqlAlgorithm);
     }
 

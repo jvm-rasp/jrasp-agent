@@ -1,18 +1,22 @@
 package nacos
 
 import (
+	"errors"
+	"github.com/asaskevich/govalidator"
+	"github.com/nacos-group/nacos-sdk-go/clients"
+	"github.com/nacos-group/nacos-sdk-go/common/constant"
+	"github.com/nacos-group/nacos-sdk-go/vo"
 	"io/ioutil"
 	"jrasp-daemon/defs"
 	"jrasp-daemon/environ"
 	"jrasp-daemon/userconfig"
 	"jrasp-daemon/utils"
 	"jrasp-daemon/zlog"
+	"net/url"
 	"os"
 	"path/filepath"
-
-	"github.com/nacos-group/nacos-sdk-go/clients"
-	"github.com/nacos-group/nacos-sdk-go/common/constant"
-	"github.com/nacos-group/nacos-sdk-go/vo"
+	"strconv"
+	"strings"
 )
 
 type NacosInfo struct {
@@ -43,11 +47,18 @@ func NacosInit(cfg *userconfig.Config, env *environ.Environ) {
 	var serverConfigs []constant.ServerConfig
 
 	for i := 0; i < len(cfg.NacosIps); i++ {
+		result, err := parseAddress(cfg.NacosIps[i]) // 兼容多种格式: ip、ip:port、http://ip:port/nacos
+		if err != nil {
+			zlog.Errorf(defs.NACOS_INIT, "[registerStatus]", "nacos server:%v, err:%v", cfg.NacosIps, err)
+			info.Message += err.Error()
+			info.Status = false
+			continue
+		}
 		serverConfig := constant.ServerConfig{
-			IpAddr:      cfg.NacosIps[i],
-			ContextPath: "/nacos",
-			Port:        8848,
-			Scheme:      "http",
+			IpAddr:      result["ip"].(string),
+			ContextPath: result["path"].(string),
+			Port:        result["port"].(uint64),
+			Scheme:      result["scheme"].(string),
 		}
 		serverConfigs = append(serverConfigs, serverConfig)
 	}
@@ -114,4 +125,41 @@ func NacosInit(cfg *userconfig.Config, env *environ.Environ) {
 		info.Status = false
 	}
 	zlog.Infof(defs.NACOS_INFO, "[NacosInit]", utils.ToString(info))
+}
+
+func parseAddress(text string) (map[string]interface{}, error) {
+	var result = make(map[string]interface{})
+	// 纯域名或者纯IP
+	if govalidator.IsHost(text) {
+		result["ip"] = text
+		result["port"] = 8848
+		result["scheme"] = "http"
+		result["path"] = "/nacos"
+		return result, nil
+	}
+	// 带有域名和端口
+	if (!strings.HasPrefix(text, "http://") && !strings.HasPrefix(text, "https://")) &&
+		len(strings.Split(text, ":")) > 1 {
+		host := strings.Split(text, ":")[0]
+		port := strings.Split(text, ":")[1]
+		if govalidator.IsHost(host) && govalidator.IsPort(port) {
+			result["ip"] = host
+			result["port"], _ = strconv.ParseUint(port, 10, 32)
+			result["scheme"] = "http"
+			result["path"] = "/nacos"
+			return result, nil
+		}
+	}
+	if govalidator.IsURL(text) {
+		u, err := url.Parse(text)
+		if err != nil {
+			return nil, err
+		}
+		result["ip"] = u.Hostname()
+		result["port"], _ = strconv.ParseUint(u.Port(), 10, 32)
+		result["scheme"] = u.Scheme
+		result["path"] = u.Path
+		return result, nil
+	}
+	return nil, errors.New("nacos地址不规范")
 }

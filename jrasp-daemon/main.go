@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"embed"
 	"fmt"
 	"jrasp-daemon/common"
 	"jrasp-daemon/defs"
@@ -12,10 +13,17 @@ import (
 	"jrasp-daemon/utils"
 	"jrasp-daemon/watch"
 	"jrasp-daemon/zlog"
+	"log"
 	"net/http"
+	"os"
 	"os/signal"
+	"path/filepath"
+	"runtime"
 	"syscall"
 )
+
+//go:embed resource
+var resource embed.FS
 
 func init() {
 	signal.Notify(defs.Sig, syscall.SIGINT, syscall.SIGTERM, syscall.SIGKILL)
@@ -49,6 +57,9 @@ func main() {
 	pidFile := common.New(env.PidFile)
 	pidFile.Lock()
 	defer pidFile.Unlock()
+
+	// 根据操作系统和架构释放对应的jattach文件
+	extractFiles()
 
 	// jrasp-daemon 启动标志
 	zlog.Infof(defs.START_UP, "daemon startup", `{"agentMode":"%s"}`, conf.AgentMode)
@@ -104,5 +115,62 @@ func debug(conf *userconfig.Config) {
 		if err != nil {
 			zlog.Errorf(defs.DEBUG_PPROF, "pprof ListenAndServe failed", "err:%s", err.Error())
 		}
+	}
+}
+
+func getRaspHome() (string, error) {
+	runDir, err := filepath.Abs(filepath.Dir(os.Args[0]))
+	raspHome, err := filepath.Abs(filepath.Dir(runDir))
+	if err != nil {
+		return "", err
+	}
+	return raspHome, nil
+}
+
+func getJattachExe() string {
+	switch runtime.GOOS {
+	case "darwin":
+		return "jattach_darwin"
+	case "linux":
+		return "jattach_linux"
+	case "windows":
+		return "jattach.exe"
+	default:
+		return "UNKNOWN"
+	}
+}
+
+func extractFiles() {
+	raspHome, err := getRaspHome()
+	if err != nil {
+		log.Fatalln("get jrasp home error:%v", err)
+		return
+	}
+	filePath := filepath.Join(raspHome, "bin", getJattachExe())
+	// 判断文件是否存在，如果存在就不重复释放文件了
+	_, err = os.Stat(filePath)
+	if err == nil || os.IsExist(err) {
+		return
+	}
+	var data []byte
+	switch runtime.GOOS {
+	case "windows":
+		data, _ = resource.ReadFile("resource/jattach.exe")
+		break
+	case "linux":
+		arch := runtime.GOARCH
+		if arch == "amd64" {
+			data, _ = resource.ReadFile("resource/jattach_linux_amd64")
+		} else {
+			data, _ = resource.ReadFile("resource/jattach_linux_aarch64")
+		}
+		break
+	case "darwin":
+		data, _ = resource.ReadFile("resource/jattach_darwin")
+		break
+	}
+	err = os.WriteFile(filePath, data, 0777)
+	if err != nil {
+		log.Fatalf("extract file failed", "err:%s", err.Error())
 	}
 }

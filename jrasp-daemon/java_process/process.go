@@ -103,7 +103,7 @@ func (jp *JavaProcess) Attach() error {
 }
 
 func (jp *JavaProcess) execCmd() error {
-	zlog.Infof(defs.ATTACH_DEFAULT, "[Attach]", "attach to jvm[%d] start...", jp.JavaPid)
+	zlog.Debugf(defs.ATTACH_DEFAULT, "[Attach]", "attach to jvm[%d] start...", jp.JavaPid)
 	// 通过attach 传递给目标jvm的参数
 	agentArgs := fmt.Sprintf("raspHome=%s;coreVersion=%s", jp.env.InstallDir, jp.cfg.Version)
 	// jattach pid load instrument false jrasp-launcher.jar
@@ -113,7 +113,7 @@ func (jp *JavaProcess) execCmd() error {
 		"load", "instrument", "false", fmt.Sprintf("%s=%s", filepath.Join(jp.env.InstallDir, "lib", "jrasp-launcher-"+jp.cfg.Version+".jar"), agentArgs),
 	)
 
-	zlog.Infof(defs.ATTACH_DEFAULT, "[Attach]", "cmdArgs:%s", cmd.Args)
+	zlog.Debugf(defs.ATTACH_DEFAULT, "[Attach]", "cmdArgs:%s", cmd.Args)
 	// 权限切换在 jattach 里面做了，直接在root权限下执行命令就行
 	if err := cmd.Start(); err != nil {
 		zlog.Warnf(defs.ATTACH_DEFAULT, "[Attach]", "cmd.Start error:%v", err)
@@ -161,7 +161,7 @@ func (jp *JavaProcess) ReadTokenFile() bool {
 		}
 		jp.ServerIp = ip
 		jp.ServerPort = port
-		zlog.Infof(defs.ATTACH_READ_TOKEN, "[ip:port]", "ip: %s,port: %s", ip, port)
+		zlog.Debugf(defs.ATTACH_READ_TOKEN, "[ip:port]", "ip: %s,port: %s", ip, port)
 		return true
 	}
 	zlog.Errorf(defs.ATTACH_READ_TOKEN, "[token file]", "attach token file[%s] not exist", tokenFilePath)
@@ -197,7 +197,7 @@ func (jp *JavaProcess) UpdateParameters() bool {
 		}
 	}
 	client.UpdateAgentConfig(config)
-	zlog.Infof(defs.UPDATE_MODULE_PARAMETERS, "[update agent config]", "config: %s", config)
+	zlog.Debugf(defs.UPDATE_MODULE_PARAMETERS, "[update agent config]", "config: %s", config)
 
 	// 更新模块参数
 	for _, v := range jp.moduleConfigs {
@@ -207,7 +207,7 @@ func (jp *JavaProcess) UpdateParameters() bool {
 				param += key + "=" + join(value) + ";"
 			}
 			client.SendParameters(param)
-			zlog.Infof(defs.UPDATE_MODULE_PARAMETERS, "[update module config]", "param: %s", param)
+			zlog.Debugf(defs.UPDATE_MODULE_PARAMETERS, "[update module config]", "param: %s", param)
 		}
 	}
 	return true

@@ -68,7 +68,7 @@ func (this *Update) UpdateDaemonFile() {
 			}
 		}
 	} else {
-		zlog.Infof(defs.DOWNLOAD, "no need to update jrasp-daemon",
+		zlog.Debugf(defs.DOWNLOAD, "no need to update jrasp-daemon",
 			"config.binFileHash:%s,disk.binFileHash:%s", this.cfg.BinFileHash, this.env.BinFileHash)
 	}
 }
@@ -98,7 +98,7 @@ func (this *Update) replace() {
 // TODO 疑似bug
 func (this *Update) DownLoadModuleFiles() {
 	if !this.cfg.ModuleAutoUpdate {
-		zlog.Infof(defs.DOWNLOAD, "moduleAutoUpdate is disabled", "close module update from remote")
+		zlog.Debugf(defs.DOWNLOAD, "moduleAutoUpdate is disabled", "close module update from remote")
 		return
 	}
 	// 获取磁盘上的插件

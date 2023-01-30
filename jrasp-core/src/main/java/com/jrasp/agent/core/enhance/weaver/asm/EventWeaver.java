@@ -61,7 +61,7 @@ public class EventWeaver extends ClassVisitor implements Opcodes, AsmTypes, AsmM
         }
 
         methodMatcher.setHook(true);
-        logger.log(Level.INFO, "hook method {0} ", methodMatcher.desc());
+        logger.log(Level.CONFIG, "hook method {0} ", methodMatcher.desc());
 
         // 匹配命中，获取listenerId
         final int listenerId = ObjectIDs.instance.identity(methodMatcher.getAdviceListener());

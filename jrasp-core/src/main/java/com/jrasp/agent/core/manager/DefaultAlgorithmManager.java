@@ -28,7 +28,7 @@ public class DefaultAlgorithmManager implements AlgorithmManager {
     public boolean register(Algorithm algorithm) {
         String type = algorithm.getType();
         algorithmMaps.put(type, algorithm);
-        logger.log(Level.INFO, "register algorithm module: {0}", type);
+        logger.log(Level.CONFIG, "register algorithm module: {0}", type);
         return true;
     }
 

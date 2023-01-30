@@ -36,7 +36,7 @@ public class UpdatePacketHandler implements PacketHandler {
     @Override
     public String run(String data) throws Throwable {
         // 模块名称:k1=v1;k2=v2;k2=v21,v22,v23;
-        LOGGER.log(Level.INFO, "data:{0}", data);
+        LOGGER.log(Level.CONFIG, "data:{0}", data);
         if (RaspStringUtils.isNotBlank(data)) {
             String[] moduleAndValue = data.split(":", 2);
             if (moduleAndValue.length == 2) {

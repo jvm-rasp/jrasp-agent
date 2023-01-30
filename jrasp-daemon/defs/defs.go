@@ -53,7 +53,8 @@ const (
 	CLEAN_PID_FILE  int = START_LOG_ID + 28 // 清空pid文件
 	WRITE_PID_FILE  int = START_LOG_ID + 29 // 写pid文件
 
-	CONFIG_ID int = START_LOG_ID + 30 // 配置文件id
+	CONFIG_ID    int = START_LOG_ID + 30 // 配置文件id
+	EXTRACT_FILE int = START_LOG_ID + 31 // 释放文件
 )
 
 const DAEMON_PID_FILE = "pid"

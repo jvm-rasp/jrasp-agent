@@ -1,5 +1,6 @@
 package com.jrasp.agent.module.sql.algorithm;
 
+import com.jrasp.agent.api.RaspConfig;
 import com.jrasp.agent.api.log.RaspLog;
 import com.jrasp.agent.api.request.AttackInfo;
 import com.jrasp.agent.module.sql.algorithm.impl.MySqlAlgorithm;
@@ -40,9 +41,71 @@ public class MySqlAlgorithmTest {
         }
     };
 
+    private static final RaspConfig raspConfig = new RaspConfig() {
+        @Override
+        public boolean isCheckDisable() {
+            return false;
+        }
+
+        @Override
+        public void setCheckDisable(boolean checkEnable) {
+
+        }
+
+        @Override
+        public String getRedirectUrl() {
+            return null;
+        }
+
+        @Override
+        public String getJsonBlockContent() {
+            return null;
+        }
+
+        @Override
+        public String getXmlBlockContent() {
+            return null;
+        }
+
+        @Override
+        public String getHtmlBlockContent() {
+            return null;
+        }
+
+        @Override
+        public void setRedirectUrl(String redirectUrl) {
+
+        }
+
+        @Override
+        public void setJsonBlockContent(String jsonBlockContent) {
+
+        }
+
+        @Override
+        public void setXmlBlockContent(String xmlBlockContent) {
+
+        }
+
+        @Override
+        public void setHtmlBlockContent(String htmlBlockContent) {
+
+        }
+
+        @Override
+        public int getBlockStatusCode() {
+            return 0;
+        }
+
+        @Override
+        public void setBlockStatusCode(int blockStatusCode) {
+
+        }
+    };
+
     @Test
     public void test() {
-        MySqlAlgorithm mySqlAlgorithm = new MySqlAlgorithm(configMaps, logger);
+        MySqlAlgorithm mySqlAlgorithm = new MySqlAlgorithm(configMaps, raspConfig, logger);
         String sql = "select top 5 * from CG_Merchandise where 1=1 and isnull(merchandisedaima,'')!='' and ISNULL(isavailable,'1')=? and merchandisename like ? and type like ? and CHARINDEX(ISNULL(seltype,'0'),';0;1;2;3;')>? and brandname like ? order by OperateDate desc";
         try {
             long time0 = System.currentTimeMillis();

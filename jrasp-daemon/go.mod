@@ -13,6 +13,7 @@ require (
 
 require (
 	github.com/BurntSushi/toml v0.4.1 // indirect
+	github.com/asaskevich/govalidator v0.0.0-20210307081110-f21760c49a8d // indirect
 	github.com/fsnotify/fsnotify v1.4.9
 	github.com/kr/text v0.2.0 // indirect
 	golang.org/x/net v0.0.0-20210917221730-978cfadd31cf // indirect

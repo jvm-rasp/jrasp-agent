@@ -155,7 +155,7 @@ public class RceAlgorithm extends ModuleLifecycleAdapter implements Module, Algo
             AttackInfo attackInfo = new AttackInfo(context, cmd, enableBlock, getType(), checkType, message, level);
             logger.attack(attackInfo);
             if (enableBlock) {
-                ProcessController.throwThrowsImmediatelyAndSendResponse(context,raspConfig,new RuntimeException("rce block by jrasp."));
+                ProcessController.throwsImmediatelyAndSendResponse(attackInfo, raspConfig, new RuntimeException("rce block by jrasp."));
             }
         }
     }

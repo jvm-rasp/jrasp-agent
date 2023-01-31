@@ -2,21 +2,23 @@ package environ
 
 import (
 	"errors"
-	"github.com/shirou/gopsutil/v3/cpu"
-	"github.com/shirou/gopsutil/v3/disk"
-	"github.com/shirou/gopsutil/v3/mem"
 	"jrasp-daemon/defs"
 	"jrasp-daemon/utils"
 	"net"
 	"os"
 	"path/filepath"
 	"runtime"
+
+	"github.com/shirou/gopsutil/v3/cpu"
+	"github.com/shirou/gopsutil/v3/disk"
+	"github.com/shirou/gopsutil/v3/mem"
 )
 
 var (
-	BuildDateTime  = ""
-	BuildGitBranch = ""
-	BuildGitCommit = ""
+	BuildDateTime   = ""
+	BuildGitBranch  = ""
+	BuildGitCommit  = ""
+	BuildDecryptKey = ""
 )
 
 const GB = 1024 * 1024 * 1024
@@ -39,8 +41,12 @@ type Environ struct {
 	BuildGitBranch string `json:"buildGitBranch"`
 	BuildGitCommit string `json:"buildGitCommit"`
 
-	PidFile string `json:"pidFile"`
+	// 密钥版本, 密钥最好是固化到代码中，golang二进制文件不太容易反编译，当需要更新密钥时，更新整个daemon即可
+	// 必须为16位
+	// 安全原因：不支持配置
+	BuildDecryptKey string `json:"buildDecryptKey"`
 
+	PidFile string `json:"pidFile"`
 }
 
 func NewEnviron() (*Environ, error) {
@@ -74,19 +80,20 @@ func NewEnviron() (*Environ, error) {
 	cpuCounts, err := cpu.Counts(true)
 
 	env := &Environ{
-		HostName:       getHostname(),
-		Ip:             ipAddress,
-		InstallDir:     execDir,
-		OsType:         runtime.GOOS,
-		BinFileHash:    md5Str,
-		TotalMem:       memInfo.Total / GB,
-		CpuCounts:      cpuCounts,
-		FreeDisk:       FreeDisk,
-		Version:        defs.JRASP_DAEMON_VERSION,
-		BuildGitBranch: BuildGitBranch,
-		BuildDateTime:  BuildDateTime,
-		BuildGitCommit: BuildGitCommit,
-		PidFile:        filepath.Join(execDir, defs.DAEMON_PID_FILE),
+		HostName:        getHostname(),
+		Ip:              ipAddress,
+		InstallDir:      execDir,
+		OsType:          runtime.GOOS,
+		BinFileHash:     md5Str,
+		TotalMem:        memInfo.Total / GB,
+		CpuCounts:       cpuCounts,
+		FreeDisk:        FreeDisk,
+		Version:         defs.JRASP_DAEMON_VERSION,
+		BuildGitBranch:  BuildGitBranch,
+		BuildDateTime:   BuildDateTime,
+		BuildDecryptKey: BuildDecryptKey,
+		BuildGitCommit:  BuildGitCommit,
+		PidFile:         filepath.Join(execDir, defs.DAEMON_PID_FILE),
 	}
 	return env, nil
 }

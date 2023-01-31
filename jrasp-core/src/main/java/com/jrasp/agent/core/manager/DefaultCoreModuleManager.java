@@ -492,7 +492,7 @@ public class DefaultCoreModuleManager {
         // 用户模块加载目录，加载用户模块目录下的所有模块
         // 对模块访问权限进行校验
         if (moduleLibDir.exists() && moduleLibDir.canRead()) {
-            new ModuleLibLoader(moduleLibDir, cfg.getRunModulePath(), cfg.getLaunchMode()).load(new InnerModuleLoadCallback());
+            new ModuleLibLoader(moduleLibDir, cfg.getRunModulePath(), cfg.getDecyptKey(), cfg.getLaunchMode()).load(new InnerModuleLoadCallback());
         } else {
             logger.log(Level.WARNING, "module-lib not access, ignore flush load this lib. path={}", moduleLibDir);
         }
@@ -596,7 +596,7 @@ public class DefaultCoreModuleManager {
 
             // 4. 加载add
             for (final File jarFile : appendJarFiles) {
-                new ModuleLibLoader(jarFile, cfg.getRunModulePath(), cfg.getLaunchMode())
+                new ModuleLibLoader(jarFile, cfg.getRunModulePath(), cfg.getDecyptKey(), cfg.getLaunchMode())
                         .load(new InnerModuleLoadCallback());
             }
         } catch (Throwable cause) {
@@ -642,7 +642,7 @@ public class DefaultCoreModuleManager {
         // 用户模块目录
         if (moduleLibDir.exists() && moduleLibDir.canRead()) {
             logger.log(Level.INFO, "force-flush modules: module-lib={0}", moduleLibDir);
-            new ModuleLibLoader(moduleLibDir, cfg.getRunModulePath(), cfg.getLaunchMode())
+            new ModuleLibLoader(moduleLibDir, cfg.getRunModulePath(), cfg.getDecyptKey(), cfg.getLaunchMode())
                     .load(new InnerModuleLoadCallback());
         } else {
             logger.log(Level.WARNING, "force-flush modules: module-lib can not access, will be ignored. module-lib={0}", moduleLibDir);

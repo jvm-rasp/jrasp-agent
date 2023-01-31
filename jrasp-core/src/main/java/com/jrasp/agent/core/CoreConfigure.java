@@ -18,10 +18,16 @@ import java.util.Map;
  * 内核启动配置
  * Created by luanjia@taobao.com on 16/10/2.
  */
-public class CoreConfigure  {
+public class CoreConfigure {
 
     private static final String KEY_NAMESPACE = "namespace";
     private static final String DEFAULT_VAL_NAMESPACE = "default";
+
+    /**
+     * 解密密钥
+     */
+    private static final String KEY_DECRYPT = "key";
+    private static final String DEFAULT_VALUE_DECRYPT = "1234567890abcdef";
 
     private static final String KEY_SANDBOX_HOME = "home";
     private static final String KEY_LAUNCH_MODE = "mode";
@@ -55,10 +61,10 @@ public class CoreConfigure  {
     }
 
     /**
-     * @see com.jrasp.agent.launcher110.AgentLauncher#install(Map, Instrumentation) 被反射初始化
-     * 即每次执行 attach 生成一个新的对象
      * @param featureString
      * @return
+     * @see com.jrasp.agent.launcher110.AgentLauncher#install(Map, Instrumentation) 被反射初始化
+     * 即每次执行 attach 生成一个新的对象
      */
     public static CoreConfigure toConfigure(final String featureString) {
         return new CoreConfigure(featureString);
@@ -97,6 +103,11 @@ public class CoreConfigure  {
      */
     private boolean isLaunchByAttachMode() {
         return RaspStringUtils.equals(featureMap.get(KEY_LAUNCH_MODE), VAL_LAUNCH_MODE_ATTACH);
+    }
+
+    public String getDecyptKey() {
+        return RaspStringUtils.isNotBlank(featureMap.get(KEY_DECRYPT))
+                ? featureMap.get(KEY_DECRYPT) : DEFAULT_VALUE_DECRYPT;
     }
 
     /**

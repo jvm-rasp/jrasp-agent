@@ -158,6 +158,7 @@ func setDefaultValue(vp *viper.Viper) {
 	vp.SetDefault("EnablePid", true)
 
 	vp.SetDefault("ConfigId", -1)
+
 }
 
 // IsDynamicMode IsDynamic 是否是动态注入模式

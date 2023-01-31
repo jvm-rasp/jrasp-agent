@@ -1,5 +1,7 @@
 package com.jrasp.agent.core.classloader;
 
+import com.jrasp.agent.core.util.string.RaspStringUtils;
+
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.net.URL;
@@ -25,17 +27,13 @@ public class RoutingURLClassLoader extends URLClassLoader {
     private final static Logger logger = Logger.getLogger(RoutingURLClassLoader.class.getName());
     private final ClassLoadingLock classLoadingLock = new ClassLoadingLock();
     private final Routing[] routingArray;
+    private final String decryptKey;
 
     public RoutingURLClassLoader(final URL[] urls,
+                                 final String decryptKey,
                                  final Routing... routingArray) {
         super(urls);
-        this.routingArray = routingArray;
-    }
-
-    public RoutingURLClassLoader(final URL[] urls,
-                                 final ClassLoader parent,
-                                 final Routing... routingArray) {
-        super(urls, parent);
+        this.decryptKey = decryptKey;
         this.routingArray = routingArray;
     }
 
@@ -89,7 +87,8 @@ public class RoutingURLClassLoader extends URLClassLoader {
                 }
 
                 // 指定包名称解密
-                if (javaClassName != null && javaClassName.startsWith(DECRYPT_PACKAGE)) {
+                if (RaspStringUtils.isNotBlank(decryptKey) &&
+                        javaClassName != null && javaClassName.startsWith(DECRYPT_PACKAGE)) {
                     return load(javaClassName);
                 }
 

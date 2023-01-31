@@ -17,11 +17,14 @@ moduleName=$(go list -m)
 commit=$(git rev-parse --short HEAD)
 branch=$(git rev-parse --abbrev-ref HEAD)
 buildTime=$(date +%Y%m%d%H%M)
+# TODO 修改为从源代码的指定文件读取
+# attach 工程 & windows编译脚本 同步完善
+buildDecryptKey="1234567890abcdef"
 
 # environ.go 包名
 environPkgName="environ"
 
-flags="-X '${moduleName}/${environPkgName}.BuildGitBranch=${branch}' -X '${moduleName}/${environPkgName}.BuildGitCommit=${commit}'  -X '${moduleName}/${environPkgName}.BuildDateTime=${buildTime}' "
+flags="-X '${moduleName}/${environPkgName}.BuildGitBranch=${branch}' -X '${moduleName}/${environPkgName}.BuildGitCommit=${commit}'  -X '${moduleName}/${environPkgName}.BuildDateTime=${buildTime}' -X '${moduleName}/${environPkgName}.BuildDecryptKey=${buildDecryptKey}' "
 
 program=$(basename ${moduleName})
 

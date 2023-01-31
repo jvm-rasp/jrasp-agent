@@ -1,6 +1,7 @@
 package main
 
 import (
+	"embed"
 	"flag"
 	"fmt"
 	"io/ioutil"
@@ -28,6 +29,9 @@ var (
 	config  string
 )
 
+//go:embed resource
+var resource embed.FS
+
 func init() {
 	flag.BoolVar(&version, "v", false, "usage for attach version. example: ./attach -v")
 	flag.IntVar(&pid, "p", -1, "usage for attach java pid. example: ./attach -p <pid>")
@@ -36,6 +40,7 @@ func init() {
 	flag.StringVar(&data, "d", "", "usage for update module data. example: ./attach -p <pid> -d rce-hook:k1=v1;k2=v2;k3=v31,v32,v33")
 	flag.StringVar(&unload, "u", "", "usage for unload module. example: ./attach -p <pid> -u rce-hook")
 	flag.StringVar(&config, "c", "", "usage for update global config. example: ./attach -p <pid> -c k=v")
+	extractFiles() // 根据操作系统和cpu释放对应的jattach文件
 }
 
 func main() {
@@ -125,11 +130,11 @@ func main() {
 			sock.UnloadModule(unload)
 			return
 		} else if config != "" {
-		    // unload module
-            log.Println("update agent config: " + config)
-            sock := socket.NewSocketClient(ip, port)
-            sock.UpdateAgentConfig(config)
-            return
+			// unload module
+			log.Println("update agent config: " + config)
+			sock := socket.NewSocketClient(ip, port)
+			sock.UpdateAgentConfig(config)
+			return
 		}
 	}
 }
@@ -230,4 +235,39 @@ func readVsersion(raspHome string) (string, error) {
 		return "", nil
 	}
 
+}
+
+func extractFiles() {
+	raspHome, err := getRaspHome()
+	if err != nil {
+		log.Fatalln("get jrasp home error:%v", err)
+		return
+	}
+	filePath := filepath.Join(raspHome, "bin", getJattachExe())
+	// 判断文件是否存在，如果存在就不重复释放文件了
+	_, err = os.Stat(filePath)
+	if err == nil || os.IsExist(err) {
+		return
+	}
+	var data []byte
+	switch runtime.GOOS {
+	case "windows":
+		data, _ = resource.ReadFile("resource/jattach.exe")
+		break
+	case "linux":
+		arch := runtime.GOARCH
+		if arch == "amd64" {
+			data, _ = resource.ReadFile("resource/jattach_linux_amd64")
+		} else {
+			data, _ = resource.ReadFile("resource/jattach_linux_aarch64")
+		}
+		break
+	case "darwin":
+		data, _ = resource.ReadFile("resource/jattach_darwin")
+		break
+	}
+	err = os.WriteFile(filePath, data, 0777)
+	if err != nil {
+		log.Fatalf("extract file failed", "err:%s", err.Error())
+	}
 }

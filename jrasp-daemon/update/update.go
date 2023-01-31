@@ -68,7 +68,7 @@ func (this *Update) UpdateDaemonFile() {
 			}
 		}
 	} else {
-		zlog.Infof(defs.DOWNLOAD, "no need to update jrasp-daemon",
+		zlog.Debugf(defs.DOWNLOAD, "no need to update jrasp-daemon",
 			"config.binFileHash:%s,disk.binFileHash:%s", this.cfg.BinFileHash, this.env.BinFileHash)
 	}
 }
@@ -98,7 +98,7 @@ func (this *Update) replace() {
 // TODO 疑似bug
 func (this *Update) DownLoadModuleFiles() {
 	if !this.cfg.ModuleAutoUpdate {
-		zlog.Infof(defs.DOWNLOAD, "moduleAutoUpdate is disabled", "close module update from remote")
+		zlog.Debugf(defs.DOWNLOAD, "moduleAutoUpdate is disabled", "close module update from remote")
 		return
 	}
 	// 获取磁盘上的插件
@@ -135,7 +135,7 @@ func (this *Update) downLoad(fileHashMap map[string]string) {
 				continue
 			}
 			// 校验成功，修改名称
-			if tmpFileHash == m.Md5 {
+			if tmpFileHash == strings.ToLower(m.Md5) {
 				zlog.Infof(defs.DOWNLOAD, "check file hash success", "tmpfilePath:%s,tmpFileHash:%v", tmpFileName, tmpFileHash)
 				newFilePath := filepath.Join(this.moduleDir, m.ModuleName+".jar")
 				// 覆盖旧插件
@@ -145,6 +145,14 @@ func (this *Update) downLoad(fileHashMap map[string]string) {
 					zlog.Errorf(defs.DOWNLOAD, "[BUG]rename file name failed", "tmpFileName:%s,newFilePath:%s,err:%v", tmpFileName, newFilePath, err)
 					_ = os.Remove(tmpFileName)
 					continue
+				}
+			} else {
+				// 检验失败打印日志，并删除临时文件
+				zlog.Errorf(defs.DOWNLOAD, "[BUG]check file hash failed", "tmpfilePath:%s,tmpFileHash:%v,configHash:%v", tmpFileName, tmpFileHash, m.Md5)
+				err := os.Remove(tmpFileName)
+				if err != nil {
+					zlog.Errorf(defs.DOWNLOAD, "[BUG]delete broken file err", "file path: %s", tmpFileName)
+					return
 				}
 			}
 		}

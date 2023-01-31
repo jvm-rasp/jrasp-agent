@@ -8,6 +8,7 @@ import com.jrasp.agent.core.server.socket.handler.packet.PacketType;
 import com.jrasp.agent.core.util.string.RaspStringUtils;
 
 import java.lang.reflect.Method;
+import java.net.URLDecoder;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -36,7 +37,7 @@ public class UpdatePacketHandler implements PacketHandler {
     @Override
     public String run(String data) throws Throwable {
         // 模块名称:k1=v1;k2=v2;k2=v21,v22,v23;
-        LOGGER.log(Level.INFO, "data:{0}", data);
+        LOGGER.log(Level.CONFIG, "data:{0}", data);
         if (RaspStringUtils.isNotBlank(data)) {
             String[] moduleAndValue = data.split(":", 2);
             if (moduleAndValue.length == 2) {
@@ -55,7 +56,7 @@ public class UpdatePacketHandler implements PacketHandler {
                 for (String kv : kvArray) {
                     String[] kAndV = kv.split("=", 2);
                     if (kAndV.length == 2) {
-                        parametersMap.put(kAndV[0], kAndV[1]);
+                        parametersMap.put(kAndV[0], URLDecoder.decode(kAndV[1], "UTF-8"));
                     } else {
                         throw new RuntimeException("update module config failed. split kv array length not equal to 2, kv: " + kv);
                     }

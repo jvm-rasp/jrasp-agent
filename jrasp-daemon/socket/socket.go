@@ -78,7 +78,7 @@ func (this *SocketClient) Handler(p *Package) {
 	case ERROR:
 		zlog.Errorf(defs.UPDATE_MODULE_PARAMETERS, "update parameters", "result:%s", string(p.Body))
 	default:
-		zlog.Infof(defs.UPDATE_MODULE_PARAMETERS, "update parameters", "result:%s", string(p.Body))
+		zlog.Debugf(defs.UPDATE_MODULE_PARAMETERS, "update parameters", "result:%s", string(p.Body))
 	}
 }
 

@@ -153,7 +153,7 @@ func setDefaultValue(vp *viper.Viper) {
 	vp.SetDefault("BinFileHash", "")
 
 	// 默认自动更新
-	vp.SetDefault("ModuleAutoUpdate", false)
+	vp.SetDefault("ModuleAutoUpdate", true)
 
 	vp.SetDefault("EnablePid", true)
 

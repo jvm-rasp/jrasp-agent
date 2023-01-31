@@ -104,7 +104,7 @@ public class DefaultModuleEventWatcher implements ModuleEventWatcher {
         }
         // 在rasp 加载前，已经被JVM加载的类，需要进行一次reTransformClasses，加入 rasp hook 逻辑
         // 在rasp 卸载时，对于全部HOOK类，需要进行一次reTransformClasses，还原
-        logger.log(Level.INFO, "isAddHook: {0}, transform class: {1}",
+        logger.log(Level.CONFIG, "isAddHook: {0}, transform class: {1}",
                 new Object[]{isAddHook, RaspStringUtils.join(waitingReTransformClasses, ",")});
         for (final Class<?> waitingReTransformClass : waitingReTransformClasses) {
             try {

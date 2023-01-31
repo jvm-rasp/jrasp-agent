@@ -6,6 +6,8 @@ import com.jrasp.agent.core.server.socket.handler.packet.PacketType;
 import com.jrasp.agent.core.util.string.RaspStringUtils;
 
 import java.lang.reflect.Field;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -40,6 +42,8 @@ public class UpdateConfigPacketHandler implements PacketHandler {
                     if (kv != null && kv.length == 2) {
                         String fieldName = kv[0].trim();
                         String valueString = kv[1].trim();
+                        // 对value进行url解码
+                        valueString = URLDecoder.decode(valueString, "UTF-8");
                         Field field = clazz.getDeclaredField(fieldName);
                         Object originValue = transformType(field, valueString);
                         field.setAccessible(true);

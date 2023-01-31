@@ -56,7 +56,7 @@ func NewWatch(cfg *userconfig.Config, env *environ.Environ, ctx context.Context)
 
 // nacos 服务不稳定，长时间运行后容易断开连，这里设置定时重启功能（一般是1个月以上）
 func (w *Watch) Reboot() {
-	zlog.Infof(defs.DEFAULT_INFO, "restart jrasp-daemon ticker start...", "reboot period:%d(Minute)", w.cfg.RebootTicker)
+	zlog.Debugf(defs.DEFAULT_INFO, "restart jrasp-daemon ticker start...", "reboot period:%d(Minute)", w.cfg.RebootTicker)
 	for {
 		select {
 		case _ = <-w.ctx.Done():
@@ -193,7 +193,7 @@ func (w *Watch) getJavaProcessInfo(procss *process.Process) {
 	if !w.cfg.IsDisable() && javaProcess.SuccessInject() {
 		javaProcess.SoftFlush()
 		javaProcess.UpdateParameters()
-		zlog.Infof(defs.AGENT_CONFIG_UPDATE, "update agent config", "update parameters success")
+		zlog.Debugf(defs.AGENT_CONFIG_UPDATE, "update agent config", "update parameters success")
 	}
 
 	zlog.Infof(defs.JAVA_PROCESS_STARTUP, "find a java process", utils.ToString(javaProcess))

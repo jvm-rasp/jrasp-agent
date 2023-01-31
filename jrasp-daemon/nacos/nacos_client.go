@@ -102,7 +102,7 @@ func NacosInit(cfg *userconfig.Config, env *environ.Environ) {
 		Group:  "DEFAULT_GROUP",
 		OnChange: func(namespace, group, dataId, data string) {
 			zlog.Infof(defs.NACOS_LISTEN_CONFIG, "[ListenConfig]", "group:%s,dataId=%s,data=%s", group, dataId, data)
-			err = ioutil.WriteFile(filepath.Join(env.InstallDir, "cfg", "config.json"), []byte(data), 0600)
+			err = ioutil.WriteFile(filepath.Join(env.InstallDir, "config", "config.json"), []byte(data), 0600)
 			if err != nil {
 				info.Message = err.Error()
 				info.Status = false

@@ -1,5 +1,6 @@
 package com.jrasp.agent.core.classloader;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -16,6 +17,10 @@ import java.util.logging.Logger;
  * @author luanjia@taobao.com
  */
 public class RoutingURLClassLoader extends URLClassLoader {
+    /**
+     * 需要解密的包名称
+     */
+    private final static String DECRYPT_PACKAGE = "com.jrasp.agent.module.";
 
     private final static Logger logger = Logger.getLogger(RoutingURLClassLoader.class.getName());
     private final ClassLoadingLock classLoadingLock = new ClassLoadingLock();
@@ -83,6 +88,11 @@ public class RoutingURLClassLoader extends URLClassLoader {
                     return loadedClass;
                 }
 
+                // 指定包名称解密
+                if (javaClassName != null && javaClassName.startsWith(DECRYPT_PACKAGE)) {
+                    return load(javaClassName);
+                }
+
                 try {
                     Class<?> aClass = findClass(javaClassName);
                     if (resolve) {
@@ -104,6 +114,29 @@ public class RoutingURLClassLoader extends URLClassLoader {
         });
     }
 
+    @SuppressWarnings("unchecked")
+    private Class load(String name) {
+        Class claz = null;
+        try {
+            String path = name.replace('.', '/').concat(".class");
+            URL url = this.getResource(path);
+            if (url != null) {
+                BufferedInputStream bis = new BufferedInputStream(url.openStream());
+                byte[] data = new byte[bis.available()];
+                bis.read(data);
+                bis.close();
+                // 数组解密
+                // TODO 目前没有实现
+                for (int i = 0; i < data.length; i++) {
+
+                }
+                return defineClass(name, data, 0, data.length);
+            }
+        } catch (Exception e) {
+            claz = null;
+        }
+        return claz;
+    }
 
     /**
      * 类加载路由匹配器

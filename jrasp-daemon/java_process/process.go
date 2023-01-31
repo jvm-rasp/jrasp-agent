@@ -11,6 +11,7 @@ import (
 	"jrasp-daemon/utils"
 	"jrasp-daemon/zlog"
 	"net/http"
+	"net/url"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -218,7 +219,7 @@ func join(params []interface{}) string {
 	for _, param := range params {
 		switch param.(type) {
 		case string:
-			paramSlice = append(paramSlice, param.(string))
+			paramSlice = append(paramSlice, url.PathEscape(param.(string))) // 使用url编码防止存在特殊字符
 		case bool:
 			paramSlice = append(paramSlice, strconv.FormatBool(param.(bool)))
 		case []string:
@@ -244,7 +245,7 @@ func join2(param interface{}) string {
 	var paramSlice []string
 	switch param.(type) {
 	case string:
-		paramSlice = append(paramSlice, param.(string))
+		paramSlice = append(paramSlice, url.PathEscape(param.(string))) // 使用url编码防止存在特殊字符
 	case bool:
 		paramSlice = append(paramSlice, strconv.FormatBool(param.(bool)))
 	case []string:

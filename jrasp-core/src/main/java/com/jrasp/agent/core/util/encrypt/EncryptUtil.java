@@ -1,16 +1,15 @@
 package com.jrasp.agent.core.util.encrypt;
 
 import com.jrasp.agent.api.util.StringUtils;
-import com.sun.org.slf4j.internal.Logger;
-import com.sun.org.slf4j.internal.LoggerFactory;
-
 import javax.crypto.Cipher;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.security.MessageDigest;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class EncryptUtil {
-    private static Logger LOGGER = LoggerFactory.getLogger(EncryptUtil.class);
+    private final static Logger logger = Logger.getLogger(EncryptUtil.class.getName());
     /**
      * 编码
      */
@@ -73,12 +72,12 @@ public class EncryptUtil {
                 //返回base64字符串
                 return encrypted;
             } catch (Exception e) {
-                LOGGER.debug("AES encrypt exception:" + e.getMessage());
+                logger.log(Level.WARNING,"AES encrypt exception:" + e.getMessage());
                 throw new RuntimeException(e);
             }
 
         }else {
-            LOGGER.error("AES encrypt: the aesKey is null or error!");
+            logger.log(Level.WARNING, "AES encrypt: the aesKey is null or error!");
             return null;
         }
     }
@@ -108,12 +107,12 @@ public class EncryptUtil {
                 //将字节数组转成字符串
                 return decrypted;
             } catch (Exception e) {
-                LOGGER.debug("AES decrypt exception:" + e.getMessage());
+                logger.log(Level.WARNING,"AES decrypt exception:" + e.getMessage());
                 throw new RuntimeException(e);
             }
 
         }else {
-            LOGGER.error("AES decrypt: the aesKey is null or error!");
+            logger.log(Level.WARNING, "AES decrypt: the aesKey is null or error!");
             return null;
         }
     }
@@ -143,11 +142,11 @@ public class EncryptUtil {
                 //根据待加密内容生成字节数组
                 encrypted = cipher.doFinal(content);
             } catch (Exception e) {
-                LOGGER.error("AES_CBC encrypt exception:" + e.getMessage());
+                logger.log(Level.WARNING, "AES_CBC encrypt exception:" + e.getMessage());
                 throw new RuntimeException(e);
             }
         }else {
-            LOGGER.error("AES_CBC encrypt: the aesKey is null or error!");
+            logger.log(Level.WARNING, "AES_CBC encrypt: the aesKey is null or error!");
         }
         return encrypted;
     }
@@ -178,11 +177,11 @@ public class EncryptUtil {
                 decrypted = cipher.doFinal(content);
 
             } catch (Exception e) {
-                LOGGER.error("AES_CBC decrypt exception:" + e.getMessage());
+                logger.log(Level.WARNING, "AES_CBC decrypt exception:" + e.getMessage());
                 throw new RuntimeException(e);
             }
         } else {
-            LOGGER.error("AES_CBC decrypt: the aesKey is null or error!");
+            logger.log(Level.WARNING,"AES_CBC decrypt: the aesKey is null or error!");
         }
         return decrypted;
     }

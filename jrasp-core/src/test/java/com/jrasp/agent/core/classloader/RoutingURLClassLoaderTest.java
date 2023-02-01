@@ -2,16 +2,13 @@ package com.jrasp.agent.core.classloader;
 
 import util.encrypt.EncryptUtil;
 import org.junit.Test;
-import sun.misc.BASE64Decoder;
-import sun.misc.BASE64Encoder;
 
 public class RoutingURLClassLoaderTest {
 
 
 
     private final String plainText = "This is test string";
-
-    private final String encryptText = "hijEWo9VTf/L81TpUJHIL7pohZ0fxEG4lGJY4Hn72a8=";
+    private final byte[] encryptText = new byte[] {-122, 40, -60, 90, -113, 85, 77, -1, -53, -13, 84, -23, 80, -111, -56, 47, -70, 104, -123, -99, 31, -60, 65, -72, -108, 98, 88, -32, 121, -5, -39, -81};
 
     /**
      * 偏移量(CBC中使用，增强加密算法强度)
@@ -26,11 +23,11 @@ public class RoutingURLClassLoaderTest {
     @Test
     public void aesTest() throws Exception {
         byte[] encryptData = EncryptUtil.encryptCBC(plainText.getBytes("UTF-8"), IV, KEY);
-        String encrypted = new BASE64Encoder().encode(encryptData);
-        assert encrypted.equals(encryptText);
-
-        byte[] data = new BASE64Decoder().decodeBuffer(encryptText);
-        byte[] decryptData = EncryptUtil.decryptCBC(data, IV, KEY);
+        assert encryptData.length == encryptText.length;
+        for(int i=0; i< encryptData.length; i++) {
+            assert encryptData[i] == encryptText[i];
+        }
+        byte[] decryptData = EncryptUtil.decryptCBC(encryptText, IV, KEY);
         assert new String(decryptData).equals(plainText);
     }
 

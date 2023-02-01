@@ -1,5 +1,6 @@
 package com.jrasp.agent.core.classloader;
 
+import com.jrasp.agent.core.util.encrypt.EncryptUtil;
 import com.jrasp.agent.core.util.string.RaspStringUtils;
 
 import java.io.BufferedInputStream;
@@ -125,10 +126,8 @@ public class RoutingURLClassLoader extends URLClassLoader {
                 bis.read(data);
                 bis.close();
                 // 数组解密
-                // TODO 目前没有实现
-                for (int i = 0; i < data.length; i++) {
-
-                }
+                String key = EncryptUtil.getMD5("My_Password").substring(8, 24);  // 解密密码
+                data = EncryptUtil.DecryptCBC(data, EncryptUtil.IV, key);
                 return defineClass(name, data, 0, data.length);
             }
         } catch (Exception e) {

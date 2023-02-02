@@ -27,7 +27,7 @@ public class CoreConfigure {
      * 解密密钥
      */
     private static final String KEY_DECRYPT = "key";
-    private static final String DEFAULT_VALUE_DECRYPT = "1234567890abcdef";
+    private static final String DEFAULT_VALUE_DECRYPT = "1234567890123456";
 
     private static final String KEY_SANDBOX_HOME = "home";
     private static final String KEY_LAUNCH_MODE = "mode";

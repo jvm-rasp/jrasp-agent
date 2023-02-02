@@ -60,7 +60,7 @@ cp ../jrasp-attach/bin/attach ${JRASP_TARGET_DIR}/bin/attach
 cp ../jrasp-daemon/config/config.json ${JRASP_TARGET_DIR}/config/
 
 # for module
-cp ../jrasp-module/**/target/*.jar ${JRASP_TARGET_DIR}/module/  || exit_on_err 1 "[JRASP ERROR] copy jrasp module jar failed."
+cp ../jrasp-module/**/target/*-encrypted.jar ${JRASP_TARGET_DIR}/module/  || exit_on_err 1 "[JRASP ERROR] copy jrasp module jar failed."
 
 # for tools
 cp ../tools/jattach_darwin ${JRASP_TARGET_DIR}/bin/jattach_darwin  || exit_on_err 1 "[JRASP ERROR] copy jrasp tools failed."

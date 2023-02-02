@@ -101,7 +101,7 @@ echo f | xcopy /s /f "%JRASP_HOME%\jrasp-launcher\target\jrasp-launcher-"%VERSIO
 
 rem module jar复制
 rem 当前路径以及子路径下复制jar包
-for /r %JRASP_HOME%\jrasp-module %%i in (*.jar) do copy %%i "%MODULE_DIR%"
+for /r %JRASP_HOME%\jrasp-module %%i in (*-encrypted.jar) do copy %%i "%MODULE_DIR%"
 
 rem  jrasp-attach复制
 copy "%JRASP_HOME%\jrasp-attach\bin\attach.exe" "%BIN_DIR%"

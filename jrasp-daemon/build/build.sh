@@ -13,7 +13,7 @@ export GOPROXY="https://mirrors.aliyun.com/goproxy/"
 echo "GOPROXY:"${GOPROXY}
 
 # jrasp's version
-KEY_VERSION=$(cat ./build/KEY.txt)
+KEY_VERSION=$(cat ../bin/DECRYPT_KEY.txt)
 
 # 编译信息
 moduleName=$(go list -m)

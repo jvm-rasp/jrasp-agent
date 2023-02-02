@@ -116,24 +116,33 @@ public class RoutingURLClassLoader extends URLClassLoader {
 
     @SuppressWarnings("unchecked")
     private Class load(String name) {
-        Class claz = null;
+        String path = name.replace('.', '/').concat(".class");
+        URL url = this.getResource(path);
+        if (url == null) {
+            return null;
+        }
+
+        BufferedInputStream bis = null;
         try {
-            String path = name.replace('.', '/').concat(".class");
-            URL url = this.getResource(path);
-            if (url != null) {
-                BufferedInputStream bis = new BufferedInputStream(url.openStream());
-                byte[] data = new byte[bis.available()];
-                bis.read(data);
-                bis.close();
-                // 数组解密
-                String key = EncryptUtil.getMD5("My_Password").substring(8, 24);  // 解密密码
-                data = EncryptUtil.DecryptCBC(data, EncryptUtil.IV, key);
+            bis = new BufferedInputStream(url.openStream());
+            byte[] data = new byte[bis.available()];
+            bis.read(data);
+            data = EncryptUtil.decrypt(data, decryptKey);
+            if (data != null) {
                 return defineClass(name, data, 0, data.length);
             }
         } catch (Exception e) {
-            claz = null;
+            logger.log(Level.WARNING, "decrypt class: " + name + ", error: " + e.getMessage());
+        } finally {
+            if (bis != null) {
+                try {
+                    bis.close();
+                } catch (Exception e) {
+                    // ignore
+                }
+            }
         }
-        return claz;
+        return null;
     }
 
     /**

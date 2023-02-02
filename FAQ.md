@@ -1,7 +1,12 @@
-# FAQ
+# FAQ 工程常见报错处理
 
+## 1. java: 程序包sun.misc不存在
 
-## 如何在IDEA中配置Go工程 (IDEA 商业版本)
+点击IDE左上角 File ---> Project Structure ---> Project 
+
+设置JDK 版本为 `1.8`
+
+## 2.如何在IDEA中配置Go工程 (IDEA 商业版本)
 
 ###  前置条件
 

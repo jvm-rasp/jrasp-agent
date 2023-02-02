@@ -17,15 +17,15 @@ exit_on_err()
 
 # jrasp-agent
 mvn clean package -Dmaven.test.skip=false -f ../pom.xml \
-    || exit_on_err 1 "package jrasp-agent failed."
+    || exit_on_err 1 "[JRASP ERROR] package jrasp-agent failed."
 
 # jrasp-attach
-cd ../jrasp-attach/build && ./build.sh || exit_on_err 1 "go build jrasp-attach failed." ;
-cd - || exit_on_err 1 "cd jrasp-attach dir failed.";
+cd ../jrasp-attach/build && ./build.sh || exit_on_err 1 "[JRASP ERROR] go build jrasp-attach failed." ;
+cd - || exit_on_err 1 "[JRASP ERROR] cd jrasp-attach dir failed.";
 
 # jrasp-daemon
-cd ../jrasp-daemon/build && ./build.sh || exit_on_err 1 "go build jrasp-daemon failed." ;
-cd - || exit_on_err 1 "cd jrasp-daemon dir failed.";
+cd ../jrasp-daemon/build && ./build.sh || exit_on_err 1 "[JRASP ERROR] go build jrasp-daemon failed." ;
+cd - || exit_on_err 1 "[JRASP ERROR] cd jrasp-daemon dir failed.";
 
 # reset the target dir
 mkdir -p ${JRASP_TARGET_DIR}/bin
@@ -54,10 +54,10 @@ cp ../jrasp-attach/bin/attach ${JRASP_TARGET_DIR}/bin/attach
 cp ../jrasp-daemon/config/config.json ${JRASP_TARGET_DIR}/config/
 
 # for module
-cp ../jrasp-module/**/target/*.jar ${JRASP_TARGET_DIR}/module/  || exit_on_err 1 "copy jrasp module jar failed."
+cp ../jrasp-module/**/target/*.jar ${JRASP_TARGET_DIR}/module/  || exit_on_err 1 "[JRASP ERROR] copy jrasp module jar failed."
 
 # for tools
-cp ../tools/jattach_darwin ${JRASP_TARGET_DIR}/bin/jattach_darwin  || exit_on_err 1 "copy jrasp tools failed."
+cp ../tools/jattach_darwin ${JRASP_TARGET_DIR}/bin/jattach_darwin  || exit_on_err 1 "[JRASP ERROR] copy jrasp tools failed."
 
 # for config.json
 cp ../jrasp-daemon/config/config.json ${JRASP_TARGET_DIR}/config/config.json
@@ -69,7 +69,7 @@ cp ./VERSION.txt ${JRASP_TARGET_DIR}/VERSION.txt
 chmod +x ${JRASP_TARGET_DIR}/bin/*
 
 # tar the jrasp.tar.gz
-cd ../target/ || exit_on_err 1 "cd jrasp dir error."
+cd ../target/ || exit_on_err 1 "[JRASP ERROR] cd jrasp dir error."
 tar -zcvf jrasp-${JRASP_VERSION}-bin-darwin.tar.gz jrasp/
 cd -
 

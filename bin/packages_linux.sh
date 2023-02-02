@@ -17,15 +17,15 @@ exit_on_err()
 
 # jrasp-agent
 mvn clean package -Dmaven.test.skip=false -f ../pom.xml \
-    || exit_on_err 1 "package jrasp-agent failed."
+    || exit_on_err 1 "[JRASP ERROR] package jrasp-agent failed."
 
 # jrasp-inject
-cd ../jrasp-attach/build && ./build.sh || exit_on_err 1 "go build jrasp-attach failed." ;
+cd ../jrasp-attach/build && ./build.sh || exit_on_err 1 "[JRASP ERROR] go build jrasp-attach failed." ;
 cd - || exit_on_err 1 "cd jrasp-attach dir failed.";
 
 # jrasp-daemon
-cd ../jrasp-daemon/build && ./build.sh || exit_on_err 1 "go build jrasp-daemon failed." ;
-cd - || exit_on_err 1 "cd jrasp-daemon dir failed.";
+cd ../jrasp-daemon/build && ./build.sh || exit_on_err 1 "[JRASP ERROR] go build jrasp-daemon failed." ;
+cd - || exit_on_err 1 "[JRASP ERROR] cd jrasp-daemon dir failed.";
 
 # reset the target dir
 mkdir -p ${JRASP_TARGET_DIR}/bin
@@ -54,20 +54,37 @@ cp ../jrasp-daemon/config/config.json ${JRASP_TARGET_DIR}/config/
 cp ../jrasp-attach/bin/attach ${JRASP_TARGET_DIR}/bin/attach
 
 # for module
-cp ../jrasp-module/**/target/*.jar ${JRASP_TARGET_DIR}/module/  || exit_on_err 1 "copy jrasp module jar failed."
-
-# for tools
-cp ../tools/jattach_linux ${JRASP_TARGET_DIR}/bin/jattach_linux  || exit_on_err 1 "copy jrasp tools failed."
+cp ../jrasp-module/**/target/*.jar ${JRASP_TARGET_DIR}/module/  || exit_on_err 1 "[JRASP ERROR] copy jrasp module jar failed."
 
 # for VERSION.txt
 cp ./VERSION.txt ${JRASP_TARGET_DIR}/VERSION.txt
+
+#### aarch64
+
+# for tools
+cp ../tools/jattach_linux_aarch64 ${JRASP_TARGET_DIR}/bin/jattach_linux  || exit_on_err 1 "[JRASP ERROR] copy jrasp tools failed."
 
 # make it execute able
 chmod +x ${JRASP_TARGET_DIR}/bin/*
 
 # tar the jrasp.tar.gz
 cd ../target/
-tar -zcvf jrasp-${JRASP_VERSION}-bin-linux.tar.gz jrasp/
+tar -zcvf jrasp-${JRASP_VERSION}-linux-aarch64-bin.tar.gz jrasp/
 cd -
 
-echo "package jrasp-${JRASP_VERSION}-bin-linux.tar.gz finish."
+echo "package jrasp-${JRASP_VERSION}-linux-aarch64-bin.tar.gz finish."
+
+#### amd64
+
+# for tools
+cp ../tools/jattach_linux_amd64 ${JRASP_TARGET_DIR}/bin/jattach_linux  || exit_on_err 1 "[JRASP ERROR] copy jrasp tools failed."
+
+# make it execute able
+chmod +x ${JRASP_TARGET_DIR}/bin/*
+
+# tar the jrasp.tar.gz
+cd ../target/
+tar -zcvf jrasp-${JRASP_VERSION}-linux-amd64-bin.tar.gz jrasp/
+cd -
+
+echo "package jrasp-${JRASP_VERSION}-linux-amd64-bin.tar.gz finish."

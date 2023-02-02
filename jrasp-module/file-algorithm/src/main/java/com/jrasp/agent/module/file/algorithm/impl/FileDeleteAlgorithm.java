@@ -1,4 +1,4 @@
-package com.jrasp.module.file.algorithm.impl;
+package com.jrasp.agent.module.file.algorithm.impl;
 
 import com.jrasp.agent.api.ProcessController;
 import com.jrasp.agent.api.algorithm.Algorithm;

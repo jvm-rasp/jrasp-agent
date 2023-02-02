@@ -15,6 +15,12 @@ exit_on_err()
     exit ${1}
 }
 
+# install maven plugin 插件
+cd ../jrasp-encrypt
+mvn clean install -Dmaven.test.skip=false -f ../pom.xml \
+    || exit_on_err 1 "[JRASP ERROR] install encrypt maven plugin failed."
+cd -
+
 # jrasp-agent
 mvn clean package -Dmaven.test.skip=false -f ../pom.xml \
     || exit_on_err 1 "[JRASP ERROR] package jrasp-agent failed."

@@ -15,11 +15,11 @@
         <module>jrasp-core</module>
         <module>jrasp-module</module>
         <module>jrasp-maven</module>
+        <module>jrasp-encrypt</module>
     </modules>
 
     <properties>
         <jrasp.version>1.1.1</jrasp.version>
-        <jrasp.core.version>1.1.1</jrasp.core.version>
     </properties>
 
     <dependencyManagement>
@@ -37,7 +37,7 @@
             <dependency>
                 <groupId>com.jrasp.agent</groupId>
                 <artifactId>jrasp-core</artifactId>
-                <version>${jrasp.core.version}</version>
+                <version>${jrasp.version}</version>
             </dependency>
             <dependency>
                 <groupId>junit</groupId>

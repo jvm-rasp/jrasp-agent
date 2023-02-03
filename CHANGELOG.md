@@ -1,9 +1,12 @@
 # 版本迭代
 
-## 1.1.1 【2023-01】
+## 1.1.1 【2023-01】进行中
 ### Enhancement
 + [module] SQL检测增加LRU缓存，相同sql仅检测一次
 + [module] 检测模块增加自定义html
++ [module] 插件jar包支持加密与运行时类加载器解密
++ [工程] 将模块加密流程增加到maven plugin中
++ [工程] 支持 linux aarch64架构
 ### Bugfix
 + [attach & build] 解决windows打包脚本兼容性问题，增加windows系统编译自动打包功能；
 + [module] 解决方法参数涉及第三方类时触发类的依赖加载bug
@@ -13,6 +16,8 @@
 + [部署方案] 小规模服务部署
 + [module] 支持sqlserver数据库
 + [agent] 去掉模块复制到run目录的功能
++ [工程] 提供方便测试的jrasp-vulns 工程
++ [daemon] 支持安装目录lib下jar更新
 
 ## 1.1.0【2022-10】
 ### Enhancement

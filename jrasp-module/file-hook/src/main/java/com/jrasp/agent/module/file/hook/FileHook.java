@@ -1,4 +1,4 @@
-package com.jrasp.module.file.hook;
+package com.jrasp.agent.module.file.hook;
 
 import com.jrasp.agent.api.annotation.Information;
 import com.jrasp.agent.api.LoadCompleted;

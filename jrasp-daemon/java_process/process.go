@@ -105,8 +105,14 @@ func (jp *JavaProcess) Attach() error {
 
 func (jp *JavaProcess) execCmd() error {
 	zlog.Debugf(defs.ATTACH_DEFAULT, "[Attach]", "attach to jvm[%d] start...", jp.JavaPid)
+	// logPath 转换成绝对路径
+	logPathAbs, err := filepath.Abs(jp.cfg.LogPath)
+	if err != nil {
+		zlog.Warnf(defs.ATTACH_DEFAULT, "[Attach]", "logPath: %s, logPathAbs: %s", jp.cfg.LogPath, logPathAbs)
+	}
 	// 通过attach 传递给目标jvm的参数
-	agentArgs := fmt.Sprintf("raspHome=%s;coreVersion=%s", jp.env.InstallDir, jp.cfg.Version)
+	agentArgs := fmt.Sprintf("raspHome=%s;coreVersion=%s;key=%s;logPath=%s;",
+		jp.env.InstallDir, jp.cfg.Version, jp.transformKey(jp.env.BuildDecryptKey), logPathAbs)
 	// jattach pid load instrument false jrasp-launcher.jar
 	cmd := exec.Command(
 		filepath.Join(jp.env.InstallDir, "bin", getJattachExe()),
@@ -133,6 +139,12 @@ func (jp *JavaProcess) execCmd() error {
 	}
 
 	return nil
+}
+
+// keyVersion 转换为key
+func (jp *JavaProcess) transformKey(keyVersion string) string {
+	// todo 实现密钥转换逻辑
+	return keyVersion
 }
 
 // CheckRunDir run/pid目录

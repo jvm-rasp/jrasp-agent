@@ -12,16 +12,21 @@ echo "current dir:${projectpath}"
 export GOPROXY="https://mirrors.aliyun.com/goproxy/"
 echo "GOPROXY:"${GOPROXY}
 
+# jrasp's version
+KEY_VERSION=$(cat ../bin/DECRYPT_KEY.txt)
+
 # 编译信息
 moduleName=$(go list -m)
 commit=$(git rev-parse --short HEAD)
 branch=$(git rev-parse --abbrev-ref HEAD)
 buildTime=$(date +%Y%m%d%H%M)
+# TODO attach 工程 & windows编译脚本 同步完善
+buildDecryptKey=${KEY_VERSION}
 
 # environ.go 包名
 environPkgName="environ"
 
-flags="-X '${moduleName}/${environPkgName}.BuildGitBranch=${branch}' -X '${moduleName}/${environPkgName}.BuildGitCommit=${commit}'  -X '${moduleName}/${environPkgName}.BuildDateTime=${buildTime}' "
+flags="-X '${moduleName}/${environPkgName}.BuildGitBranch=${branch}' -X '${moduleName}/${environPkgName}.BuildGitCommit=${commit}'  -X '${moduleName}/${environPkgName}.BuildDateTime=${buildTime}' -X '${moduleName}/${environPkgName}.BuildDecryptKey=${buildDecryptKey}' "
 
 program=$(basename ${moduleName})
 

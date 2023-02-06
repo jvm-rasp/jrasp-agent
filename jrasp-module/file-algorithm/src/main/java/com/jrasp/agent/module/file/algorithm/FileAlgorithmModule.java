@@ -1,4 +1,4 @@
-package com.jrasp.module.file.algorithm;
+package com.jrasp.agent.module.file.algorithm;
 
 import com.jrasp.agent.api.annotation.Information;
 import com.jrasp.agent.api.Module;
@@ -6,10 +6,10 @@ import com.jrasp.agent.api.ModuleLifecycleAdapter;
 import com.jrasp.agent.api.algorithm.AlgorithmManager;
 import com.jrasp.agent.api.annotation.RaspResource;
 import com.jrasp.agent.api.log.RaspLog;
-import com.jrasp.module.file.algorithm.impl.FileDeleteAlgorithm;
-import com.jrasp.module.file.algorithm.impl.FileListAlgorithm;
-import com.jrasp.module.file.algorithm.impl.FileReadAlgorithm;
-import com.jrasp.module.file.algorithm.impl.FileUploadAlgorithm;
+import com.jrasp.agent.module.file.algorithm.impl.FileDeleteAlgorithm;
+import com.jrasp.agent.module.file.algorithm.impl.FileListAlgorithm;
+import com.jrasp.agent.module.file.algorithm.impl.FileReadAlgorithm;
+import com.jrasp.agent.module.file.algorithm.impl.FileUploadAlgorithm;
 import org.kohsuke.MetaInfServices;
 
 import java.util.Map;

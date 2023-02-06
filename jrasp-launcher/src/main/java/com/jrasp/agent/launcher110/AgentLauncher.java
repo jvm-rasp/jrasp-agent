@@ -21,8 +21,8 @@ public class AgentLauncher {
         return sandboxHome + File.separatorChar + "lib" + File.separator + "jrasp-core-" + coreVersion + ".jar";
     }
 
-    // sandbox默认主目录
-    private static final String DEFAULT_SANDBOX_HOME
+    // JRASP默认主目录
+    private static final String DEFAULT_JRASP_HOME
             = new File(AgentLauncher.class.getProtectionDomain().getCodeSource().getLocation().getFile()).getParentFile().getParent();
 
     // 启动模式: agent方式加载
@@ -121,10 +121,10 @@ public class AgentLauncher {
                                                           final Instrumentation inst) {
 
         final String namespace = getNamespace(featureMap);
-        final String coreFeatureString = toFeatureString(featureMap);
+        final Map<String, String> coreConfigs = toCoreConfigMap(featureMap);
 
         try {
-            final String home = getSandboxHome(featureMap);
+            final String home = getRaspHome(featureMap);
             // 依赖的spy版本在agent加载时确定，解决业务进程不重启，而无法没有升级的问题
 
             final String coreVersion = getCoreVersion(featureMap);
@@ -135,9 +135,9 @@ public class AgentLauncher {
             // CoreConfigure类定义
             final Class<?> classOfConfigure = sandboxClassLoader.loadClass(CLASS_OF_CORE_CONFIGURE);
 
-            // 反序列化成CoreConfigure类实例
-            final Object objectOfCoreConfigure = classOfConfigure.getMethod("toConfigure", String.class)
-                    .invoke(null, coreFeatureString);
+            // 反射生成CoreConfigure类实例
+            final Object objectOfCoreConfigure = classOfConfigure.getMethod("toConfigure", Map.class)
+                    .invoke(null, coreConfigs);
 
             // CoreServer类定义
             final Class<?> classOfProxyServer = sandboxClassLoader.loadClass(CLASS_OF_PROXY_CORE_SERVER);
@@ -179,19 +179,14 @@ public class AgentLauncher {
 
     // ----------------------------------------------- 以下代码用于配置解析 -----------------------------------------------
 
-    private static final String KEY_SANDBOX_HOME = "home";
+    private static final String KEY_JRASP_HOME = "raspHome";
+    private static final String KEY_LAUNCH_MODE = "mode";
 
     private static final String KEY_CORE_VERSION = "coreVersion";
     private static final String DEFAULT_CORE_VERSION = "1.1.1";
 
     private static final String KEY_NAMESPACE = "namespace";
     private static final String DEFAULT_NAMESPACE = "default";
-
-    private static final String KEY_SERVER_IP = "server.ip";
-    private static final String DEFAULT_IP = "0.0.0.0";
-
-    private static final String KEY_SERVER_PORT = "server.port";
-    private static final String DEFAULT_PORT = "0";
 
     private static boolean isNotBlankString(final String string) {
         return null != string
@@ -230,7 +225,7 @@ public class AgentLauncher {
             // k1=v1;k2=v2;
             // 加上limit限制为2，兼容性更强，如果v1中含有"="，解析将报错
             // 例如传递如下参数 url=http://localhost:8080?index=home;
-            final String[] kvSegmentArray = kvPairSegmentString.split("=",2);
+            final String[] kvSegmentArray = kvPairSegmentString.split("=", 2);
             if (kvSegmentArray.length != 2
                     || isBlankString(kvSegmentArray[0])
                     || isBlankString(kvSegmentArray[1])) {
@@ -256,8 +251,8 @@ public class AgentLauncher {
     }
 
     // 获取主目录
-    private static String getSandboxHome(final Map<String, String> featureMap) {
-        String home = getDefault(featureMap, KEY_SANDBOX_HOME, DEFAULT_SANDBOX_HOME);
+    private static String getRaspHome(final Map<String, String> featureMap) {
+        String home = getDefault(featureMap, KEY_JRASP_HOME, DEFAULT_JRASP_HOME);
         if (isWindows()) {
             Matcher m = Pattern.compile("(?i)^[/\\\\]([a-z])[/\\\\]").matcher(home);
             if (m.find()) {
@@ -277,31 +272,14 @@ public class AgentLauncher {
         return getDefault(featureMap, KEY_CORE_VERSION, DEFAULT_CORE_VERSION);
     }
 
-    // 如果featureMap中有对应的key值，则将featureMap中的[K,V]对合并到featureSB中
-    private static void appendFromFeatureMap(final StringBuilder featureSB,
-                                             final Map<String, String> featureMap,
-                                             final String key,
-                                             final String defaultValue) {
-        if (featureMap.containsKey(key)) {
-            featureSB.append(format("%s=%s;", key, getDefault(featureMap, key, defaultValue)));
-        }
+    // 与agent默认参数合并后向maps中增加参数,未被合并的参数透传给core
+    private static Map<String, String> toCoreConfigMap(final Map<String, String> featureMap) {
+        final String raspHome = getRaspHome(featureMap);
+        featureMap.put(KEY_JRASP_HOME, raspHome);
+        featureMap.put(KEY_NAMESPACE, getNamespace(featureMap));
+        featureMap.put(KEY_LAUNCH_MODE, LAUNCH_MODE);
+        // 其他参数透传给jrasp-core
+        return featureMap;
     }
-
-    // 将featureMap中的[K,V]对转换为featureString
-    private static String toFeatureString(final Map<String, String> featureMap) {
-        final String sandboxHome = getSandboxHome(featureMap);
-        final StringBuilder featureSB = new StringBuilder(
-                format(";mode=%s;home=%s;namespace=%s;", LAUNCH_MODE, sandboxHome, getNamespace(featureMap))
-        );
-
-        // 合并IP(如有)
-        appendFromFeatureMap(featureSB, featureMap, KEY_SERVER_IP, DEFAULT_IP);
-
-        // 合并PORT(如有)
-        appendFromFeatureMap(featureSB, featureMap, KEY_SERVER_PORT, DEFAULT_PORT);
-
-        return featureSB.toString();
-    }
-
 
 }

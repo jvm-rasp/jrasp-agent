@@ -18,15 +18,27 @@ import java.util.Map;
  * 内核启动配置
  * Created by luanjia@taobao.com on 16/10/2.
  */
-public class CoreConfigure  {
+public class CoreConfigure {
 
     private static final String KEY_NAMESPACE = "namespace";
     private static final String DEFAULT_VAL_NAMESPACE = "default";
 
-    private static final String KEY_SANDBOX_HOME = "home";
+    /**
+     * 解密密钥
+     */
+    private static final String KEY_DECRYPT = "key";
+    private static final String DEFAULT_VALUE_DECRYPT = "1234567890123456";
+
+    private static final String KEY_JRASP_HOME = "raspHome";
+
     private static final String KEY_LAUNCH_MODE = "mode";
+
     private static final String KEY_SERVER_IP = "server.ip";
+
     private static final String KEY_SERVER_PORT = "server.port";
+
+    // 日志路径
+    private static final String KEY_LOG_PATH = "logPath";
 
     private static final String VAL_LAUNCH_MODE_AGENT = "agent";
     private static final String VAL_LAUNCH_MODE_ATTACH = "attach";
@@ -45,23 +57,18 @@ public class CoreConfigure  {
 
     private final Map<String, String> featureMap = new LinkedHashMap<String, String>();
 
-    private CoreConfigure(final String featureString) {
-        final Map<String, String> featureMap = toFeatureMap(featureString);
-        this.featureMap.putAll(featureMap);
-    }
-
-    private Map<String, String> toFeatureMap(String featureString) {
-        return codec.toMap(featureString);
+    private CoreConfigure(final Map<String,String> agentConfig) {
+        this.featureMap.putAll(agentConfig);
     }
 
     /**
+     * @param configs
+     * @return
      * @see com.jrasp.agent.launcher110.AgentLauncher#install(Map, Instrumentation) 被反射初始化
      * 即每次执行 attach 生成一个新的对象
-     * @param featureString
-     * @return
      */
-    public static CoreConfigure toConfigure(final String featureString) {
-        return new CoreConfigure(featureString);
+    public static CoreConfigure toConfigure(final Map<String,String> configs) {
+        return new CoreConfigure(configs);
     }
 
     /**
@@ -99,6 +106,11 @@ public class CoreConfigure  {
         return RaspStringUtils.equals(featureMap.get(KEY_LAUNCH_MODE), VAL_LAUNCH_MODE_ATTACH);
     }
 
+    public String getDecyptKey() {
+        return RaspStringUtils.isNotBlank(featureMap.get(KEY_DECRYPT))
+                ? featureMap.get(KEY_DECRYPT) : DEFAULT_VALUE_DECRYPT;
+    }
+
     /**
      * 获取沙箱的启动模式
      * 默认按照ATTACH模式启动
@@ -129,8 +141,8 @@ public class CoreConfigure  {
      *
      * @return 沙箱安装目录
      */
-    public String getJvmSandboxHome() {
-        return featureMap.get(KEY_SANDBOX_HOME);
+    public String getJRASPHome() {
+        return featureMap.get(KEY_JRASP_HOME);
     }
 
     /**
@@ -155,11 +167,12 @@ public class CoreConfigure  {
 
     // 获取运行时文件路径
     public String getProcessRunPath() {
-        return getJvmSandboxHome() + File.separatorChar + "run";
+        return getJRASPHome() + File.separatorChar + "run";
     }
 
     public String getLogsPath() {
-        return getJvmSandboxHome() + File.separator + KEY_LOGS_LIB_PATH;
+        String logDir = featureMap.get(KEY_LOG_PATH);
+        return "".equals(logDir) ? getJRASPHome() + File.separator + KEY_LOGS_LIB_PATH : logDir;
     }
 
     // 获取进程运行时pid目录
@@ -173,7 +186,7 @@ public class CoreConfigure  {
     }
 
     public String getModuleLibPath() {
-        return getJvmSandboxHome() + File.separator + KEY_MODULE_LIB_PATH;
+        return getJRASPHome() + File.separator + KEY_MODULE_LIB_PATH;
     }
 
     /**

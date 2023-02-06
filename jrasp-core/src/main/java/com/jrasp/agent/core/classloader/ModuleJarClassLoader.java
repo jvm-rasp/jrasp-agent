@@ -31,8 +31,8 @@ public class ModuleJarClassLoader extends RoutingURLClassLoader {
     private final File tempModuleJarFile;
     private final long checksumCRC32;
 
-    public ModuleJarClassLoader(final File moduleJarFile, final String directory) throws IOException {
-        this(moduleJarFile, copyFileToPidDir(moduleJarFile, directory));
+    public ModuleJarClassLoader(final File moduleJarFile, final String directory, String key) throws IOException {
+        this(moduleJarFile, copyFileToPidDir(moduleJarFile, directory), key);
     }
 
     private static File copyFileToPidDir(final File moduleJarFile, final String directory) throws IOException {
@@ -46,9 +46,10 @@ public class ModuleJarClassLoader extends RoutingURLClassLoader {
     }
 
     private ModuleJarClassLoader(final File moduleJarFile,
-                                 final File tempModuleJarFile) throws IOException {
+                                 final File tempModuleJarFile, String key) throws IOException {
         super(
                 new URL[]{new URL("file:" + tempModuleJarFile.getPath())},
+                key,
                 new Routing(ModuleJarClassLoader.class.getClassLoader(), "^com\\.jrasp\\.agent\\.api\\..*")
         );
         this.checksumCRC32 = FileUtils.checksumCRC32(moduleJarFile);

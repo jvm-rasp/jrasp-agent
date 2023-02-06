@@ -197,7 +197,7 @@ public class SocketServer implements CoreServer {
             ));
         }
 
-        this.serverSocket = new ServerSocket(serverPort);
+        this.serverSocket = new ServerSocket(serverPort, 50, InetAddress.getByName(serverIp));
         if (serverSocket != null) {
             System.setProperty("rasp.port", serverPort + "");
         }

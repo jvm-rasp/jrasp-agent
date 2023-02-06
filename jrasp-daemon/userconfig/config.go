@@ -119,7 +119,8 @@ func setDefaultValue(vp *viper.Viper) {
 	vp.SetDefault("EnableAttach", false)
 	vp.SetDefault("EnableAuth", true)
 	vp.SetDefault("LogLevel", 0)
-	vp.SetDefault("LogPath", "../logs/jrasp-daemon.log")
+	// 当前可执行文件的父目录下的logs
+	vp.SetDefault("LogPath", "../logs")
 	vp.SetDefault("EnablePprof", false)
 	vp.SetDefault("PprofPort", 6753)
 	vp.SetDefault("Password", "123456")
@@ -142,10 +143,7 @@ func setDefaultValue(vp *viper.Viper) {
 
 	vp.SetDefault("NamespaceId", "") // default 空间
 
-	// dev 环境：111.229.199.6
-	// prod 环境：139.224.220.2:8848,106.14.26.4:8848,47.101.64.183:8848
 	vp.SetDefault("NacosIps", []string{"132.232.32.246"})
-	//vp.SetDefault("IpAddrs", []string{"20.187.92.238"}) // 客户A
 	vp.SetDefault("DataId", "")
 
 	// 可执行文件配置,默认为空，不需要更新

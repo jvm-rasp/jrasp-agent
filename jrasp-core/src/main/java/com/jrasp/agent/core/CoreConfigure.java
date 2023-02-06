@@ -29,10 +29,16 @@ public class CoreConfigure {
     private static final String KEY_DECRYPT = "key";
     private static final String DEFAULT_VALUE_DECRYPT = "1234567890123456";
 
-    private static final String KEY_SANDBOX_HOME = "home";
+    private static final String KEY_JRASP_HOME = "raspHome";
+
     private static final String KEY_LAUNCH_MODE = "mode";
+
     private static final String KEY_SERVER_IP = "server.ip";
+
     private static final String KEY_SERVER_PORT = "server.port";
+
+    // 日志路径
+    private static final String KEY_LOG_PATH = "logPath";
 
     private static final String VAL_LAUNCH_MODE_AGENT = "agent";
     private static final String VAL_LAUNCH_MODE_ATTACH = "attach";
@@ -51,23 +57,18 @@ public class CoreConfigure {
 
     private final Map<String, String> featureMap = new LinkedHashMap<String, String>();
 
-    private CoreConfigure(final String featureString) {
-        final Map<String, String> featureMap = toFeatureMap(featureString);
-        this.featureMap.putAll(featureMap);
-    }
-
-    private Map<String, String> toFeatureMap(String featureString) {
-        return codec.toMap(featureString);
+    private CoreConfigure(final Map<String,String> agentConfig) {
+        this.featureMap.putAll(agentConfig);
     }
 
     /**
-     * @param featureString
+     * @param configs
      * @return
      * @see com.jrasp.agent.launcher110.AgentLauncher#install(Map, Instrumentation) 被反射初始化
      * 即每次执行 attach 生成一个新的对象
      */
-    public static CoreConfigure toConfigure(final String featureString) {
-        return new CoreConfigure(featureString);
+    public static CoreConfigure toConfigure(final Map<String,String> configs) {
+        return new CoreConfigure(configs);
     }
 
     /**
@@ -140,8 +141,8 @@ public class CoreConfigure {
      *
      * @return 沙箱安装目录
      */
-    public String getJvmSandboxHome() {
-        return featureMap.get(KEY_SANDBOX_HOME);
+    public String getJRASPHome() {
+        return featureMap.get(KEY_JRASP_HOME);
     }
 
     /**
@@ -166,11 +167,12 @@ public class CoreConfigure {
 
     // 获取运行时文件路径
     public String getProcessRunPath() {
-        return getJvmSandboxHome() + File.separatorChar + "run";
+        return getJRASPHome() + File.separatorChar + "run";
     }
 
     public String getLogsPath() {
-        return getJvmSandboxHome() + File.separator + KEY_LOGS_LIB_PATH;
+        String logDir = featureMap.get(KEY_LOG_PATH);
+        return "".equals(logDir) ? getJRASPHome() + File.separator + KEY_LOGS_LIB_PATH : logDir;
     }
 
     // 获取进程运行时pid目录
@@ -184,7 +186,7 @@ public class CoreConfigure {
     }
 
     public String getModuleLibPath() {
-        return getJvmSandboxHome() + File.separator + KEY_MODULE_LIB_PATH;
+        return getJRASPHome() + File.separator + KEY_MODULE_LIB_PATH;
     }
 
     /**

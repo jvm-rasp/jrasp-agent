@@ -5,6 +5,7 @@ import (
 	"io"
 	"jrasp-daemon/defs"
 	"os"
+	"path/filepath"
 	"time"
 
 	"go.uber.org/zap"
@@ -13,6 +14,8 @@ import (
 )
 
 var defaultLogger *Log
+
+const logFileName string = "jrasp-daemon.log"
 
 func InitLogger(logger *Log) {
 	defaultLogger = logger
@@ -51,7 +54,7 @@ func NewLog(logPath, hostName, ip string, logLevel int) *Log {
 	}
 
 	// 获取io.Writer的实现
-	fileWriter := getWriter(logPath)
+	fileWriter := getWriter(filepath.Join(logPath, logFileName))
 
 	// 实现多个输出
 	core := zapcore.NewTee(

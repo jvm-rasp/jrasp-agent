@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"strings"
 
 	"github.com/shirou/gopsutil/v3/cpu"
 	"github.com/shirou/gopsutil/v3/disk"
@@ -65,7 +66,7 @@ func NewEnviron() (*Environ, error) {
 		return nil, err
 	}
 	// ip
-	ipAddress, err := getExternalIP()
+	ipAddress, err := GetDefaultIp()
 	if err != nil {
 		return nil, err
 	}
@@ -138,6 +139,17 @@ func getExternalIP() (string, error) {
 		}
 	}
 	return "", errors.New("are you connected to the network?")
+}
+
+func GetDefaultIp() (string, error) {
+	conn, err := net.Dial("udp", "114.114.114.114:53")
+	if err != nil {
+		return "", err
+	}
+	defer conn.Close()
+	localAddr := conn.LocalAddr().(*net.UDPAddr)
+	ip := strings.Split(localAddr.IP.String(), ":")[0]
+	return ip, nil
 }
 
 func GetInstallDisk(path string) (free uint64, err error) {

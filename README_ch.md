@@ -124,6 +124,7 @@ agent 初始化日志在`jrasp/logs`目录下的 jrasp-agent-0.log
 + jrasp-agent-0.log 记录java agent 的日志
 + jrasp-daemon.log 记录守护进程的日志
 + jrasp-attack-0.log 记录攻击日志
++ jrasp-module-0.log 模块自身日志
 
 ## 04 日志上报到管理端 （非必需，可以跳过）
 

@@ -6,17 +6,17 @@ import (
 	"io/ioutil"
 	"jrasp-attach/attach"
 	"jrasp-attach/common"
+	"jrasp-attach/config"
 	"jrasp-attach/socket"
 	"log"
+	"net/url"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"strconv"
 	"strings"
 )
-
-const AGENT_NAME = "jrasp-launcher"
-const AGENT_VERSION = "1.1.1"
 
 var (
 	version bool
@@ -25,17 +25,15 @@ var (
 	list    bool
 	data    string
 	unload  string
-	config  string
+	cf      string
 )
 
 func init() {
 	flag.BoolVar(&version, "v", false, "usage for attach version. example: ./attach -v")
-	flag.IntVar(&pid, "p", -1, "usage for attach java pid. example: ./attach -p <pid>")
+	flag.IntVar(&pid, "p", -1, "usage for attach java pid and update params. example: ./attach -p <pid>")
 	flag.BoolVar(&stop, "s", false, "usage for stop agent. example: ./attach -p <pid> -s")
 	flag.BoolVar(&list, "l", false, "usage for list transform class. example: ./attach -p <pid> -l")
-	flag.StringVar(&data, "d", "", "usage for update module data. example: ./attach -p <pid> -d rce-hook:k1=v1;k2=v2;k3=v31,v32,v33")
 	flag.StringVar(&unload, "u", "", "usage for unload module. example: ./attach -p <pid> -u rce-hook")
-	flag.StringVar(&config, "c", "", "usage for update global config. example: ./attach -p <pid> -c k=v")
 }
 
 func main() {
@@ -46,6 +44,13 @@ func main() {
 	}
 
 	if pid > 0 {
+		// 配置初始化
+		config, err := config.InitConfig()
+		if err != nil {
+			log.Fatalf("config init error %s", err.Error())
+			return
+		}
+
 		// get jrasp home
 		raspHome, err := getRaspHome()
 		if err != nil {
@@ -59,16 +64,22 @@ func main() {
 		// 读取版本号
 		version, err := readVsersion(raspHome)
 		if err != nil || version == "" {
-			version = AGENT_VERSION
+			version = common.VERSION
+		}
+
+		// logPath 转换成绝对路径
+		logPathAbs, err := filepath.Abs(config.LogPath)
+		if err != nil {
+			log.Fatalf("logPath: %s, logPathAbs: %s", config.LogPath, logPathAbs)
 		}
 
 		cmd := exec.Command(
 			filepath.Join(raspHome, "bin", getJattachExe()), fmt.Sprintf("%d", pid),
-			"load", "instrument", "false", fmt.Sprintf("%s=%s", filepath.Join(raspHome, "lib", AGENT_NAME+"-"+version+".jar"),
-				fmt.Sprintf("%s=%s", "coreVersion", version)),
+			"load", "instrument", "false",
+			fmt.Sprintf("%s=%s", filepath.Join(raspHome, "lib", common.AGENT_NAME+"-"+version+".jar"),
+				fmt.Sprintf("raspHome=%s;coreVersion=%s;key=%s;logPath=%s;", raspHome, version, common.BuildDecryptKey, logPathAbs)),
 		)
-		// log.Println("cmd:%s", cmd.String())
-		// 权限切换在 jattach 里面做了，直接在root权限下执行命令就行
+
 		if err := cmd.Start(); err != nil {
 			log.Fatalf("cmd.Start error:%v", err)
 			return
@@ -97,41 +108,117 @@ func main() {
 		}
 		log.Printf("command socket init success: [%s:%s]", ip, port)
 
-		if stop == false && list == false && data == "" && unload == "" && config == "" {
+		// attach 之后建立socket
+		sock := socket.NewSocketClient(ip, port)
+
+		sock.Send("false", socket.FLUSH)
+		// 更新全局参数&模块参数
+		UpdateParameter(sock, config)
+
+		if stop == false && list == false && data == "" && unload == "" && cf == "" {
 			log.Println("attach jvm success")
 			return
 		} else if stop == true {
 			// stop
 			log.Print("stop agent")
-			sock := socket.NewSocketClient(ip, port)
 			sock.SendExit()
 			return
 		} else if list == true {
 			// list
 			log.Println("list transform class:")
-			sock := socket.NewSocketClient(ip, port)
 			sock.List()
 			return
 		} else if data != "" {
 			// update data
 			log.Println("update module data," + data)
-			sock := socket.NewSocketClient(ip, port)
 			sock.SendParameters(data)
 			return
 		} else if unload != "" {
 			// unload module
 			log.Println("unload module: " + unload)
-			sock := socket.NewSocketClient(ip, port)
 			sock.UnloadModule(unload)
 			return
-		} else if config != "" {
-			// unload module
-			log.Println("update agent config: " + config)
-			sock := socket.NewSocketClient(ip, port)
-			sock.UpdateAgentConfig(config)
+		} else if cf != "" {
+			// update config
+			log.Println("update agent config: " + cf)
+			sock.UpdateAgentConfig(cf)
 			return
 		}
 	}
+}
+
+func UpdateParameter(client *socket.SocketClient, c *config.Config) {
+	// 更新全局参数
+	var config = ""
+	for k, v := range c.AgentConfigs {
+		if k != "" {
+			config += k + "=" + join2(v) + ";"
+		}
+	}
+	client.UpdateAgentConfig(config)
+
+	// 更新模块参数
+	for _, v := range c.ModuleConfigs {
+		if v.Parameters != nil && len(v.Parameters) > 0 {
+			var param = v.ModuleName + ":"
+			for key, value := range v.Parameters {
+				param += key + "=" + join(value) + ";"
+			}
+			client.SendParameters(param)
+		}
+	}
+}
+
+func join(params []interface{}) string {
+	var paramSlice []string
+	for _, param := range params {
+		switch param.(type) {
+		case string:
+			paramSlice = append(paramSlice, url.PathEscape(param.(string))) // 使用url编码防止存在特殊字符
+		case bool:
+			paramSlice = append(paramSlice, strconv.FormatBool(param.(bool)))
+		case []string:
+			paramSlice = append(paramSlice, strings.Join(param.([]string), ","))
+		case int8, int16, int32, int, int64, uint8, uint16, uint32, uint, uint64:
+			paramSlice = append(paramSlice, strconv.Itoa(param.(int)))
+		case float64:
+			strV := strconv.FormatFloat(param.(float64), 'f', -1, 64)
+			paramSlice = append(paramSlice, strV)
+		case float32:
+			ft := param.(float32)
+			strV := strconv.FormatFloat(float64(ft), 'f', -1, 64)
+			paramSlice = append(paramSlice, strV)
+		// TODO 其他类型
+		default:
+			log.Fatalf("[data type not support]", "param: %s", param)
+		}
+	}
+	return strings.Join(paramSlice, ",")
+}
+
+func join2(param interface{}) string {
+	var paramSlice []string
+	switch param.(type) {
+	case string:
+		paramSlice = append(paramSlice, url.PathEscape(param.(string))) // 使用url编码防止存在特殊字符
+	case bool:
+		paramSlice = append(paramSlice, strconv.FormatBool(param.(bool)))
+	case []string:
+		paramSlice = append(paramSlice, strings.Join(param.([]string), ","))
+	case int8, int16, int32, int, int64, uint8, uint16, uint32, uint, uint64:
+		paramSlice = append(paramSlice, strconv.Itoa(param.(int)))
+	case float64:
+		strV := strconv.FormatFloat(param.(float64), 'f', -1, 64)
+		paramSlice = append(paramSlice, strV)
+	case float32:
+		ft := param.(float32)
+		strV := strconv.FormatFloat(float64(ft), 'f', -1, 64)
+		paramSlice = append(paramSlice, strV)
+	// TODO 其他类型
+	default:
+		log.Fatalf("[data type not support]", "param: %s", param)
+	}
+	return strings.Join(paramSlice, ",")
 }
 
 func getRaspHome() (string, error) {

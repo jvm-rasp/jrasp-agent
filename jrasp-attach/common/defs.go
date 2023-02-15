@@ -2,4 +2,8 @@ package common
 
 const VERSION = "1.1.1"
 
-const SUPPORT_URL = "https://www.jrasp.com"
+const AGENT_NAME = "jrasp-launcher"
+
+const DATE_FORMAT = "2006-01-02 15:04:05.000"
+
+var BuildDecryptKey = ""

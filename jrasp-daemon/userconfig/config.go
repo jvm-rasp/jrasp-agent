@@ -57,8 +57,11 @@ type Config struct {
 	BinFileUrl  string `json:"binFileUrl"`  // 下载链接
 	BinFileHash string `json:"binFileHash"` // hash
 
+	// agent 核心包下载链接
+	AgentDownLoadConfigs []AgentDownLoadConfig `json:"agentDownLoadConfigs"`
+
 	// module列表
-	ModuleConfigs []ModuleConfig `json:"moduleConfigs"` // 模块配置
+	ModuleConfigs []ModuleConfig `json:"moduleConfigs"`
 
 	// 模块更新
 	ModuleAutoUpdate bool `json:"moduleAutoUpdate"` // 本地磁盘没有缓存，模块对象存储服务上下载
@@ -78,6 +81,13 @@ type ModuleConfig struct {
 	Md5         string `json:"md5"`         // 插件hash
 	// TODO 参数类型使用interface{}, 尽量保存原始类型
 	Parameters map[string][]interface{} `json:"parameters"` // 参数列表
+}
+
+// agent 核心包下载链接
+type AgentDownLoadConfig struct {
+	JarName     string `json:"jarName"`     // 名称
+	DownLoadURL string `json:"downLoadURL"` // 下载链接
+	Md5         string `json:"md5"`         // 插件hash
 }
 
 func InitConfig() (*Config, error) {
@@ -123,8 +133,7 @@ func setDefaultValue(vp *viper.Viper) {
 	vp.SetDefault("LogPath", "../logs")
 	vp.SetDefault("EnablePprof", false)
 	vp.SetDefault("PprofPort", 6753)
-	vp.SetDefault("Password", "123456")
-	vp.SetDefault("Username", "admin")
+
 	vp.SetDefault("EnableDeleyExit", false)
 	vp.SetDefault("EnableResourceCheck", false)
 
@@ -156,6 +165,14 @@ func setDefaultValue(vp *viper.Viper) {
 	vp.SetDefault("EnablePid", true)
 
 	vp.SetDefault("ConfigId", -1)
+
+	vp.SetDefault("AgentDownLoadConfigs", nil)
+	// vp.SetDefault("RaspBridgeJar", "")
+	// vp.SetDefault("RaspCoreJar", "")
+	// vp.SetDefault("RaspLauncherJar", "")
+	// vp.SetDefault("RaspBridgeJarHash", "")
+	// vp.SetDefault("RaspCoreJarHash", "")
+	// vp.SetDefault("RaspLauncherJarHash", "")
 
 }
 

@@ -127,6 +127,7 @@ all log files are under the `jrasp/logs/` directory.
 + jrasp-agent-0.log is the java agent log
 + jrasp-daemon.log is the daemon process log
 + jrasp-attack-0.log is the attack log
++ jrasp-module-0.log is the module log
 
 ## 04 Log reporting to the management end (not required, can be skipped)
 

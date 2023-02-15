@@ -16,10 +16,13 @@ import (
 
 const MODULE_KEY = "module"
 
+const AGENT_KEY = "lib"
+
 type Update struct {
 	cfg       *userconfig.Config
 	env       *environ.Environ
 	moduleDir string
+	agentDir  string
 }
 
 func NewUpdateClient(cfg *userconfig.Config, env *environ.Environ) *Update {
@@ -27,6 +30,7 @@ func NewUpdateClient(cfg *userconfig.Config, env *environ.Environ) *Update {
 		cfg:       cfg,
 		env:       env,
 		moduleDir: filepath.Join(env.InstallDir, MODULE_KEY),
+		agentDir:  filepath.Join(env.InstallDir, AGENT_KEY),
 	}
 }
 
@@ -80,6 +84,8 @@ func (this *Update) replace() {
 	if err != nil {
 		zlog.Infof(defs.DOWNLOAD, "chmod +x jrasp-demon.tmp", "err:%v", err)
 	}
+	// TODO 疑似bug
+	// bug：存在无法rename的场景
 	err = os.Rename("jrasp-daemon.tmp", "jrasp-daemon")
 	if err == nil {
 		zlog.Infof(defs.DOWNLOAD, "update jrasp-daemon file success", "rename jrasp-daemon file success,daemon process will exit...")
@@ -94,8 +100,23 @@ func (this *Update) replace() {
 	}
 }
 
+// DownLoad Agent 模块升级
+func (this *Update) DownLoadAgentFiles() {
+	// 获取磁盘上的agent 包
+	files, err := ioutil.ReadDir(this.agentDir)
+	if err != nil {
+		zlog.Errorf(defs.DOWNLOAD, "list disk agent file failed", "err:%v", err)
+		return
+	}
+
+	// 1.先检测磁盘上的全部插件的名称、hash
+	fileHashMap := this.calDiskHash(files)
+
+	// 2.下载
+	this.downLoadAgent(fileHashMap)
+}
+
 // DownLoadModuleFiles 模块升级
-// TODO 疑似bug
 func (this *Update) DownLoadModuleFiles() {
 	if !this.cfg.ModuleAutoUpdate {
 		zlog.Debugf(defs.DOWNLOAD, "moduleAutoUpdate is disabled", "close module update from remote")
@@ -113,6 +134,49 @@ func (this *Update) DownLoadModuleFiles() {
 
 	// 2.下载
 	this.downLoad(fileHashMap)
+}
+
+func (this *Update) downLoadAgent(fileHashMap map[string]string) {
+	for _, m := range this.cfg.AgentDownLoadConfigs {
+		_, ok := fileHashMap[m.JarName]
+		if !ok {
+			// 下载文件
+			tmpFileName := filepath.Join(this.moduleDir, m.JarName+".tmp")
+			err := utils.DownLoadFile(m.DownLoadURL, tmpFileName) // agent.tmp
+			if err != nil {
+				zlog.Errorf(defs.DOWNLOAD, "[BUG]download file failed", "tmpFileName:%s,err:%v", tmpFileName, err)
+				_ = os.Remove(tmpFileName)
+				continue
+			}
+			// hash 校验
+			tmpFileHash, err := utils.GetFileMd5(tmpFileName)
+			if err != nil {
+				zlog.Errorf(defs.DOWNLOAD, "[BUG]cal file hash failed", "filePath:%s,err:%v", tmpFileName, err)
+				_ = os.Remove(tmpFileName)
+				continue
+			}
+			// 校验成功，修改名称
+			if tmpFileHash == strings.ToLower(m.Md5) {
+				zlog.Infof(defs.DOWNLOAD, "check file hash success", "tmpfilePath:%s,tmpFileHash:%v", tmpFileName, tmpFileHash)
+				newFilePath := filepath.Join(this.moduleDir, m.JarName+".jar")
+				// 修改名称
+				err := os.Rename(tmpFileName, newFilePath)
+				if err != nil {
+					zlog.Errorf(defs.DOWNLOAD, "[BUG]rename file name failed", "tmpFileName:%s,newFilePath:%s,err:%v", tmpFileName, newFilePath, err)
+					_ = os.Remove(tmpFileName)
+					continue
+				}
+			} else {
+				// 检验失败打印日志，并删除临时文件
+				zlog.Errorf(defs.DOWNLOAD, "[BUG]check file hash failed", "tmpfilePath:%s,tmpFileHash:%v,configHash:%v", tmpFileName, tmpFileHash, m.Md5)
+				err := os.Remove(tmpFileName)
+				if err != nil {
+					zlog.Errorf(defs.DOWNLOAD, "[BUG]delete broken file err", "file path: %s", tmpFileName)
+					return
+				}
+			}
+		}
+	}
 }
 
 func (this *Update) downLoad(fileHashMap map[string]string) {
@@ -139,7 +203,6 @@ func (this *Update) downLoad(fileHashMap map[string]string) {
 				zlog.Infof(defs.DOWNLOAD, "check file hash success", "tmpfilePath:%s,tmpFileHash:%v", tmpFileName, tmpFileHash)
 				newFilePath := filepath.Join(this.moduleDir, m.ModuleName+".jar")
 				// 覆盖旧插件
-				// todo bug：存在无法rename的场景
 				err := os.Rename(tmpFileName, newFilePath)
 				if err != nil {
 					zlog.Errorf(defs.DOWNLOAD, "[BUG]rename file name failed", "tmpFileName:%s,newFilePath:%s,err:%v", tmpFileName, newFilePath, err)

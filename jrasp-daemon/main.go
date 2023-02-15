@@ -13,10 +13,7 @@ import (
 	"jrasp-daemon/watch"
 	"jrasp-daemon/zlog"
 	"net/http"
-	"os"
 	"os/signal"
-	"path/filepath"
-	"runtime"
 	"syscall"
 )
 
@@ -76,6 +73,9 @@ func main() {
 	// 下载最新的可执行文件
 	ossClient.UpdateDaemonFile()
 
+	// 下载最新的agent jar
+	ossClient.DownLoadAgentFiles()
+
 	// 下载模块插件
 	ossClient.DownLoadModuleFiles()
 
@@ -107,27 +107,5 @@ func debug(conf *userconfig.Config) {
 		if err != nil {
 			zlog.Errorf(defs.DEBUG_PPROF, "pprof ListenAndServe failed", "err:%s", err.Error())
 		}
-	}
-}
-
-func getRaspHome() (string, error) {
-	runDir, err := filepath.Abs(filepath.Dir(os.Args[0]))
-	raspHome, err := filepath.Abs(filepath.Dir(runDir))
-	if err != nil {
-		return "", err
-	}
-	return raspHome, nil
-}
-
-func getJattachExe() string {
-	switch runtime.GOOS {
-	case "darwin":
-		return "jattach_darwin"
-	case "linux":
-		return "jattach_linux"
-	case "windows":
-		return "jattach.exe"
-	default:
-		return "UNKNOWN"
 	}
 }

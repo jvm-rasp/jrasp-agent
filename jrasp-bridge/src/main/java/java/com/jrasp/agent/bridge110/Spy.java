@@ -115,7 +115,8 @@ public class Spy {
 
     public static Ret spyMethodOnReturn(final Object object,
                                         final String namespace,
-                                        final int listenerId) throws Throwable {
+                                        final int listenerId,
+                                        final int targetClassLoaderObjectID) throws Throwable {
         final Thread thread = Thread.currentThread();
         if (selfCallBarrier.isEnter(thread)) {
             return Ret.RET_NONE;
@@ -126,7 +127,7 @@ public class Spy {
             if (null == spyHandler) {
                 return Ret.RET_NONE;
             }
-            return spyHandler.handleOnReturn(listenerId, object);
+            return spyHandler.handleOnReturn(listenerId, targetClassLoaderObjectID, object);
         } catch (Throwable cause) {
             handleException(cause);
             return Ret.RET_NONE;
@@ -137,7 +138,8 @@ public class Spy {
 
     public static Ret spyMethodOnThrows(final Throwable throwable,
                                         final String namespace,
-                                        final int listenerId) throws Throwable {
+                                        final int listenerId,
+                                        final int targetClassLoaderObjectID) throws Throwable {
         final Thread thread = Thread.currentThread();
         if (selfCallBarrier.isEnter(thread)) {
             return Ret.RET_NONE;
@@ -148,7 +150,7 @@ public class Spy {
             if (null == spyHandler) {
                 return Ret.RET_NONE;
             }
-            return spyHandler.handleOnThrows(listenerId, throwable);
+            return spyHandler.handleOnThrows(listenerId, targetClassLoaderObjectID, throwable);
         } catch (Throwable cause) {
             handleException(cause);
             return Ret.RET_NONE;

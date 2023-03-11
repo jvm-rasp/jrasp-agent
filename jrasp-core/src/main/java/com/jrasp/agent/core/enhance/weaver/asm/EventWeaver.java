@@ -134,6 +134,7 @@ public class EventWeaver extends ClassVisitor implements Opcodes, AsmTypes, AsmM
                                 loadReturn(Type.getReturnType(desc));
                                 push(namespace);
                                 push(listenerId);
+                                loadClassLoader();
                                 invokeStatic(ASM_TYPE_SPY, ASM_METHOD_Spy$spyMethodOnReturn);
                                 processControl(desc, true);
                                 returnValue();
@@ -145,6 +146,7 @@ public class EventWeaver extends ClassVisitor implements Opcodes, AsmTypes, AsmM
                                 loadLocal(newLocal);
                                 push(namespace);
                                 push(listenerId);
+                                loadClassLoader();
                                 invokeStatic(ASM_TYPE_SPY, ASM_METHOD_Spy$spyMethodOnThrows);
                                 processControl(desc);
                                 loadLocal(newLocal);
@@ -259,6 +261,7 @@ public class EventWeaver extends ClassVisitor implements Opcodes, AsmTypes, AsmM
                                 loadReturn(opcode);
                                 push(namespace);
                                 push(listenerId);
+                                loadClassLoader();
                                 invokeStatic(ASM_TYPE_SPY, ASM_METHOD_Spy$spyMethodOnReturn);
                                 //[Ret,rawRespond]
                                 processControl(desc, true);
@@ -281,6 +284,7 @@ public class EventWeaver extends ClassVisitor implements Opcodes, AsmTypes, AsmM
                             loadLocal(newlocal);
                             push(namespace);
                             push(listenerId);
+                            loadClassLoader();
                             invokeStatic(ASM_TYPE_SPY, ASM_METHOD_Spy$spyMethodOnThrows);
                             processControl(desc);
                             loadLocal(newlocal);

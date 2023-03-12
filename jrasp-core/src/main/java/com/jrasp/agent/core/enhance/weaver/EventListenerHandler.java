@@ -265,7 +265,7 @@ public class EventListenerHandler implements SpyHandler {
     }
 
     @Override
-    public Spy.Ret handleOnThrows(int listenerId, int targetClassLoaderObjectID, Throwable throwable) throws Throwable {
+    public Spy.Ret handleOnThrows(int listenerId, Throwable throwable) throws Throwable {
         try {
             BusinessClassLoaderHolder.setBusinessClassLoader(Thread.currentThread().getContextClassLoader());
             return handleOnEnd(listenerId, throwable, false);
@@ -275,7 +275,7 @@ public class EventListenerHandler implements SpyHandler {
     }
 
     @Override
-    public Spy.Ret handleOnReturn(int listenerId, int targetClassLoaderObjectID, Object object) throws Throwable {
+    public Spy.Ret handleOnReturn(int listenerId, Object object) throws Throwable {
         try {
             BusinessClassLoaderHolder.setBusinessClassLoader(Thread.currentThread().getContextClassLoader());
             return handleOnEnd(listenerId, object, true);

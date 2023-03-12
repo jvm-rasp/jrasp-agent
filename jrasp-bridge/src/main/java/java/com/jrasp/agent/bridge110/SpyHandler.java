@@ -31,7 +31,7 @@ public interface SpyHandler {
      * @return Spy流程控制结果
      * @throws Throwable 处理{方法调用:异常返回}失败
      */
-    Spy.Ret handleOnThrows(int listenerId, int targetClassLoaderObjectID, Throwable throwable) throws Throwable;
+    Spy.Ret handleOnThrows(int listenerId, Throwable throwable) throws Throwable;
 
     /**
      * 处理方法调用:正常返回
@@ -41,6 +41,6 @@ public interface SpyHandler {
      * @return Spy流程控制结果
      * @throws Throwable 处理{方法调用:正常返回}失败
      */
-    Spy.Ret handleOnReturn(int listenerId, int targetClassLoaderObjectID, Object object) throws Throwable;
+    Spy.Ret handleOnReturn(int listenerId, Object object) throws Throwable;
 
 }

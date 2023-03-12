@@ -36,16 +36,16 @@ public interface AsmMethods {
     );
 
     /**
-     * asm method of {@link Spy#spyMethodOnReturn(Object, String, int, int)}
+     * asm method of {@link Spy#spyMethodOnReturn(Object, String, int)}
      */
-    Method ASM_METHOD_Spy$spyMethodOnReturn = getAsmMethod(Spy.class, "spyMethodOnReturn", Object.class, String.class, int.class, int.class);
+    Method ASM_METHOD_Spy$spyMethodOnReturn = getAsmMethod(Spy.class, "spyMethodOnReturn", Object.class, String.class, int.class);
 
     /**
-     * asm method of {@link Spy#spyMethodOnThrows(Throwable, String, int, int)}
+     * asm method of {@link Spy#spyMethodOnThrows(Throwable, String, int)}
      */
     Method ASM_METHOD_Spy$spyMethodOnThrows = getAsmMethod(
             Spy.class,
             "spyMethodOnThrows",
-            Throwable.class, String.class, int.class, int.class
+            Throwable.class, String.class, int.class
     );
 }

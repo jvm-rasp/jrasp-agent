@@ -59,6 +59,9 @@ public class JarEncryptor {
         if (password == null || password.length() == 0) {
             throw new RuntimeException("密码不能为空");
         }
+        if (password.length() != 16) {
+            throw new RuntimeException("密码须为16位");
+        }
 
         this.jarOrWar = jarPath.substring(jarPath.lastIndexOf(".") + 1);
         Log.debug("加密类型：" + jarOrWar);

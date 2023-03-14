@@ -74,6 +74,7 @@ func main() {
 	ossClient.UpdateDaemonFile()
 
 	// 下载最新的agent jar
+
 	// ossClient.DownLoadAgentFiles()
 
 	// 下载模块插件

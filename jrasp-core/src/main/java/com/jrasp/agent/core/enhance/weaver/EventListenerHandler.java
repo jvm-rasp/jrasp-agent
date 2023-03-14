@@ -151,7 +151,7 @@ public class EventListenerHandler implements SpyHandler {
         } catch (Throwable throwable) {
             // BEFORE处理异常,打日志,并通知下游不需要进行处理
             // TODO 这里是模块bug 日志
-            logger.log(Level.WARNING, "[BUG] module bug ",throwable);
+            logger.log(Level.WARNING, "[BUG] module bug ", throwable);
         }
         // 默认返回不进行任何流程变更
         return newInstanceForNone();
@@ -260,12 +260,14 @@ public class EventListenerHandler implements SpyHandler {
             return handleEvent(listenerId, processId, invokeId, event, processor);
         } finally {
             process.getEventFactory().returnEvent(event);
+            BusinessClassLoaderHolder.removeBusinessClassLoader();
         }
     }
 
     @Override
     public Spy.Ret handleOnThrows(int listenerId, Throwable throwable) throws Throwable {
         try {
+            BusinessClassLoaderHolder.setBusinessClassLoader(Thread.currentThread().getContextClassLoader());
             return handleOnEnd(listenerId, throwable, false);
         } finally {
             BusinessClassLoaderHolder.removeBusinessClassLoader();
@@ -275,6 +277,7 @@ public class EventListenerHandler implements SpyHandler {
     @Override
     public Spy.Ret handleOnReturn(int listenerId, Object object) throws Throwable {
         try {
+            BusinessClassLoaderHolder.setBusinessClassLoader(Thread.currentThread().getContextClassLoader());
             return handleOnEnd(listenerId, object, true);
         } finally {
             BusinessClassLoaderHolder.removeBusinessClassLoader();

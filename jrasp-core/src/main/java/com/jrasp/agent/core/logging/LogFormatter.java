@@ -40,10 +40,12 @@ public class LogFormatter extends Formatter {
         // Source
         sb.append(' ');
         // 使用log名称
+        sb.append('[');
         // todo log 名称太长了，考虑截断处理
         sb.append(record.getLoggerName());
         sb.append('.');
         sb.append(record.getSourceMethodName());
+        sb.append(']');
 
         // Message
         sb.append(' ');

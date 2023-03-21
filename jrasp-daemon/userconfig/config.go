@@ -48,11 +48,6 @@ type Config struct {
 	HeartBeatReportTicker uint   `json:"heartBeatReportTicker"`
 	DependencyTicker      uint32 `json:"dependencyTicker"`
 
-	// nacos 配置
-	NamespaceId string   `json:"namespaceId"` // 命名空间
-	DataId      string   `json:"dataId"`      // 配置id
-	NacosIps    []string `json:"nacosIps"`    // nacos 服务端ip列表
-
 	// jrasp-daemon 自身配置
 	BinFileUrl  string `json:"binFileUrl"`  // 下载链接
 	BinFileHash string `json:"binFileHash"` // hash
@@ -149,11 +144,6 @@ func setDefaultValue(vp *viper.Viper) {
 	vp.SetDefault("EnableRceBlock", false)
 
 	vp.SetDefault("AttachTime", -1)
-
-	vp.SetDefault("NamespaceId", "") // default 空间
-
-	vp.SetDefault("NacosIps", []string{"132.232.32.246"})
-	vp.SetDefault("DataId", "")
 
 	// 可执行文件配置,默认为空，不需要更新
 	vp.SetDefault("BinFileUrl", "")

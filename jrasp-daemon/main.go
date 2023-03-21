@@ -6,7 +6,6 @@ import (
 	"jrasp-daemon/common"
 	"jrasp-daemon/defs"
 	"jrasp-daemon/environ"
-	"jrasp-daemon/nacos"
 	"jrasp-daemon/update"
 	"jrasp-daemon/userconfig"
 	"jrasp-daemon/utils"
@@ -63,9 +62,6 @@ func main() {
 
 	// 配置信息打印
 	zlog.Infof(defs.CONFIG_VALUE, "user config value", "") // utils.ToString(conf)
-
-	// 配置客户端初始化
-	nacos.NacosInit(conf, env)
 
 	// 可执行文件下载
 	ossClient := update.NewUpdateClient(conf, env)

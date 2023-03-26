@@ -10,8 +10,10 @@ jrasp-launcher/target/
 jrasp-module/**/target
 jrasp-module/target
 jrasp-attach/bin
+jrasp-attach/go.sum
 
 jrasp-daemon/bin/jattach_darwin
+jrasp-daemon/go.sum
 jrasp-daemon/bin/jattach_linux
 jrasp-daemon/bin/jrasp-daemon.exe
 jrasp-daemon/bin/jrasp-daemon

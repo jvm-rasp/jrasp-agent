@@ -66,6 +66,8 @@ type Config struct {
 
 	// EnablePid
 	EnablePid bool `json:"enablePid"` // 是否允许创建pid文件，防止重复启动
+
+	RemoteHosts []string `json:"remoteHosts"` // 服务端地址
 }
 
 // ModuleConfig module信息
@@ -157,6 +159,9 @@ func setDefaultValue(vp *viper.Viper) {
 	vp.SetDefault("ConfigId", -1)
 
 	vp.SetDefault("AgentDownLoadConfigs", nil)
+
+	vp.SetDefault("RemoteHosts", []string{"localhost:8080"})
+
 	// vp.SetDefault("RaspBridgeJar", "")
 	// vp.SetDefault("RaspCoreJar", "")
 	// vp.SetDefault("RaspLauncherJar", "")

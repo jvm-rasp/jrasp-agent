@@ -160,7 +160,7 @@ func setDefaultValue(vp *viper.Viper) {
 
 	vp.SetDefault("AgentDownLoadConfigs", nil)
 
-	vp.SetDefault("RemoteHosts", []string{"localhost:8080"})
+	vp.SetDefault("RemoteHosts", []string{"localhost:8088"})
 
 	// vp.SetDefault("RaspBridgeJar", "")
 	// vp.SetDefault("RaspCoreJar", "")

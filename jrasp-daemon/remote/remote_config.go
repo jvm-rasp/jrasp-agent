@@ -20,7 +20,7 @@ func WatchRemoteConfig(cfg *userconfig.Config, env *environ.Environ) {
 	for {
 		// 随机选取一个服务端
 		index := rand.Intn(len(cfg.RemoteHosts))
-		u := url.URL{Scheme: "ws", Host: cfg.RemoteHosts[index], Path: "/ws/" + env.HostName}
+		u := url.URL{Scheme: "ws", Host: cfg.RemoteHosts[index], Path: "/rasp-admin/ws/" + env.HostName}
 		var dialer *websocket.Dialer
 		conn, _, err := dialer.Dial(u.String(), nil)
 		if err != nil {

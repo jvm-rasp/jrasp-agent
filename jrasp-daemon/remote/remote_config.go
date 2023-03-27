@@ -8,7 +8,6 @@ import (
 	"jrasp-daemon/userconfig"
 	"jrasp-daemon/zlog"
 	"math/rand"
-	"net/url"
 	"os"
 	"path/filepath"
 	"time"
@@ -16,19 +15,21 @@ import (
 	"github.com/gorilla/websocket"
 )
 
+const WS_URL_FORMAT = "ws://%s/ws/%s"
+
 func WatchRemoteConfig(cfg *userconfig.Config, env *environ.Environ) {
 	for {
 		// 随机选取一个服务端
 		index := rand.Intn(len(cfg.RemoteHosts))
-		u := url.URL{Scheme: "ws", Host: cfg.RemoteHosts[index], Path: "/rasp-admin/ws/" + env.HostName}
 		var dialer *websocket.Dialer
-		conn, _, err := dialer.Dial(u.String(), nil)
+		url := fmt.Sprintf(WS_URL_FORMAT, cfg.RemoteHosts[index], env.HostName)
+		conn, _, err := dialer.Dial(url, nil)
 		if err != nil {
 			fmt.Println(err)
 		} else {
 			defer func() { _ = conn.Close() }()
 
-			zlog.Infof(defs.NACOS_LISTEN_CONFIG, "[ListenConfig]", "create conn success to remote: %s", u.String())
+			zlog.Infof(defs.NACOS_LISTEN_CONFIG, "[ListenConfig]", "create conn success to remote: %s", url)
 
 			go heatbeat(conn)
 

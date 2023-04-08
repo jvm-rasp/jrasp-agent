@@ -53,7 +53,13 @@ class ModuleLibLoader {
     }
 
     private File[] listModuleJarFileInLib() {
-        return convertFileCollectionToFileArray(listFiles(moduleLibDir, new String[]{"jar"}, false));
+        // 兼容文件和路径下查找jar包
+        if (moduleLibDir.exists() && moduleLibDir.isFile()
+                && moduleLibDir.canRead() && moduleLibDir.getName().endsWith(".jar")) {
+            return new File[]{moduleLibDir};
+        } else {
+            return convertFileCollectionToFileArray(listFiles(moduleLibDir, new String[]{"jar"}, false));
+        }
     }
 
     private String jarList(File[] allJar) {

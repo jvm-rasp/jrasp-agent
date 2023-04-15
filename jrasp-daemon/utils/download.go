@@ -1,17 +1,24 @@
 package utils
 
 import (
+	"crypto/tls"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 )
 
 // DownLoadFile 不依赖oss
 func DownLoadFile(url string, fileName string) error {
+	var transport http.Transport
+	if strings.HasPrefix(url, "https://") {
+		transport = http.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: true}}
+	}
 	client := &http.Client{
-		Timeout: time.Second * 60,
+		Transport: &transport,
+		Timeout:   time.Second * 60,
 	}
 	response, err := client.Get(url)
 	if err != nil {

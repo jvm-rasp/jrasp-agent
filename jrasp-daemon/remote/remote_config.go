@@ -1,6 +1,7 @@
 package remote
 
 import (
+	"crypto/tls"
 	"fmt"
 	"io/ioutil"
 	"jrasp-daemon/defs"
@@ -10,22 +11,29 @@ import (
 	"math/rand"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/gorilla/websocket"
 )
 
-const WS_URL_FORMAT = "ws://%s/ws/%s"
+const WS_URL_FORMAT = "%s/ws/%s"
 
 func WatchRemoteConfig(cfg *userconfig.Config, env *environ.Environ) {
 	for {
 		// 随机选取一个服务端
 		index := rand.Intn(len(cfg.RemoteHosts))
-		var dialer *websocket.Dialer
 		url := fmt.Sprintf(WS_URL_FORMAT, cfg.RemoteHosts[index], env.HostName)
+		var tlsConfig tls.Config
+		if strings.HasPrefix(url, "wss://") {
+			tlsConfig = tls.Config{InsecureSkipVerify: true}
+		}
+		dialer := &websocket.Dialer{
+			TLSClientConfig: &tlsConfig,
+		}
 		conn, _, err := dialer.Dial(url, nil)
 		if err != nil {
-			fmt.Println(err)
+			zlog.Errorf(defs.NACOS_LISTEN_CONFIG, "[ListenConfig]", "create conn failed to remote: %s, error: %v", url, err)
 		} else {
 			defer func() { _ = conn.Close() }()
 

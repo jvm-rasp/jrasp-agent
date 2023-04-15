@@ -27,6 +27,9 @@ public class DeserializationAlgorithm extends ModuleLifecycleAdapter implements 
     @RaspResource
     private AlgorithmManager algorithmManager;
 
+    @RaspResource
+    private String metaInfo;
+
     private OisAlgorithm oisAlgorithm;
 
     private JsonAlgorithm jsonAlgorithm;
@@ -35,9 +38,9 @@ public class DeserializationAlgorithm extends ModuleLifecycleAdapter implements 
 
     @Override
     public boolean update(Map<String, String> configMaps) {
-        oisAlgorithm = new OisAlgorithm(logger, configMaps);
-        jsonAlgorithm = new JsonAlgorithm(logger, configMaps);
-        xmlAlgorithm = new XmlAlgorithm(logger, configMaps);
+        oisAlgorithm = new OisAlgorithm(logger, configMaps, metaInfo);
+        jsonAlgorithm = new JsonAlgorithm(logger, configMaps, metaInfo);
+        xmlAlgorithm = new XmlAlgorithm(logger, configMaps, metaInfo);
         algorithmManager.register(oisAlgorithm);
         algorithmManager.register(jsonAlgorithm);
         algorithmManager.register(xmlAlgorithm);
@@ -46,9 +49,9 @@ public class DeserializationAlgorithm extends ModuleLifecycleAdapter implements 
 
     @Override
     public void loadCompleted() {
-        oisAlgorithm = new OisAlgorithm(logger);
-        jsonAlgorithm = new JsonAlgorithm(logger);
-        xmlAlgorithm = new XmlAlgorithm(logger);
+        oisAlgorithm = new OisAlgorithm(logger, metaInfo);
+        jsonAlgorithm = new JsonAlgorithm(logger, metaInfo);
+        xmlAlgorithm = new XmlAlgorithm(logger, metaInfo);
         algorithmManager.register(oisAlgorithm);
         algorithmManager.register(jsonAlgorithm);
         algorithmManager.register(xmlAlgorithm);

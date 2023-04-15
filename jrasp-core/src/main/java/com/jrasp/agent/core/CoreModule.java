@@ -26,6 +26,8 @@ public class CoreModule {
     // 全局唯一编号
     private final String uniqueId;
 
+    private final String metaInfo;
+
     // 模块归属Jar文件
     private final File jarFile;
 
@@ -56,6 +58,7 @@ public class CoreModule {
      * @param module   模块
      */
     public CoreModule(final String uniqueId,
+                      final String metaInfo,
                       final File jarFile,
                       final ModuleJarClassLoader loader,
                       final Module module) {
@@ -63,6 +66,7 @@ public class CoreModule {
         this.jarFile = jarFile;
         this.loader = loader;
         this.module = module;
+        this.metaInfo = metaInfo;
     }
 
     /**
@@ -131,6 +135,10 @@ public class CoreModule {
      */
     public String getUniqueId() {
         return uniqueId;
+    }
+
+    public String getMetaInfo() {
+        return metaInfo;
     }
 
     /**

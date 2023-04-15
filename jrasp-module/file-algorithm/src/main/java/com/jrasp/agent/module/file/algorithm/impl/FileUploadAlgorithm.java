@@ -18,6 +18,8 @@ public class FileUploadAlgorithm implements Algorithm {
 
     private final RaspLog logger;
 
+    private final String metaInfo;
+
     /**
      * 兼容 windows、unix
      */
@@ -31,11 +33,13 @@ public class FileUploadAlgorithm implements Algorithm {
         return "file-upload";
     }
 
-    public FileUploadAlgorithm(RaspLog logger) {
+    public FileUploadAlgorithm(RaspLog logger, String metaInfo) {
+        this.metaInfo = metaInfo;
         this.logger = logger;
     }
 
-    public FileUploadAlgorithm(Map<String, String> configMaps, RaspLog logger) {
+    public FileUploadAlgorithm(Map<String, String> configMaps, RaspLog logger, String metaInfo) {
+        this.metaInfo = metaInfo;
         this.logger = logger;
         this.travelStr = ParamSupported.getParameter(configMaps, "travel_str", String[].class, travelStr);
         this.fileUploadAction = ParamSupported.getParameter(configMaps, "file_upload_action", Integer.class, fileUploadAction);
@@ -89,7 +93,7 @@ public class FileUploadAlgorithm implements Algorithm {
     private void doActionCtl(int action, Context context, String payload, String algorithm, String message, int level) throws ProcessControlException {
         if (action > -1) {
             boolean enableBlock = action == 1;
-            AttackInfo attackInfo = new AttackInfo(context, payload, enableBlock, getType(), algorithm, message, level);
+            AttackInfo attackInfo = new AttackInfo(context, metaInfo, payload, enableBlock, getType(), algorithm, message, level);
             logger.attack(attackInfo);
             if (enableBlock) {
                 ProcessControlException.throwThrowsImmediately(new RuntimeException("upload file block by rasp."));

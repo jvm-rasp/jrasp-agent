@@ -105,7 +105,7 @@ public class MySqlAlgorithmTest {
 
     @Test
     public void test() {
-        MySqlAlgorithm mySqlAlgorithm = new MySqlAlgorithm(configMaps, raspConfig, logger);
+        MySqlAlgorithm mySqlAlgorithm = new MySqlAlgorithm(configMaps, raspConfig, logger,"test");
         String sql = "select top 5 * from CG_Merchandise where 1=1 and isnull(merchandisedaima,'')!='' and ISNULL(isavailable,'1')=? and merchandisename like ? and type like ? and CHARINDEX(ISNULL(seltype,'0'),';0;1;2;3;')>? and brandname like ? order by OperateDate desc";
         try {
             long time0 = System.currentTimeMillis();

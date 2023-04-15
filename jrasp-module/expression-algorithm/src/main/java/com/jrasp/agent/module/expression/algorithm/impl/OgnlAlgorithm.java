@@ -62,17 +62,21 @@ public class OgnlAlgorithm implements Algorithm {
 
     private final RaspLog logger;
 
-    public OgnlAlgorithm(RaspLog logger) {
+    private final String metaInfo;
+
+    public OgnlAlgorithm(RaspLog logger, String metaInfo) {
         this.logger = logger;
+        this.metaInfo = metaInfo;
     }
 
-    public OgnlAlgorithm(RaspLog logger, Map<String, String> configMaps) {
+    public OgnlAlgorithm(RaspLog logger, Map<String, String> configMaps, String metaInfo) {
         this.logger = logger;
         this.ognlMinLength = ParamSupported.getParameter(configMaps, "ognl_min_length", Integer.class, ognlMinLength);
         this.ognlMaxLimitLength = ParamSupported.getParameter(configMaps, "ognl_max_limit_length", Integer.class, ognlMaxLimitLength);
         this.ognlBlackListAction = ParamSupported.getParameter(configMaps, "ognl_black_list_action", Integer.class, ognlBlackListAction);
         this.ognlMaxLimitLengthAction = ParamSupported.getParameter(configMaps, "ognl_max_limit_length_action", Integer.class, ognlMaxLimitLengthAction);
         this.ognlBlackList = ParamSupported.getParameter(configMaps, "ognl_black_list", String[].class, ognlBlackList);
+        this.metaInfo = metaInfo;
     }
 
     @Override
@@ -113,7 +117,7 @@ public class OgnlAlgorithm implements Algorithm {
 
     private void doAction(Context context, String expression, int action, String message, int level) throws ProcessControlException {
         boolean enableBlock = action == 1;
-        AttackInfo attackInfo = new AttackInfo(context, expression, enableBlock, getType(), getDescribe(), message, level);
+        AttackInfo attackInfo = new AttackInfo(context, metaInfo, expression, enableBlock, getType(), getDescribe(), message, level);
         logger.attack(attackInfo);
         if (enableBlock) {
             ProcessControlException.throwThrowsImmediately(new RuntimeException("ognl expression block by rasp."));

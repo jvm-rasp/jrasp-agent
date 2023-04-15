@@ -26,6 +26,9 @@ public class RceAlgorithm extends ModuleLifecycleAdapter implements Module, Algo
     private RaspLog logger;
 
     @RaspResource
+    private String metaInfo;
+
+    @RaspResource
     private RaspConfig raspConfig;
 
     private volatile Integer rceAction = 0;
@@ -152,7 +155,7 @@ public class RceAlgorithm extends ModuleLifecycleAdapter implements Module, Algo
     private void doActionCtl(int action, Context context, String cmd, String checkType, String message, int level) throws ProcessControlException {
         if (action > -1) {
             boolean enableBlock = action == 1;
-            AttackInfo attackInfo = new AttackInfo(context, cmd, enableBlock, getType(), checkType, message, level);
+            AttackInfo attackInfo = new AttackInfo(context, metaInfo, cmd, enableBlock, getType(), checkType, message, level);
             logger.attack(attackInfo);
             if (enableBlock) {
                 ProcessController.throwsImmediatelyAndSendResponse(attackInfo, raspConfig, new RuntimeException("rce block by jrasp."));

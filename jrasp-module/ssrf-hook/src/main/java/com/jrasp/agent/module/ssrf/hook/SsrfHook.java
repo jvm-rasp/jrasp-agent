@@ -40,6 +40,9 @@ public class SsrfHook extends ModuleLifecycleAdapter implements Module, LoadComp
     private ThreadLocal<Context> context;
 
     @RaspResource
+    private String metaInfo;
+
+    @RaspResource
     private AlgorithmManager algorithmManager;
 
     private volatile Boolean disable = false;

@@ -36,6 +36,9 @@ public class RceHook extends ModuleLifecycleAdapter implements Module, LoadCompl
     private ThreadLocal<Context> context;
 
     @RaspResource
+    private String metaInfo;
+
+    @RaspResource
     private AlgorithmManager algorithmManager;
 
     private volatile Boolean disable = false;

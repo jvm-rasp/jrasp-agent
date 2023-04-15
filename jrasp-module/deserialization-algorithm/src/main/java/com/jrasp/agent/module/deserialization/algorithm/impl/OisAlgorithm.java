@@ -20,6 +20,8 @@ public class OisAlgorithm implements Algorithm {
 
     private final RaspLog logger;
 
+    private final String metaInfo;
+
     private Integer oisBlackListAction = 0;
 
     // jdk反序列化类白名单
@@ -104,15 +106,17 @@ public class OisAlgorithm implements Algorithm {
             "org.apache.myfaces.view.facelets.el"
     ));
 
-    public OisAlgorithm(RaspLog logger) {
+    public OisAlgorithm(RaspLog logger, String metaInfo) {
         this.logger = logger;
+        this.metaInfo = metaInfo;
     }
 
-    public OisAlgorithm(RaspLog logger, Map<String, String> configMaps) {
+    public OisAlgorithm(RaspLog logger, Map<String, String> configMaps, String metaInfo) {
         this.logger = logger;
         this.oisBlackListAction = ParamSupported.getParameter(configMaps, "ois_black_list_action", Integer.class, oisBlackListAction);
         this.oisBlackClassSet = ParamSupported.getParameter(configMaps, "ois_black_class_list", Set.class, oisBlackClassSet);
         this.oisBlackPackageSet = ParamSupported.getParameter(configMaps, "ois_black_package_list", Set.class, oisBlackPackageSet);
+        this.metaInfo = metaInfo;
     }
 
     @Override
@@ -150,7 +154,7 @@ public class OisAlgorithm implements Algorithm {
 
     private void doCheck(Context context, String className, int action, String message, int level) throws ProcessControlException {
         boolean enableBlock = action == 1;
-        AttackInfo attackInfo = new AttackInfo(context, className, enableBlock, getType(), getDescribe(), message, level);
+        AttackInfo attackInfo = new AttackInfo(context, metaInfo, className, enableBlock, getType(), getDescribe(), message, level);
         logger.attack(attackInfo);
         if (enableBlock) {
             ProcessControlException.throwThrowsImmediately(new RuntimeException("ois deserialization attack block by rasp."));

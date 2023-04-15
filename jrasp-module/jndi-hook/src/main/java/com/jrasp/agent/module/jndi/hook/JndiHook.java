@@ -35,6 +35,9 @@ public class JndiHook implements Module, LoadCompleted {
     @RaspResource
     private ThreadLocal<Context> requestContext;
 
+    @RaspResource
+    private String metaInfo;
+
     @Override
     public void loadCompleted() {
         jndiHook();
@@ -131,7 +134,7 @@ public class JndiHook implements Module, LoadCompleted {
                 String lookupUrl = (String) parameters[0];
                 if (hasDangerProtocol(lookupUrl)) {
                     boolean block = jndiBlackListAction == 1;
-                    AttackInfo attackInfo = new AttackInfo(context, lookupUrl, block, TYPE, "danger jndi url", "", 100);
+                    AttackInfo attackInfo = new AttackInfo(context, metaInfo, lookupUrl, block, TYPE, "danger jndi url", "", 100);
                     logger.attack(attackInfo);
                     if (block) {
                         ProcessControlException.throwThrowsImmediately(new RuntimeException("jndi inject block by rasp."));

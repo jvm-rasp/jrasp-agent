@@ -155,6 +155,7 @@ public class DefaultCoreModuleManager {
      * @throws ModuleException 加载模块失败
      */
     private synchronized void load(final String uniqueId,
+                                   final String metaInfo,
                                    final Module module,
                                    final File moduleJarFile,
                                    final ModuleJarClassLoader moduleClassLoader) throws ModuleException {
@@ -165,7 +166,7 @@ public class DefaultCoreModuleManager {
         }
 
         // 初始化模块信息
-        final CoreModule coreModule = new CoreModule(uniqueId, moduleJarFile, moduleClassLoader, module);
+        final CoreModule coreModule = new CoreModule(uniqueId, metaInfo, moduleJarFile, moduleClassLoader, module);
 
         // 注入@RaspResource资源
         injectResourceOnLoadIfNecessary(coreModule);
@@ -209,6 +210,9 @@ public class DefaultCoreModuleManager {
                 } else if (RaspConfig.class.isAssignableFrom(fieldType)) {
                     // 全局配置
                     writeField(resourceField, module, RaspConfigImpl.getInstance(), true);
+                } else if (String.class.isAssignableFrom(fieldType)) {
+                    // metainfo
+                    writeField(resourceField, module, coreModule.getMetaInfo(), true);
                 } else {
                     // 其他情况需要输出日志警告
                     logger.log(Level.WARNING, "module inject @RaspResource ignored: field not found. module={0};class={1};type={2};field={3};",
@@ -446,6 +450,7 @@ public class DefaultCoreModuleManager {
     final private class InnerModuleLoadCallback implements ModuleJarLoader.ModuleLoadCallback {
         @Override
         public void onLoad(final String uniqueId,
+                           final String metaInfo,
                            final Class moduleClass,
                            final Module module,
                            final File moduleJarFile,
@@ -463,7 +468,7 @@ public class DefaultCoreModuleManager {
                 return;
             }
             // 这里进行真正的模块加载
-            load(uniqueId, module, moduleJarFile, moduleClassLoader);
+            load(uniqueId, metaInfo, module, moduleJarFile, moduleClassLoader);
         }
     }
 

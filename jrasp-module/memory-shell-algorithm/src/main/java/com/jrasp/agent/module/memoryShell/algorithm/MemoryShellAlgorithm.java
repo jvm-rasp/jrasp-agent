@@ -29,6 +29,9 @@ public class MemoryShellAlgorithm extends ModuleLifecycleAdapter implements Modu
     @RaspResource
     private RaspConfig raspConfig;
 
+    @RaspResource
+    private String metaInfo;
+
     private volatile Integer memoryShellAction = 0;
 
     @Override
@@ -49,6 +52,7 @@ public class MemoryShellAlgorithm extends ModuleLifecycleAdapter implements Modu
         String message = "发现疑似内存马注入";
         AttackInfo attackInfo = new AttackInfo(
                 context,
+                metaInfo,
                 "",
                 enableBlock,
                 "内存马注入防护",

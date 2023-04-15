@@ -12,6 +12,9 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.ServiceLoader;
 import java.util.Set;
+import java.util.jar.Attributes;
+import java.util.jar.JarFile;
+import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -38,8 +41,9 @@ class ModuleJarLoader {
     }
 
     private boolean loadingModules(final ModuleJarClassLoader moduleClassLoader,
-                                   final ModuleLoadCallback mCb) {
-
+                                   final ModuleLoadCallback mCb) throws IOException {
+        // 读取模块信息
+        final String metaInfo = readMainfest(this.moduleJarFile);
         final Set<String> loadedModuleUniqueIds = new LinkedHashSet<String>();
         final ServiceLoader<Module> moduleServiceLoader = ServiceLoader.load(Module.class, moduleClassLoader);
         final Iterator<Module> moduleIt = moduleServiceLoader.iterator();
@@ -89,7 +93,7 @@ class ModuleJarLoader {
 
             try {
                 if (null != mCb) {
-                    mCb.onLoad(uniqueId, classOfModule, module, moduleJarFile, moduleClassLoader);
+                    mCb.onLoad(uniqueId, metaInfo, classOfModule, module, moduleJarFile, moduleClassLoader);
                 }
             } catch (Throwable cause) {
                 logger.log(Level.WARNING, "loading module instance failed: MODULE-LOADER-PROVIDER denied, will be ignored.",
@@ -132,6 +136,31 @@ class ModuleJarLoader {
 
     }
 
+    private String readMainfest(File moduleJarFile) {
+        // 读取模块信息
+        JarFile jarFile = null;
+        try {
+            jarFile = new JarFile(moduleJarFile);
+            Manifest manifest = jarFile.getManifest();
+            Attributes mainAttributes = manifest.getMainAttributes();
+            String moduleName = mainAttributes.getValue("moduleName");
+            String moduleVersion = mainAttributes.getValue("moduleVersion");
+            String buildTime = mainAttributes.getValue("buildTime");
+            return moduleName + "-" + moduleVersion + "-" + buildTime;
+        } catch (Exception e) {
+            logger.log(Level.WARNING, "read manifest file error,file name" + moduleJarFile.getName(), e);
+            return "UNKNOWN";
+        } finally {
+            if (jarFile != null) {
+                try {
+                    jarFile.close();
+                } catch (Exception e) {
+                    logger.log(Level.WARNING, "close jarfile error" + moduleJarFile.getName(), e);
+                }
+            }
+        }
+    }
+
     /**
      * 模块加载回调
      */
@@ -141,6 +170,7 @@ class ModuleJarLoader {
          * 模块加载回调
          *
          * @param uniqueId          模块ID
+         * @param metaInfo          jar元信息
          * @param moduleClass       模块类
          * @param module            模块实例
          * @param moduleJarFile     模块所在Jar文件
@@ -148,6 +178,7 @@ class ModuleJarLoader {
          * @throws Throwable 加载回调异常
          */
         void onLoad(String uniqueId,
+                    String metaInfo,
                     Class moduleClass,
                     Module module,
                     File moduleJarFile,

@@ -27,6 +27,8 @@ public class FileListAlgorithm implements Algorithm {
 
     private final RaspLog logger;
 
+    private final String metaInfo;
+
     /**
      * 系统根路径下主要目录
      */
@@ -38,13 +40,15 @@ public class FileListAlgorithm implements Algorithm {
             "C:\\", "D:\\", "E:\\")
     );
 
-    public FileListAlgorithm(Map<String, String> configMaps, RaspLog logger) {
+    public FileListAlgorithm(Map<String, String> configMaps, RaspLog logger, String metaInfo) {
+        this.metaInfo = metaInfo;
         this.logger = logger;
         this.travelStr = ParamSupported.getParameter(configMaps, "travel_str", String[].class, travelStr);
         this.fileListAction = ParamSupported.getParameter(configMaps, "file_list_action", Integer.class, fileListAction);
     }
 
-    public FileListAlgorithm(RaspLog logger) {
+    public FileListAlgorithm(RaspLog logger, String metaInfo) {
+        this.metaInfo = metaInfo;
         this.logger = logger;
     }
 
@@ -102,7 +106,7 @@ public class FileListAlgorithm implements Algorithm {
     private void doActionCtl(int action, Context context, String path, String algorithm, String message, int level) throws ProcessControlException {
         if (action > -1) {
             boolean enableBlock = action == 1;
-            AttackInfo attackInfo = new AttackInfo(context, path, enableBlock, getType(), algorithm, message, level);
+            AttackInfo attackInfo = new AttackInfo(context, metaInfo, path, enableBlock, getType(), algorithm, message, level);
             logger.attack(attackInfo);
             if (enableBlock) {
                 ProcessControlException.throwThrowsImmediately(new RuntimeException("list file block by rasp."));

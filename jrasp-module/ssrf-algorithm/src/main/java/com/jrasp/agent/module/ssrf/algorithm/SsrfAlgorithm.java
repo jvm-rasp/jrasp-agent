@@ -31,6 +31,9 @@ public class SsrfAlgorithm extends ModuleLifecycleAdapter implements Module, Alg
     private AlgorithmManager algorithmManager;
 
     @RaspResource
+    private String metaInfo;
+
+    @RaspResource
     private RaspLog logger;
 
     @Override
@@ -93,7 +96,7 @@ public class SsrfAlgorithm extends ModuleLifecycleAdapter implements Module, Alg
     private void doActionCtl(int action, Context context, String payload, String algorithm, String message, int level) throws ProcessControlException {
         if (action > -1) {
             boolean enableBlock = action == 1;
-            AttackInfo attackInfo = new AttackInfo(context, payload, enableBlock, getType(), algorithm, message, level);
+            AttackInfo attackInfo = new AttackInfo(context, metaInfo, payload, enableBlock, getType(), algorithm, message, level);
             logger.attack(attackInfo);
             if (enableBlock) {
                 ProcessControlException.throwThrowsImmediately(new RuntimeException("ssrf block by rasp."));

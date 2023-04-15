@@ -31,6 +31,9 @@ public class ExpressionHook implements Module, LoadCompleted {
     private RaspLog logger;
 
     @RaspResource
+    private String metaInfo;
+
+    @RaspResource
     private AlgorithmManager algorithmManager;
 
     @RaspResource

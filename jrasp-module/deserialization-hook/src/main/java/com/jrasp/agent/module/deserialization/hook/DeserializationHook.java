@@ -37,6 +37,9 @@ public class DeserializationHook extends ModuleLifecycleAdapter implements Modul
     @RaspResource
     private ThreadLocal<Context> context;
 
+    @RaspResource
+    private String metaInfo;
+
     /**
      * object Input stream
      */

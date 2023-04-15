@@ -28,6 +28,9 @@ public class MysqlHook implements Module, LoadCompleted {
     private RaspLog LOGGER;
 
     @RaspResource
+    private String metaInfo;
+
+    @RaspResource
     private ModuleEventWatcher moduleEventWatcher;
 
     @RaspResource

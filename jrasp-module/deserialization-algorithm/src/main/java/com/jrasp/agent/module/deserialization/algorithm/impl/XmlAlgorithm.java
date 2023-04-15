@@ -17,6 +17,8 @@ public class XmlAlgorithm implements Algorithm {
 
     private final RaspLog logger;
 
+    private final String metaInfo;
+
     private Integer xmlBlackListAction = 0;
 
     //  xml反序列化类黑名单
@@ -38,16 +40,18 @@ public class XmlAlgorithm implements Algorithm {
             "$URLData", "$LazyIterator", "$GetterSetterReflection", "$PrivilegedGetter", "$ProxyLazyValue", "$ServiceNameIterator"
     );
 
-    public XmlAlgorithm(RaspLog logger) {
+    public XmlAlgorithm(RaspLog logger, String metaInfo) {
         this.logger = logger;
+        this.metaInfo = metaInfo;
     }
 
-    public XmlAlgorithm(RaspLog logger, Map<String, String> configMaps) {
+    public XmlAlgorithm(RaspLog logger, Map<String, String> configMaps, String metaInfo) {
         this.logger = logger;
         this.xmlBlackListAction = ParamSupported.getParameter(configMaps, "xml_black_list_action", Integer.class, xmlBlackListAction);
         this.xmlBlackClassSet = ParamSupported.getParameter(configMaps, "xml_black_class_list", Set.class, xmlBlackClassSet);
         this.xmlBlackPackageSet = ParamSupported.getParameter(configMaps, "xml_black_package_list", Set.class, xmlBlackPackageSet);
         this.xmlBlackKeyList = ParamSupported.getParameter(configMaps, "xml_black_key_list", List.class, xmlBlackKeyList);
+        this.metaInfo = metaInfo;
     }
 
     @Override
@@ -91,7 +95,7 @@ public class XmlAlgorithm implements Algorithm {
 
     private void doAction(Context context, String className, int action, String message, int level) throws ProcessControlException {
         boolean enableBlock = action == 1;
-        AttackInfo attackInfo = new AttackInfo(context, className, enableBlock, getType(), getDescribe(), message, level);
+        AttackInfo attackInfo = new AttackInfo(context, metaInfo, className, enableBlock, getType(), getDescribe(), message, level);
         logger.attack(attackInfo);
         if (enableBlock) {
             ProcessControlException.throwThrowsImmediately(new RuntimeException("xml deserialization attack block by rasp."));

@@ -1,9 +1,9 @@
 package com.jrasp.agent.module.expression.algorithm;
 
-import com.jrasp.agent.api.annotation.Information;
 import com.jrasp.agent.api.Module;
 import com.jrasp.agent.api.ModuleLifecycleAdapter;
 import com.jrasp.agent.api.algorithm.AlgorithmManager;
+import com.jrasp.agent.api.annotation.Information;
 import com.jrasp.agent.api.annotation.RaspResource;
 import com.jrasp.agent.api.log.RaspLog;
 import com.jrasp.agent.module.expression.algorithm.impl.OgnlAlgorithm;

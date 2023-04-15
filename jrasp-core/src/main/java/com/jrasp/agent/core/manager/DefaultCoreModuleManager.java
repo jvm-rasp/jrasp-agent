@@ -1,7 +1,7 @@
 package com.jrasp.agent.core.manager;
 
-import com.jrasp.agent.api.*;
 import com.jrasp.agent.api.Module;
+import com.jrasp.agent.api.*;
 import com.jrasp.agent.api.algorithm.AlgorithmManager;
 import com.jrasp.agent.api.annotation.Information;
 import com.jrasp.agent.api.annotation.RaspResource;

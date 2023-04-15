@@ -1,10 +1,10 @@
 package com.jrasp.agent.module.ssrf.hook;
 
+import com.jrasp.agent.api.LoadCompleted;
+import com.jrasp.agent.api.Module;
 import com.jrasp.agent.api.ModuleLifecycleAdapter;
 import com.jrasp.agent.api.algorithm.AlgorithmManager;
 import com.jrasp.agent.api.annotation.Information;
-import com.jrasp.agent.api.LoadCompleted;
-import com.jrasp.agent.api.Module;
 import com.jrasp.agent.api.annotation.RaspResource;
 import com.jrasp.agent.api.listener.Advice;
 import com.jrasp.agent.api.listener.AdviceListener;
@@ -20,7 +20,10 @@ import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.Map;
 
 /**
  * @author jrasp

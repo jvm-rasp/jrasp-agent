@@ -9,8 +9,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static java.lang.String.format;
-
 /**
  * 如果修改这个类，必须将类路径上的版本号抬升
  * 规范： 1.1.0 ----> 110

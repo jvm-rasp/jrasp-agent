@@ -7,7 +7,6 @@ import com.jrasp.agent.core.util.string.RaspStringUtils;
 
 import java.lang.reflect.Field;
 import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 

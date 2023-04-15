@@ -1,7 +1,7 @@
 package com.jrasp.agent.core.server.socket.handler.impl;
 
-import com.jrasp.agent.api.annotation.Information;
 import com.jrasp.agent.api.Module;
+import com.jrasp.agent.api.annotation.Information;
 import com.jrasp.agent.core.CoreModule;
 import com.jrasp.agent.core.manager.DefaultCoreModuleManager;
 import com.jrasp.agent.core.server.socket.handler.PacketHandler;

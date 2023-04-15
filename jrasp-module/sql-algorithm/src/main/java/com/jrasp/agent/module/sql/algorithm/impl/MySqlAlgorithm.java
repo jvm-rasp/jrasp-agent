@@ -10,7 +10,9 @@ import com.jrasp.agent.api.request.Context;
 import com.jrasp.agent.api.util.LRUCache;
 import com.jrasp.agent.api.util.ParamSupported;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * mysql注入检测算法

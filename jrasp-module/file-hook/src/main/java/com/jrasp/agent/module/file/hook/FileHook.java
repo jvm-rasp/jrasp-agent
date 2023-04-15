@@ -1,9 +1,9 @@
 package com.jrasp.agent.module.file.hook;
 
-import com.jrasp.agent.api.annotation.Information;
 import com.jrasp.agent.api.LoadCompleted;
 import com.jrasp.agent.api.Module;
 import com.jrasp.agent.api.algorithm.AlgorithmManager;
+import com.jrasp.agent.api.annotation.Information;
 import com.jrasp.agent.api.annotation.RaspResource;
 import com.jrasp.agent.api.listener.Advice;
 import com.jrasp.agent.api.listener.AdviceListener;

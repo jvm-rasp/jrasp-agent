@@ -1,0 +1,6 @@
+{
+  "moduleName": "memory-shell-hook",
+  "parameters": {
+    "disable": false
+  }
+}

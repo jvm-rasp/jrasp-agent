@@ -28,6 +28,8 @@
         <module>file-hook</module>
         <module>file-algorithm</module>
         <module>ssrf-algorithm</module>
+        <module>memory-shell-algorithm</module>
+        <module>memory-shell-hook</module>
     </modules>
 
     <dependencies>

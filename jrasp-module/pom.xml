@@ -58,6 +58,26 @@
 
     <build>
         <plugins>
+            <!-- bugfix: 多个插件都绑定了package阶段，谁放在前面，谁先执行，这里需要先加入依赖后执行加密-->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>2.2-beta-5</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>attached</goal>
+                        </goals>
+                        <phase>package</phase>
+                        <configuration>
+                            <descriptorRefs>
+                                <descriptorRef>jar-with-dependencies</descriptorRef>
+                            </descriptorRefs>
+                            <appendAssemblyId>false</appendAssemblyId>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>com.jrasp.agent</groupId>
                 <artifactId>jrasp-encrypt</artifactId>

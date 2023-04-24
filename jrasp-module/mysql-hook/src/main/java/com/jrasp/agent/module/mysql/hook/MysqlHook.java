@@ -1,9 +1,9 @@
 package com.jrasp.agent.module.mysql.hook;
 
-import com.jrasp.agent.api.annotation.Information;
 import com.jrasp.agent.api.LoadCompleted;
 import com.jrasp.agent.api.Module;
 import com.jrasp.agent.api.algorithm.AlgorithmManager;
+import com.jrasp.agent.api.annotation.Information;
 import com.jrasp.agent.api.annotation.RaspResource;
 import com.jrasp.agent.api.listener.Advice;
 import com.jrasp.agent.api.listener.AdviceListener;
@@ -26,6 +26,9 @@ public class MysqlHook implements Module, LoadCompleted {
 
     @RaspResource
     private RaspLog LOGGER;
+
+    @RaspResource
+    private String metaInfo;
 
     @RaspResource
     private ModuleEventWatcher moduleEventWatcher;

@@ -1,9 +1,9 @@
 package com.jrasp.agent.module.jndi.hook;
 
-import com.jrasp.agent.api.annotation.Information;
 import com.jrasp.agent.api.LoadCompleted;
 import com.jrasp.agent.api.Module;
 import com.jrasp.agent.api.ProcessControlException;
+import com.jrasp.agent.api.annotation.Information;
 import com.jrasp.agent.api.annotation.RaspResource;
 import com.jrasp.agent.api.listener.Advice;
 import com.jrasp.agent.api.listener.AdviceListener;
@@ -34,6 +34,9 @@ public class JndiHook implements Module, LoadCompleted {
 
     @RaspResource
     private ThreadLocal<Context> requestContext;
+
+    @RaspResource
+    private String metaInfo;
 
     @Override
     public void loadCompleted() {
@@ -131,7 +134,7 @@ public class JndiHook implements Module, LoadCompleted {
                 String lookupUrl = (String) parameters[0];
                 if (hasDangerProtocol(lookupUrl)) {
                     boolean block = jndiBlackListAction == 1;
-                    AttackInfo attackInfo = new AttackInfo(context, lookupUrl, block, TYPE, "danger jndi url", "", 100);
+                    AttackInfo attackInfo = new AttackInfo(context, metaInfo, lookupUrl, block, TYPE, "danger jndi url", "", 100);
                     logger.attack(attackInfo);
                     if (block) {
                         ProcessControlException.throwThrowsImmediately(new RuntimeException("jndi inject block by rasp."));

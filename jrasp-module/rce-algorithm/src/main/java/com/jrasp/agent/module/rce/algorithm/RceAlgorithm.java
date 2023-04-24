@@ -1,10 +1,10 @@
 package com.jrasp.agent.module.rce.algorithm;
 
-import com.jrasp.agent.api.*;
 import com.jrasp.agent.api.Module;
+import com.jrasp.agent.api.*;
+import com.jrasp.agent.api.algorithm.Algorithm;
 import com.jrasp.agent.api.algorithm.AlgorithmManager;
 import com.jrasp.agent.api.annotation.Information;
-import com.jrasp.agent.api.algorithm.Algorithm;
 import com.jrasp.agent.api.annotation.RaspResource;
 import com.jrasp.agent.api.log.RaspLog;
 import com.jrasp.agent.api.request.AttackInfo;
@@ -24,6 +24,9 @@ public class RceAlgorithm extends ModuleLifecycleAdapter implements Module, Algo
 
     @RaspResource
     private RaspLog logger;
+
+    @RaspResource
+    private String metaInfo;
 
     @RaspResource
     private RaspConfig raspConfig;
@@ -152,7 +155,7 @@ public class RceAlgorithm extends ModuleLifecycleAdapter implements Module, Algo
     private void doActionCtl(int action, Context context, String cmd, String checkType, String message, int level) throws ProcessControlException {
         if (action > -1) {
             boolean enableBlock = action == 1;
-            AttackInfo attackInfo = new AttackInfo(context, cmd, enableBlock, getType(), checkType, message, level);
+            AttackInfo attackInfo = new AttackInfo(context, metaInfo, cmd, enableBlock, getType(), checkType, message, level);
             logger.attack(attackInfo);
             if (enableBlock) {
                 ProcessController.throwsImmediatelyAndSendResponse(attackInfo, raspConfig, new RuntimeException("rce block by jrasp."));

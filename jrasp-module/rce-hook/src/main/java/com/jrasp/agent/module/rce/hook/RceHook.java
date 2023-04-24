@@ -1,10 +1,10 @@
 package com.jrasp.agent.module.rce.hook;
 
-import com.jrasp.agent.api.annotation.Information;
 import com.jrasp.agent.api.LoadCompleted;
 import com.jrasp.agent.api.Module;
 import com.jrasp.agent.api.ModuleLifecycleAdapter;
 import com.jrasp.agent.api.algorithm.AlgorithmManager;
+import com.jrasp.agent.api.annotation.Information;
 import com.jrasp.agent.api.annotation.RaspResource;
 import com.jrasp.agent.api.listener.Advice;
 import com.jrasp.agent.api.listener.AdviceListener;
@@ -15,7 +15,8 @@ import com.jrasp.agent.api.matcher.ModuleEventWatcher;
 import com.jrasp.agent.api.request.Context;
 import org.kohsuke.MetaInfServices;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Map;
 
 import static com.jrasp.agent.api.util.ParamSupported.getParameter;
 
@@ -33,6 +34,9 @@ public class RceHook extends ModuleLifecycleAdapter implements Module, LoadCompl
 
     @RaspResource
     private ThreadLocal<Context> context;
+
+    @RaspResource
+    private String metaInfo;
 
     @RaspResource
     private AlgorithmManager algorithmManager;

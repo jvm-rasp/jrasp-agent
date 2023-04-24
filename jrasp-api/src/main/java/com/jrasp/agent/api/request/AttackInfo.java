@@ -19,6 +19,11 @@ public class AttackInfo {
     private Context context;
 
     /**
+     * 模块元数据信息
+     */
+    private String metaInfo = "";
+
+    /**
      * 栈
      */
     private String[] stackTrace;
@@ -59,8 +64,9 @@ public class AttackInfo {
      */
     private int level = 0;
 
-    public AttackInfo(Context context, String payload, boolean isBlocked, String attackType, String algorithm, String extend, int level) {
+    public AttackInfo(Context context, String metaInfo, String payload, boolean isBlocked, String attackType, String algorithm, String extend, int level) {
         this.context = context;
+        this.metaInfo = metaInfo;
         this.stackTrace = StackTrace.getStackTraceString();
         this.payload = payload;
         this.isBlocked = isBlocked;
@@ -144,12 +150,15 @@ public class AttackInfo {
      * 原因：
      * 1.各自json工具，都有大量漏洞
      * 2.json工具的使用可能导致内存泄漏
+     *
      * @return
      */
     public String toJSON() {
         final StringBuilder sb = new StringBuilder("{");
         sb.append("\"context\":")
                 .append(context.toJSON());
+        sb.append(",\"metaInfo\":\"")
+                .append(metaInfo).append('\"');
         sb.append(",\"stackTrace\":\"")
                 .append(array2String(stackTrace)).append('\"');
         sb.append(",\"payload\":")

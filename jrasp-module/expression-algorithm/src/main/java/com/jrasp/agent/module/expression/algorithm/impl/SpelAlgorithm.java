@@ -51,17 +51,21 @@ public class SpelAlgorithm implements Algorithm {
 
     private final RaspLog logger;
 
-    public SpelAlgorithm(RaspLog logger) {
+    private final String metaInfo;
+
+    public SpelAlgorithm(RaspLog logger, String metaInfo) {
         this.logger = logger;
+        this.metaInfo = metaInfo;
     }
 
-    public SpelAlgorithm(RaspLog logger, Map<String, String> configMaps) {
+    public SpelAlgorithm(RaspLog logger, Map<String, String> configMaps, String metaInfo) {
         this.logger = logger;
         this.spelMinLength = ParamSupported.getParameter(configMaps, "spel_min_length", Integer.class, spelMinLength);
         this.spelMaxLimitLength = ParamSupported.getParameter(configMaps, "spel_max_limit_length", Integer.class, spelMaxLimitLength);
         this.spelMaxLimitLengthAction = ParamSupported.getParameter(configMaps, "spel_max_limit_length_action", Integer.class, spelMaxLimitLengthAction);
         this.spelBlackList = ParamSupported.getParameter(configMaps, "spel_black_list", String[].class, spelBlackList);
         this.spelBlackListAction = ParamSupported.getParameter(configMaps, "spel_black_list_action", Integer.class, spelBlackListAction);
+        this.metaInfo = metaInfo;
     }
 
     @Override
@@ -99,7 +103,7 @@ public class SpelAlgorithm implements Algorithm {
 
     private void doAction(Context context, String expression, int action, String message, int level) throws ProcessControlException {
         boolean enableBlock = action == 1;
-        AttackInfo attackInfo = new AttackInfo(context, expression, enableBlock, getType(), getDescribe(), message, level);
+        AttackInfo attackInfo = new AttackInfo(context, metaInfo, expression, enableBlock, getType(), getDescribe(), message, level);
         logger.attack(attackInfo);
         if (enableBlock) {
             ProcessControlException.throwThrowsImmediately(new RuntimeException("spel expression block by rasp."));

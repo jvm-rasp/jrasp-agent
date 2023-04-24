@@ -22,6 +22,8 @@ public class JsonAlgorithm implements Algorithm {
 
     private final RaspLog logger;
 
+    private final String metaInfo;
+
     private Integer jsonBlackListAction = 0;
 
     // json反序列化类白名单
@@ -89,16 +91,18 @@ public class JsonAlgorithm implements Algorithm {
             "com.caucho"
     ));
 
-    public JsonAlgorithm(RaspLog logger) {
+    public JsonAlgorithm(RaspLog logger, String metaInfo) {
         this.logger = logger;
+        this.metaInfo = metaInfo;
     }
 
-    public JsonAlgorithm(RaspLog logger, Map<String, String> configMaps) {
+    public JsonAlgorithm(RaspLog logger, Map<String, String> configMaps, String metaInfo) {
         this.logger = logger;
         this.jsonBlackListAction = ParamSupported.getParameter(configMaps, "json_black_list_action", Integer.class, jsonBlackListAction);
         this.jsonWhiteClassSet = ParamSupported.getParameter(configMaps, "json_white_class_list", Set.class, jsonWhiteClassSet);
         this.jsonBlackClassSet = ParamSupported.getParameter(configMaps, "json_black_class_list", Set.class, jsonBlackClassSet);
         this.jsonBlackPackageSet = ParamSupported.getParameter(configMaps, "json_black_package_list", Set.class, jsonBlackPackageSet);
+        this.metaInfo = metaInfo;
     }
 
     @Override
@@ -136,7 +140,7 @@ public class JsonAlgorithm implements Algorithm {
 
     private void doCheck(Context context, String className, int action, String message, int level) throws ProcessControlException {
         boolean enableBlock = action == 1;
-        AttackInfo attackInfo = new AttackInfo(context, className, enableBlock, getType(), getDescribe(), message, level);
+        AttackInfo attackInfo = new AttackInfo(context, metaInfo, className, enableBlock, getType(), getDescribe(), message, level);
         logger.attack(attackInfo);
         if (enableBlock) {
             ProcessControlException.throwThrowsImmediately(new RuntimeException("json/yaml deserialization attack block by rasp."));

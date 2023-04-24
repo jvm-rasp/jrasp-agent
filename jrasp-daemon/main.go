@@ -6,6 +6,7 @@ import (
 	"jrasp-daemon/common"
 	"jrasp-daemon/defs"
 	"jrasp-daemon/environ"
+	"jrasp-daemon/remote"
 	"jrasp-daemon/update"
 	"jrasp-daemon/userconfig"
 	"jrasp-daemon/utils"
@@ -77,6 +78,8 @@ func main() {
 	ossClient.DownLoadModuleFiles()
 
 	newWatch := watch.NewWatch(conf, env, ctx)
+
+	go remote.WatchRemoteConfig(conf, env)
 
 	// 定时重启功能
 	go newWatch.Reboot()

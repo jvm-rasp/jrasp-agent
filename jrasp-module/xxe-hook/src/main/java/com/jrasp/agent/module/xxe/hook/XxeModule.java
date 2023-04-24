@@ -1,8 +1,8 @@
 package com.jrasp.agent.module.xxe.hook;
 
-import com.jrasp.agent.api.annotation.Information;
 import com.jrasp.agent.api.LoadCompleted;
 import com.jrasp.agent.api.Module;
+import com.jrasp.agent.api.annotation.Information;
 import com.jrasp.agent.api.annotation.RaspResource;
 import com.jrasp.agent.api.listener.Advice;
 import com.jrasp.agent.api.listener.AdviceListener;
@@ -34,6 +34,9 @@ public class XxeModule implements Module, LoadCompleted {
 
     @RaspResource
     private ThreadLocal<Context> context;
+
+    @RaspResource
+    private String metaInfo;
 
     private volatile boolean disable = false;
 

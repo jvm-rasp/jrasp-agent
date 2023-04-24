@@ -27,19 +27,23 @@ public class FileReadAlgorithm implements Algorithm {
 
     private final RaspLog logger;
 
+    private final String metaInfo;
+
     /**
      * 系统根路径下主要目录
      */
     private Set<String> dangerDirList = new HashSet<String>(Arrays.asList("/", "/home", "/etc", "/usr", "/usr/local", "/var/log", "/proc", "/sys", "/root", "C:\\", "D:\\", "E:\\"));
 
-    public FileReadAlgorithm(Map<String, String> configMaps, RaspLog logger) {
+    public FileReadAlgorithm(Map<String, String> configMaps, RaspLog logger, String metaInfo) {
+        this.metaInfo = metaInfo;
         this.logger = logger;
         this.travelStr = ParamSupported.getParameter(configMaps, "travel_str", String[].class, travelStr);
         this.fileReadAction = ParamSupported.getParameter(configMaps, "file_read_action", Integer.class, fileReadAction);
         this.dangerDirList = ParamSupported.getParameter(configMaps, "danger_dir_list", Set.class, dangerDirList);
     }
 
-    public FileReadAlgorithm(RaspLog logger) {
+    public FileReadAlgorithm(RaspLog logger, String metaInfo) {
+        this.metaInfo = metaInfo;
         this.logger = logger;
     }
 
@@ -105,7 +109,7 @@ public class FileReadAlgorithm implements Algorithm {
     private void doActionCtl(int action, Context context, String path, String checkType, String message, int level) throws ProcessControlException {
         if (action > -1) {
             boolean enableBlock = action == 1;
-            AttackInfo attackInfo = new AttackInfo(context, path, enableBlock, getType(), checkType, message, level);
+            AttackInfo attackInfo = new AttackInfo(context,  metaInfo,path, enableBlock, getType(), checkType, message, level);
             logger.attack(attackInfo);
             if (enableBlock) {
                 ProcessControlException.throwThrowsImmediately(new RuntimeException("read file block by rasp."));

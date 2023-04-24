@@ -25,6 +25,9 @@ public class SqlAlgorithm extends ModuleLifecycleAdapter implements Module {
     private RaspLog logger;
 
     @RaspResource
+    private String metaInfo;
+
+    @RaspResource
     private AlgorithmManager algorithmManager;
 
     @RaspResource
@@ -35,14 +38,14 @@ public class SqlAlgorithm extends ModuleLifecycleAdapter implements Module {
     // 其他算法实例这里添加
     @Override
     public boolean update(Map<String, String> configMaps) {
-        mySqlAlgorithm = new MySqlAlgorithm(configMaps, raspConfig, logger);
+        mySqlAlgorithm = new MySqlAlgorithm(configMaps, raspConfig, logger, metaInfo);
         algorithmManager.register(mySqlAlgorithm);
         return false;
     }
 
     @Override
     public void loadCompleted() {
-        mySqlAlgorithm = new MySqlAlgorithm(raspConfig, logger);
+        mySqlAlgorithm = new MySqlAlgorithm(raspConfig, logger, metaInfo);
         algorithmManager.register(mySqlAlgorithm);
     }
 

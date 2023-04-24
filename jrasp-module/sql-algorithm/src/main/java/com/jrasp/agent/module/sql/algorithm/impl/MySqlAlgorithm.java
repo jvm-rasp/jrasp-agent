@@ -10,7 +10,9 @@ import com.jrasp.agent.api.request.Context;
 import com.jrasp.agent.api.util.LRUCache;
 import com.jrasp.agent.api.util.ParamSupported;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * mysql注入检测算法
@@ -33,6 +35,8 @@ public class MySqlAlgorithm implements Algorithm {
 
     private final RaspLog logger;
 
+    private final String metaInfo;
+
     /**
      * sql白名单: 防止误报
      */
@@ -42,18 +46,20 @@ public class MySqlAlgorithm implements Algorithm {
 
     private RaspConfig raspConfig;
 
-    public MySqlAlgorithm(Map<String, String> configMaps, RaspConfig raspConfig, RaspLog logger) {
+    public MySqlAlgorithm(Map<String, String> configMaps, RaspConfig raspConfig, RaspLog logger, String metaInfo) {
         this.logger = logger;
         this.minSqlLimitLength = ParamSupported.getParameter(configMaps, "mysql_min_limit_length", Integer.class, minSqlLimitLength);
         this.maxSqlLimitLength = ParamSupported.getParameter(configMaps, "mysql_max_limit_length", Integer.class, maxSqlLimitLength);
         this.mysqlBlockAction = ParamSupported.getParameter(configMaps, "mysql_block_action", Integer.class, mysqlBlockAction);
         this.mysqlWhiteSet = ParamSupported.getParameter(configMaps, "mysql_white_list", Set.class, mysqlWhiteSet);
         this.raspConfig = raspConfig;
+        this.metaInfo = metaInfo;
     }
 
-    public MySqlAlgorithm(RaspConfig raspConfig, RaspLog logger) {
+    public MySqlAlgorithm(RaspConfig raspConfig, RaspLog logger, String metaInfo) {
         this.logger = logger;
         this.raspConfig = raspConfig;
+        this.metaInfo = metaInfo;
     }
 
     @Override
@@ -104,7 +110,7 @@ public class MySqlAlgorithm implements Algorithm {
             // 判断阻断状态
             boolean enableBlock = mysqlBlockAction == 1;
             // 有行号栈，便于定位攻击链路
-            AttackInfo attackInfo = new AttackInfo(context, sql, enableBlock, "sql inject", getDescribe(), "mysql", 95);
+            AttackInfo attackInfo = new AttackInfo(context, metaInfo, sql, enableBlock, "sql inject", getDescribe(), "mysql", 95);
             // 记录日志日志
             logger.attack(attackInfo);
             if (enableBlock) {

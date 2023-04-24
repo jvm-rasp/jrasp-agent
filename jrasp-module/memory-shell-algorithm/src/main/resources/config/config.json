@@ -1,0 +1,7 @@
+{
+  "moduleName": "memory-shell-algorithm",
+  "parameters": {
+    "disable": false,
+    "memory_shell_action": 0
+  }
+}

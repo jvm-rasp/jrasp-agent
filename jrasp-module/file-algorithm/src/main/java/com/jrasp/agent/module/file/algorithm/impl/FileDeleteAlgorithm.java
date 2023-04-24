@@ -27,14 +27,18 @@ public class FileDeleteAlgorithm implements Algorithm {
 
     private final RaspLog logger;
 
-    public FileDeleteAlgorithm(Map<String, String> configMaps, RaspLog logger) {
+    private final String metaInfo;
+
+    public FileDeleteAlgorithm(Map<String, String> configMaps, RaspLog logger, String metaInfo) {
         this.logger = logger;
         this.travelStr = ParamSupported.getParameter(configMaps, "travel_str", String[].class, travelStr);
         this.fileDeleteAction = ParamSupported.getParameter(configMaps, "file_delete_action", Integer.class, fileDeleteAction);
+        this.metaInfo = metaInfo;
     }
 
-    public FileDeleteAlgorithm(RaspLog logger) {
+    public FileDeleteAlgorithm(RaspLog logger, String metaInfo) {
         this.logger = logger;
+        this.metaInfo = metaInfo;
     }
 
     @Override
@@ -58,7 +62,7 @@ public class FileDeleteAlgorithm implements Algorithm {
                 for (String item : travelStr) {
                     if (path.contains(item)) {
                         boolean enableBlock = fileDeleteAction == 1;
-                        AttackInfo attackInfo = new AttackInfo(context, path, enableBlock,
+                        AttackInfo attackInfo = new AttackInfo(context, metaInfo, path, enableBlock,
                                 getType(), getDescribe(), "realpath: " + realpath, 80);
                         logger.attack(attackInfo);
                         if (enableBlock) {

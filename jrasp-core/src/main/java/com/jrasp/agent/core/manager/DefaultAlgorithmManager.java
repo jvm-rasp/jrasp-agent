@@ -4,7 +4,6 @@ import com.jrasp.agent.api.RaspConfig;
 import com.jrasp.agent.api.algorithm.Algorithm;
 import com.jrasp.agent.api.algorithm.AlgorithmManager;
 import com.jrasp.agent.api.request.Context;
-import com.jrasp.agent.core.CoreConfigure;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;

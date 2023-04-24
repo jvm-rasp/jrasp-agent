@@ -101,14 +101,15 @@ public class Context {
         return null;
     }
 
-    // h1:v1;h2:v2;h3:v3;h4:v4
+    private static final String LINE_SEPARATOR =System.getProperty("line.separator");
+
     public String getHeaderString() {
         if (header != null && header.size() > 0) {
             StringBuilder sb = new StringBuilder();
             for (Map.Entry<String, String> entry : header.entrySet()) {
-                sb.append(entry.getKey()).append(":").append(entry.getValue()).append(";");
+                sb.append(entry.getKey()).append(":").append(entry.getValue()).append(LINE_SEPARATOR);
             }
-            //  去掉最后一个;
+            //  去掉最后一个
             return sb.substring(0, sb.length() - 1);
         }
         return "";

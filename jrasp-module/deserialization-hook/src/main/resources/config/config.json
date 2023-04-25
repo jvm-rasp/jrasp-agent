@@ -1,0 +1,6 @@
+{
+  "moduleName": "deserialization-hook",
+  "parameters": {
+    "disable": true
+  }
+}

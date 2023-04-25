@@ -1,0 +1,11 @@
+{
+  "moduleName": "jndi-hook",
+  "parameters": {
+    "disable": false,
+    "jndi_black_list_action": 0,
+    "danger_protocol": [
+      "ldap://",
+      "rmi://"
+    ]
+  }
+}

@@ -48,6 +48,9 @@ type Environ struct {
 	BuildDecryptKey string `json:"buildDecryptKey"`
 
 	PidFile string `json:"pidFile"`
+
+	// 是否已连接server
+	IsConnectServer bool `json:"isConnectServer"`
 }
 
 func NewEnviron() (*Environ, error) {
@@ -95,6 +98,7 @@ func NewEnviron() (*Environ, error) {
 		BuildDecryptKey: BuildDecryptKey,
 		BuildGitCommit:  BuildGitCommit,
 		PidFile:         filepath.Join(execDir, defs.DAEMON_PID_FILE),
+		IsConnectServer: false,
 	}
 	return env, nil
 }
@@ -150,6 +154,30 @@ func GetDefaultIp() (string, error) {
 	localAddr := conn.LocalAddr().(*net.UDPAddr)
 	ip := strings.Split(localAddr.IP.String(), ":")[0]
 	return ip, nil
+}
+
+func GetDefaultIface() (*net.Interface, error) {
+	defaultIP, err := GetDefaultIp()
+	if err != nil {
+		return nil, err
+	}
+	ifaces, err := net.Interfaces()
+	if err != nil {
+		return nil, err
+	}
+	for _, item := range ifaces {
+		addrs, err := item.Addrs()
+		if err != nil {
+			return nil, err
+		}
+		for _, addr := range addrs {
+			ip := addr.(*net.IPNet)
+			if ip.IP.String() == defaultIP {
+				return &item, nil
+			}
+		}
+	}
+	return nil, errors.New("not found default ifaces")
 }
 
 func GetInstallDisk(path string) (free uint64, err error) {

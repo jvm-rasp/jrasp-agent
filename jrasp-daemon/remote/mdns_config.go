@@ -36,7 +36,8 @@ func (c *MDNSClient) SearchServer() {
 	c.entriesCh = make(chan *mdns.ServiceEntry, 4)
 	go c.listen()
 	// Start the lookup
-	params := mdns.DefaultParams("rasp.server")
+	params := mdns.DefaultParams("jrasp")
+	params.Domain = ""
 	params.Entries = c.entriesCh
 	params.DisableIPv6 = true
 	params.Interface = iface
@@ -54,10 +55,12 @@ func (c *MDNSClient) SearchServer() {
 
 func (c *MDNSClient) listen() {
 	for entry := range c.entriesCh {
-		zlog.Infof(defs.MDNS_SEARCH, "Got new entry", "service=%v, ip: %v, port: %v", entry.Info, entry.AddrV4, entry.Port)
-		for _, item := range entry.InfoFields {
-			if !arrutil.Contains(c.cfg.RemoteHosts, item) {
-				c.writeConfig(entry.InfoFields)
+		if entry.Name == "admin.jrasp.local." {
+			zlog.Infof(defs.MDNS_SEARCH, "Got new entry", "service=%v, ip: %v, port: %v", entry.Info, entry.AddrV4, entry.Port)
+			for _, item := range entry.InfoFields {
+				if !arrutil.Contains(c.cfg.RemoteHosts, item) {
+					c.writeConfig(entry.InfoFields)
+				}
 			}
 		}
 	}

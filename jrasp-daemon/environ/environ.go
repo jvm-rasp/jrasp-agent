@@ -29,6 +29,7 @@ type Environ struct {
 	HostName    string `json:"hostName"`    // 主机/容器名称
 	Ip          string `json:"ip"`          // ipAddress
 	OsType      string `json:"osType"`      // 操作系统类型
+	BinFileName string `json:"binFileName"` // 磁盘可执行文件名
 	BinFileHash string `json:"binFileHash"` // 磁盘可执行文件的md5值
 
 	// 系统信息
@@ -68,6 +69,8 @@ func NewEnviron() (*Environ, error) {
 	if err != nil {
 		return nil, err
 	}
+	// 可执行文件名
+	execName := filepath.Base(execPath)
 	// ip
 	ipAddress, err := GetDefaultIp()
 	if err != nil {
@@ -89,6 +92,7 @@ func NewEnviron() (*Environ, error) {
 		InstallDir:      execDir,
 		OsType:          runtime.GOOS,
 		BinFileHash:     md5Str,
+		BinFileName:     execName,
 		TotalMem:        memInfo.Total / GB,
 		CpuCounts:       cpuCounts,
 		FreeDisk:        FreeDisk,

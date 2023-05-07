@@ -322,7 +322,7 @@ func (jp *JavaProcess) GetPid() int32 {
 	return jp.JavaPid
 }
 
-func (jp *JavaProcess) SetStartTime() {
+func (jp *JavaProcess) SetStartTime() int64 {
 	startTime, err := jp.process.CreateTime()
 	if err != nil {
 		zlog.Warnf(defs.WATCH_DEFAULT, "get process startup time error", `{"pid":%d,"err":%v}`, jp.JavaPid, err)
@@ -330,6 +330,7 @@ func (jp *JavaProcess) SetStartTime() {
 	timeUnix := time.Unix(startTime/1000, 0)
 	timsStr := timeUnix.Format(defs.DATE_FORMAT)
 	jp.StartTime = timsStr
+	return startTime
 }
 
 func (jp *JavaProcess) GetAndMarkStatus() {

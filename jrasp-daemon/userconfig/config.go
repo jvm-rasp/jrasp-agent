@@ -68,6 +68,8 @@ type Config struct {
 	EnablePid bool `json:"enablePid"` // 是否允许创建pid文件，防止重复启动
 
 	RemoteHosts []string `json:"remoteHosts"` // 服务端地址
+
+	MinJvmStartTime int64 `json:"minJvmStartTime"` // java进程启动最小时间间隔，单位分钟，默认3分钟
 }
 
 // ModuleConfig module信息
@@ -160,8 +162,10 @@ func setDefaultValue(vp *viper.Viper) {
 
 	vp.SetDefault("AgentDownLoadConfigs", nil)
 
-	vp.SetDefault("RemoteHosts", []string{"localhost:8088/rasp-admin"})
+	// wss://www.server.jrasp.com:8088/rasp-admin
+	vp.SetDefault("RemoteHosts", []string{"wss://www.server.jrasp.com:8088/rasp-admin"})
 
+	vp.SetDefault("MinJvmStartTime", 3)
 
 	// vp.SetDefault("RaspBridgeJar", "")
 	// vp.SetDefault("RaspCoreJar", "")

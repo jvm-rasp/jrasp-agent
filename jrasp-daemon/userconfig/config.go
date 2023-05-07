@@ -1,6 +1,7 @@
 package userconfig
 
 import (
+	"errors"
 	"fmt"
 	"jrasp-daemon/defs"
 	"time"
@@ -48,12 +49,11 @@ type Config struct {
 	HeartBeatReportTicker uint   `json:"heartBeatReportTicker"`
 	DependencyTicker      uint32 `json:"dependencyTicker"`
 
-	// jrasp-daemon 自身配置
-	BinFileUrl  string `json:"binFileUrl"`  // 下载链接
-	BinFileHash string `json:"binFileHash"` // hash
+	// agent lib核心包下载链接
+	RaspLibConfigs ZipFileInfo `json:"raspLibConfigs"`
 
-	// agent 核心包下载链接
-	AgentDownLoadConfigs []AgentDownLoadConfig `json:"agentDownLoadConfigs"`
+	// 守护进程下载链接
+	RaspBinConfigs ZipFileInfo `json:"raspBinConfigs"`
 
 	// module列表
 	ModuleConfigs []ModuleConfig `json:"moduleConfigs"`
@@ -82,11 +82,27 @@ type ModuleConfig struct {
 	Parameters map[string][]interface{} `json:"parameters"` // 参数列表
 }
 
-// agent 核心包下载链接
-type AgentDownLoadConfig struct {
-	JarName     string `json:"jarName"`     // 名称
-	DownLoadURL string `json:"downLoadURL"` // 下载链接
-	Md5         string `json:"md5"`         // 插件hash
+// ZipFileInfo zip包下载链接
+type ZipFileInfo struct {
+	FileName    string        `json:"fileName"`
+	DownloadUrl string        `json:"downloadUrl"`
+	Md5         string        `json:"md5"`
+	ItemsInfo   []ZipItemInfo `json:"itemsInfo"`
+}
+
+func (zipFileInfo *ZipFileInfo) GetMD5ByName(fileName string) (string, error) {
+	itemList := zipFileInfo.ItemsInfo
+	for _, item := range itemList {
+		if item.FileName == fileName {
+			return item.Md5, nil
+		}
+	}
+	return "", errors.New(fmt.Sprintf("not found file %v in %v", fileName, zipFileInfo.FileName))
+}
+
+type ZipItemInfo struct {
+	FileName string `json:"fileName"`
+	Md5      string `json:"md5"`
 }
 
 func InitConfig() (*Config, error) {

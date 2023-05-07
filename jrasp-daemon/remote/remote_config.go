@@ -34,10 +34,12 @@ func WatchRemoteConfig(cfg *userconfig.Config, env *environ.Environ) {
 		conn, _, err := dialer.Dial(url, nil)
 		if err != nil {
 			zlog.Errorf(defs.NACOS_LISTEN_CONFIG, "[ListenConfig]", "create conn failed to remote: %s, error: %v", url, err)
+			env.IsConnectServer = false
 		} else {
 			defer func() { _ = conn.Close() }()
 
 			zlog.Infof(defs.NACOS_LISTEN_CONFIG, "[ListenConfig]", "create conn success to remote: %s", url)
+			env.IsConnectServer = true
 
 			go heatbeat(conn)
 

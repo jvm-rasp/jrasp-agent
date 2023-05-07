@@ -70,6 +70,8 @@ type Config struct {
 	RemoteHosts []string `json:"remoteHosts"` // 服务端地址
 
 	MinJvmStartTime int64 `json:"minJvmStartTime"` // java进程启动最小时间间隔，单位分钟，默认3分钟
+
+	EnableMdns bool `json:"enableMdns"` // 是否开启mdns功能
 }
 
 // ModuleConfig module信息
@@ -182,6 +184,7 @@ func setDefaultValue(vp *viper.Viper) {
 	vp.SetDefault("RemoteHosts", []string{"wss://www.server.jrasp.com:8088/rasp-admin"})
 
 	vp.SetDefault("MinJvmStartTime", 3)
+	vp.SetDefault("EnableMdns", true)
 
 	// vp.SetDefault("RaspBridgeJar", "")
 	// vp.SetDefault("RaspCoreJar", "")

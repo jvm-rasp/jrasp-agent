@@ -93,8 +93,10 @@ func main() {
 	go newWatch.JavaStatusTimer()
 
 	// 启动服务发现
-	mdnsClient := remote.NewMDNSClient(conf, env)
-	go mdnsClient.SearchServer()
+	if conf.EnableMdns {
+		mdnsClient := remote.NewMDNSClient(conf, env)
+		go mdnsClient.SearchServer()
+	}
 
 	// start pprof for debug
 	go debug(conf)

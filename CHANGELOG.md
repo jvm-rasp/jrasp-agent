@@ -1,6 +1,23 @@
 # 版本迭代
 
-## 1.1.1 【2023-01】进行中
+## 1.1.2  【2023-05】迭代中
+
+### Enhancement
+
++ [daemon] 支持容器&进程运行时注入
++ [agent] jrasp日志通过socket传输，去掉filebeat
+
+## 1.1.1 正式版 【2023-05】
+### Enhancement
++ [module] 新增内存马检测模块
++ [module] 模块增加编译时间便于区分版本
++ [daemon] deamon与server通信支持https
+### Bugfix
++ [agent] jrasp日志与tomcat日志完全隔离
+### TODO
++ [daemon] 支持安装目录lib下jar更新
+
+## 1.1.1 【2023-01】
 ### Enhancement
 + [module] SQL检测增加LRU缓存，相同sql仅检测一次
 + [module] 检测模块增加自定义html

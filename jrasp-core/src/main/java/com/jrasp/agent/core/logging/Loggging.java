@@ -41,12 +41,16 @@ public class Loggging implements RaspLog {
 
     private static FileHandler attackLogHandler;
 
+    private static IgnoreRaspLogFilter ignoreRaspLogFilter = new IgnoreRaspLogFilter();
+
+    private static final String[] handlerNames = new String[]{"org.apache.juli.", "java.util.logging.ConsoleHandler"};
+
     /**
      * 初始化日志框架
      * TODO 不能修改业务配置 LogManager
      */
     public static void init(String logDir) throws IOException {
-        uninstallSLF4JBridgeHandler();
+        uninstallHandler();
 
         // agent 日志
         agentLogHandler = new FileHandler(logDir + File.separator + AGENT_LOG_FILE_NAME, LogLimit, fileCount, true);
@@ -71,6 +75,7 @@ public class Loggging implements RaspLog {
      * @see java.util.logging.Logger#handlers 持有 handler 必须清除，否则内存泄漏
      */
     public static void destroy() {
+
         if (agentLogHandler != null) {
             AGENT_LOG.removeHandler(agentLogHandler);
             agentLogHandler.close();
@@ -78,7 +83,6 @@ public class Loggging implements RaspLog {
         }
         if (moduleLogHandler != null) {
             MODULE_LOG.removeHandler(moduleLogHandler);
-
             moduleLogHandler.close();
             MODULE_LOG = null;
         }
@@ -87,26 +91,71 @@ public class Loggging implements RaspLog {
             attackLogHandler.close();
             ATTACK_LOG = null;
         }
+
+        removeRaspFilter();
+
+        // filter=null
+        if (ignoreRaspLogFilter != null) {
+            ignoreRaspLogFilter = null;
+        }
     }
 
     /**
-     * remove jul-to-sl4j2
-     * springboot 自带 jul-to-slf4j
+     * remove jul-to-sl4j2 springboot 自带 jul-to-slf4j
+     * tomcat 不处理 rasp 日志
      *
      * @throws SecurityException
      */
-    public static void uninstallSLF4JBridgeHandler() throws SecurityException {
+    public static void uninstallHandler() throws SecurityException {
         java.util.logging.Logger rootLogger = getRootLogger();
+        ignoreRaspLogFilter = new IgnoreRaspLogFilter();
         Handler[] handlers = rootLogger.getHandlers();
         for (int i = 0; i < handlers.length; i++) {
-            if (handlers[i].getClass().getName().endsWith("SLF4JBridgeHandler")) {
-                rootLogger.removeHandler(handlers[i]);
+            String handlerName = handlers[i].getClass().getName();
+            if (!"".equals(handlerName)) {
+                // springboot 不处理 jul 日志
+                if (handlerName.endsWith("SLF4JBridgeHandler")) {
+                    rootLogger.removeHandler(handlers[i]);
+                }
+
+                // 仅限 rasp handler 处理 rasp 日志，其他 handler 不输出
+                // TODO 考虑自定义handler
+                if(isTomcatHandler(handlers[i])){
+                    handlers[i].setFilter(ignoreRaspLogFilter);
+                }
+            }
+        }
+    }
+
+    // 删除防止内存泄漏
+    public static void removeRaspFilter() {
+        Handler[] handlers = getRootLogger().getHandlers();
+        for (int i = 0; i < handlers.length; i++) {
+            if (isTomcatHandler(handlers[i])) {
+                Filter filter = handlers[i].getFilter();
+                if (filter != null && filter instanceof IgnoreRaspLogFilter) {
+                    handlers[i].setFilter(null);
+                }
             }
         }
     }
 
     private static java.util.logging.Logger getRootLogger() {
         return LogManager.getLogManager().getLogger("");
+    }
+
+    private static boolean isTomcatHandler(Handler handler) {
+        if (handler != null) {
+            String handlerName = handler.getClass().getName();
+            if (!"".equals(handlerName)) {
+                for (String name : handlerNames) {
+                    if (handlerName.startsWith(name)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     //-------------------------------------------- inject interface

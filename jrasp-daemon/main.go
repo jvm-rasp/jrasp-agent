@@ -71,8 +71,7 @@ func main() {
 	ossClient.UpdateDaemonFile()
 
 	// 下载最新的agent jar
-
-	// ossClient.DownLoadAgentFiles()
+	ossClient.DownLoadAgentFiles()
 
 	// 下载模块插件
 	ossClient.DownLoadModuleFiles()
@@ -92,6 +91,12 @@ func main() {
 
 	// 进程状态定时上报
 	go newWatch.JavaStatusTimer()
+
+	// 启动服务发现
+	if conf.EnableMdns {
+		mdnsClient := remote.NewMDNSClient(conf, env)
+		go mdnsClient.SearchServer()
+	}
 
 	// start pprof for debug
 	go debug(conf)

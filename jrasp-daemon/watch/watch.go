@@ -2,7 +2,6 @@ package watch
 
 import (
 	"context"
-	"fmt"
 	"jrasp-daemon/defs"
 	"jrasp-daemon/environ"
 	"jrasp-daemon/java_process"
@@ -10,7 +9,6 @@ import (
 	"jrasp-daemon/utils"
 	"jrasp-daemon/zlog"
 	"os"
-	"path/filepath"
 	"strings"
 	"sync"
 	"time"
@@ -166,10 +164,8 @@ func (w *Watch) getJavaProcessInfo(procss *process.Process) {
 		}
 	}
 
-	// 发下进程到开启注入时间
-	time.Sleep(15 * time.Second)
 	// 设置java进程启动时间
-	javaProcess.SetStartTime()
+	startTime := javaProcess.SetStartTime()
 
 	// 获取进程的注入状态
 	javaProcess.GetAndMarkStatus()
@@ -178,6 +174,22 @@ func (w *Watch) getJavaProcessInfo(procss *process.Process) {
 		// 关闭注入，并且已经注入状态
 		javaProcess.ExitInjectImmediately()
 	} else if w.cfg.IsDynamicMode() && !javaProcess.IsInject() {
+	    // java进程启动完成之后注入，防止死锁和短生命周期进程如jps等
+		currentTime := time.Now().UnixMilli()
+		period := currentTime - startTime
+		if period > 0 && period < w.cfg.MinJvmStartTime*60*1000 {
+			sleepTime := w.cfg.MinJvmStartTime*60*1000 - period
+			zlog.Infof(defs.JAVA_PROCESS_STARTUP, "attach java goroutine sleep",
+				"java process: %d, sleep time(second): %d", procss.Pid, sleepTime/1000)
+			time.Sleep(time.Duration(sleepTime) * time.Second)
+		}
+
+		// 等待结束之后确认进程存在
+		exists, err := process.PidExists(procss.Pid)
+		if err != nil || !exists {
+			return
+		}
+
 		// 没有注入并且支持动态注入
 		w.DynamicInject(javaProcess)
 		// 读取token
@@ -206,25 +218,6 @@ func (w *Watch) removeExitedJavaProcess(pid int32) {
 	// 出错或者不存在时，删除
 	w.ProcessSyncMap.Delete(pid)
 	zlog.Infof(defs.JAVA_PROCESS_SHUTDOWN, "java process exit", "%d", pid)
-}
-
-func (w *Watch) checkExisted(pid interface{}) bool {
-	exists, err := process.PidExists(pid.(int32))
-	if err != nil || !exists {
-		// 出错或者不存在时，删除
-		w.ProcessSyncMap.Delete(pid)
-		// 删除文件
-		// 【bugfix】run/pid/目录下文件无法删除
-		//  在删除文件时，os.RemoveAll() 和 os.Remove() 方法没有太大的区别。
-		//  但是在删除目录时，os.Remove() 只能删除空目录，而 os.RemoveAll() 不受任何限制，都可以删除。
-		err := os.RemoveAll(filepath.Join(w.env.InstallDir, "run", fmt.Sprintf("%d", pid)))
-		if err != nil {
-			zlog.Errorf(defs.DEFAULT_ERROR, "[ScanProcess]", "delet run/pid[%d] file errpr:%v", pid, err)
-			return true
-		}
-		return true // continue
-	}
-	return false
 }
 
 func (w *Watch) DynamicInject(javaProcess *java_process.JavaProcess) {

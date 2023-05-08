@@ -1,6 +1,7 @@
 package userconfig
 
 import (
+	"errors"
 	"fmt"
 	"jrasp-daemon/defs"
 	"time"
@@ -48,12 +49,11 @@ type Config struct {
 	HeartBeatReportTicker uint   `json:"heartBeatReportTicker"`
 	DependencyTicker      uint32 `json:"dependencyTicker"`
 
-	// jrasp-daemon 自身配置
-	BinFileUrl  string `json:"binFileUrl"`  // 下载链接
-	BinFileHash string `json:"binFileHash"` // hash
+	// agent lib核心包下载链接
+	RaspLibConfigs ZipFileInfo `json:"raspLibConfigs"`
 
-	// agent 核心包下载链接
-	AgentDownLoadConfigs []AgentDownLoadConfig `json:"agentDownLoadConfigs"`
+	// 守护进程下载链接
+	RaspBinConfigs ZipFileInfo `json:"raspBinConfigs"`
 
 	// module列表
 	ModuleConfigs []ModuleConfig `json:"moduleConfigs"`
@@ -68,6 +68,10 @@ type Config struct {
 	EnablePid bool `json:"enablePid"` // 是否允许创建pid文件，防止重复启动
 
 	RemoteHosts []string `json:"remoteHosts"` // 服务端地址
+
+	MinJvmStartTime int64 `json:"minJvmStartTime"` // java进程启动最小时间间隔，单位分钟，默认3分钟
+
+	EnableMdns bool `json:"enableMdns"` // 是否开启mdns功能
 }
 
 // ModuleConfig module信息
@@ -80,11 +84,27 @@ type ModuleConfig struct {
 	Parameters map[string][]interface{} `json:"parameters"` // 参数列表
 }
 
-// agent 核心包下载链接
-type AgentDownLoadConfig struct {
-	JarName     string `json:"jarName"`     // 名称
-	DownLoadURL string `json:"downLoadURL"` // 下载链接
-	Md5         string `json:"md5"`         // 插件hash
+// ZipFileInfo zip包下载链接
+type ZipFileInfo struct {
+	FileName    string        `json:"fileName"`
+	DownloadUrl string        `json:"downloadUrl"`
+	Md5         string        `json:"md5"`
+	ItemsInfo   []ZipItemInfo `json:"itemsInfo"`
+}
+
+func (zipFileInfo *ZipFileInfo) GetMD5ByName(fileName string) (string, error) {
+	itemList := zipFileInfo.ItemsInfo
+	for _, item := range itemList {
+		if item.FileName == fileName {
+			return item.Md5, nil
+		}
+	}
+	return "", errors.New(fmt.Sprintf("not found file %v in %v", fileName, zipFileInfo.FileName))
+}
+
+type ZipItemInfo struct {
+	FileName string `json:"fileName"`
+	Md5      string `json:"md5"`
 }
 
 func InitConfig() (*Config, error) {
@@ -160,8 +180,11 @@ func setDefaultValue(vp *viper.Viper) {
 
 	vp.SetDefault("AgentDownLoadConfigs", nil)
 
-	vp.SetDefault("RemoteHosts", []string{"localhost:8088/rasp-admin"})
+	// wss://www.server.jrasp.com:8088/rasp-admin
+	vp.SetDefault("RemoteHosts", []string{"wss://www.server.jrasp.com:8088/rasp-admin"})
 
+	vp.SetDefault("MinJvmStartTime", 3)
+	vp.SetDefault("EnableMdns", true)
 
 	// vp.SetDefault("RaspBridgeJar", "")
 	// vp.SetDefault("RaspCoreJar", "")

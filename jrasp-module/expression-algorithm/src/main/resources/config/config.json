@@ -1,0 +1,42 @@
+{
+  "moduleName": "expression-algorithm",
+  "parameters": {
+    "ognl_min_length": 30,
+    "ognl_max_limit_length": 200,
+    "ognl_black_list_action": 0,
+    "ognl_max_limit_length_action": 0,
+    "ognl_black_list": [
+      "java.lang.Runtime",
+      "java.lang.Class",
+      "java.lang.ClassLoader",
+      "java.lang.System",
+      "java.lang.ProcessBuilder",
+      "java.lang.Object",
+      "java.lang.Shutdown",
+      "ognl.OgnlContext",
+      "ognl.TypeConverter",
+      "ognl.MemberAccess",
+      "_memberAccess",
+      "ognl.ClassResolver",
+      "java.io.File",
+      "javax.script.ScriptEngineManager",
+      "excludedClasses",
+      "excludedPackageNamePatterns",
+      "excludedPackageNames",
+      "com.opensymphony.xwork2.ActionContext"
+    ],
+    "spel_min_length": 30,
+    "spel_max_limit_length": 400,
+    "spel_black_list_action": 0,
+    "spel_max_limit_length_action": 0,
+    "spel_black_list": [
+      "java.lang.Runtime",
+      "java.lang.ProcessBuilder",
+      "javax.script.ScriptEngineManager",
+      "java.lang.System",
+      "org.springframework.cglib.core.ReflectUtils",
+      "java.io.File",
+      "javax.management.remote.rmi.RMIConnector"
+    ]
+  }
+}

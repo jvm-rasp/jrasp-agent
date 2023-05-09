@@ -48,6 +48,7 @@ type JavaProcess struct {
 	JavaPid    int32                `json:"javaPid"`   // 进程信息
 	StartTime  string               `json:"startTime"` // 启动时间
 	CmdLines   []string             `json:"cmdLines"`  // 命令行信息
+	AppNames   []string             `json:"appNames"`  // tomcat应用名
 	AgentMode  userconfig.AgentMode `json:"agentMode"` // agent 运行模式
 	ServerIp   string               `json:"serverIp"`  // 内置jetty开启的IP:端口
 	ServerPort string               `json:"serverPort"`
@@ -312,10 +313,39 @@ func (jp *JavaProcess) SetPid(pid int32) {
 
 func (jp *JavaProcess) SetCmdLines() {
 	cmdLines, err := jp.process.CmdlineSlice()
+	//cmdLines, err := jp.process.Cmdline()
 	if err != nil {
 		zlog.Warnf(defs.WATCH_DEFAULT, "get process cmdLines error", `{"pid":%d,"err":%v}`, jp.JavaPid, err)
 	}
 	jp.CmdLines = cmdLines
+}
+
+func (jp *JavaProcess) SetAppNames() {
+	jp.AppNames = []string{}
+	cwd, err := jp.process.Exe()
+	if err != nil {
+		zlog.Warnf(defs.WATCH_DEFAULT, "get process cwd error", `{"pid":%d,"err":%v}`, jp.JavaPid, err)
+		return
+	}
+	webapps := filepath.Join(cwd, "..", "..", "..", "webapps")
+	pathExists, _ := utils.PathExists(webapps)
+	if !pathExists {
+		return
+	}
+	dirEntry, err := os.ReadDir(webapps)
+	if err != nil {
+		zlog.Warnf(defs.WATCH_DEFAULT, "read dir error", `{"pid":%d,"err":%v}`, jp.JavaPid, err)
+		return
+	}
+	for _, item := range dirEntry {
+		if item.IsDir() || item.Type() == os.ModeSymlink {
+			jp.AppNames = append(jp.AppNames, item.Name())
+		}
+	}
+}
+
+func (jp *JavaProcess) GetAppNames() []string {
+	return jp.AppNames
 }
 
 func (jp *JavaProcess) GetPid() int32 {

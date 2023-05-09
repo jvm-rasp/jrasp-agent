@@ -241,7 +241,7 @@ func (this *Update) calDiskHash(files []fs.FileInfo) map[string]string {
 		// 不在配置列表中的插件，执行删除
 		if notExisted {
 			_ = os.Remove(fileAbsPath)
-			zlog.Warnf(defs.DOWNLOAD, "module is not in config, wile delete", "name:%s", name)
+			zlog.Infof(defs.DOWNLOAD, "module is not in config, will delete", "name:%s", name)
 			continue
 		}
 

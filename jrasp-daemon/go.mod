@@ -60,5 +60,6 @@ require (
 	github.com/moby/patternmatcher v0.5.0 // indirect
 	github.com/moby/term v0.0.0-20221205130635-1aeaba878587 // indirect
 	github.com/opencontainers/runc v1.1.6 // indirect
+	github.com/otiai10/copy v1.9.0
 	gotest.tools/v3 v3.4.0 // indirect
 )

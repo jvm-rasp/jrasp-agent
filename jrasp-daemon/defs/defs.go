@@ -55,7 +55,8 @@ const (
 
 	CONFIG_ID int = START_LOG_ID + 30 // 配置文件id
 
-	MDNS_SEARCH int = START_LOG_ID + 31 // mdns搜索服务
+	WATCH_DOCKER int = START_LOG_ID + 31 // 容器监视id
+	MDNS_SEARCH  int = START_LOG_ID + 32 // mdns搜索服务
 )
 
 const DAEMON_PID_FILE = "pid"

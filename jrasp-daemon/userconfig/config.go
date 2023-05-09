@@ -47,6 +47,7 @@ type Config struct {
 	PidExistsTicker       uint32 `json:"pidExistsTicker"`
 	ProcessInjectTicker   uint32 `json:"processInjectTicker"`
 	HeartBeatReportTicker uint   `json:"heartBeatReportTicker"`
+	ContainerTicker       uint32 `json:"containerTicker"`
 	DependencyTicker      uint32 `json:"dependencyTicker"`
 
 	// agent lib核心包下载链接
@@ -160,6 +161,7 @@ func setDefaultValue(vp *viper.Viper) {
 	vp.SetDefault("PidExistsTicker", 10)
 	vp.SetDefault("ProcessInjectTicker", 30)
 	vp.SetDefault("HeartBeatReportTicker", 5)
+	vp.SetDefault("ContainerTicker", 5)
 	vp.SetDefault("DependencyTicker", 12*60*60)
 
 	vp.SetDefault("EnableBlock", false)
@@ -180,10 +182,10 @@ func setDefaultValue(vp *viper.Viper) {
 
 	vp.SetDefault("AgentDownLoadConfigs", nil)
 
-	// wss://www.server.jrasp.com:8088/rasp-admin
-	vp.SetDefault("RemoteHosts", []string{"wss://www.server.jrasp.com:8088/rasp-admin"})
+	vp.SetDefault("RemoteHosts", []string{"localhost:8088/rasp-admin"})
 
 	vp.SetDefault("MinJvmStartTime", 3)
+
 	vp.SetDefault("EnableMdns", true)
 
 	// vp.SetDefault("RaspBridgeJar", "")

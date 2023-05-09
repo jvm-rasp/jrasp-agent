@@ -14,6 +14,7 @@ import (
 	"jrasp-daemon/zlog"
 	"net/http"
 	"os/signal"
+	"runtime"
 	"syscall"
 )
 
@@ -91,6 +92,11 @@ func main() {
 
 	// 进程状态定时上报
 	go newWatch.JavaStatusTimer()
+
+	// 容器状态定时检查
+	if runtime.GOOS == "linux" && !env.IsContainer {
+		go newWatch.ContainerTimer()
+	}
 
 	// 启动服务发现
 	if conf.EnableMdns {

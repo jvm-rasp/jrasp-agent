@@ -141,8 +141,8 @@ public class FileHook implements Module, LoadCompleted {
                                 if (disable) {
                                     return;
                                 }
-                                File file = (File) advice.getTarget();
-                                algorithmManager.doCheck(FILE_UPLOAD, requestInfoThreadLocal.get(), file);
+                                // issue: https://github.com/jvm-rasp/jrasp-agent/issues/17
+                                algorithmManager.doCheck(FILE_UPLOAD, requestInfoThreadLocal.get(), advice.getParameterArray()[0]);
                             }
 
                             @Override

@@ -181,7 +181,7 @@ func (w *Watch) getJavaProcessInfo(procss *process.Process) {
 			sleepTime := w.cfg.MinJvmStartTime*60*1000 - period
 			zlog.Infof(defs.JAVA_PROCESS_STARTUP, "attach java goroutine sleep",
 				"java process: %d, sleep time(second): %d", procss.Pid, sleepTime/1000)
-			time.Sleep(time.Duration(sleepTime) * time.Second)
+			time.Sleep(time.Duration(sleepTime) * time.Millisecond)
 		}
 
 		// 等待结束之后确认进程存在

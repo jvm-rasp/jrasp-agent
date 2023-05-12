@@ -68,6 +68,9 @@ func main() {
 	// 可执行文件下载
 	ossClient := update.NewUpdateClient(conf, env)
 
+	// 清理无效或者过期的pid目录
+	ossClient.CleanPidFiles()
+
 	// 下载最新的可执行文件
 	ossClient.UpdateDaemonFile()
 

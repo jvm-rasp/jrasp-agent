@@ -258,7 +258,7 @@ public class FileHook implements Module, LoadCompleted {
                          */
                         .onMethod(new String[]{
                                         "delete(Ljava/nio/file/Path;)V",
-                                        "deleteIfExists#(Ljava/nio/file/Path;)V"
+                                        "deleteIfExists(Ljava/nio/file/Path;)V"
                                 },
                                 new AdviceListener() {
                                     @Override

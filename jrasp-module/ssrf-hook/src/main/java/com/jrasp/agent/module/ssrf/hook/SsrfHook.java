@@ -69,7 +69,7 @@ public class SsrfHook extends ModuleLifecycleAdapter implements Module, LoadComp
                  * socket
                  */
                 .onClass(new ClassMatcher("java/net/Socket")
-                        .onMethod(new MethodMatcher("(Ljava/net/SocketAddress;I)V",
+                        .onMethod(new MethodMatcher("connect(Ljava/net/SocketAddress;I)V",
                                         new AdviceListener() {
                                             @Override
                                             protected void before(Advice advice) throws Throwable {

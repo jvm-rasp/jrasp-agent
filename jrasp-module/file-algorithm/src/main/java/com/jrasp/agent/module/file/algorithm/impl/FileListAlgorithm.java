@@ -33,11 +33,11 @@ public class FileListAlgorithm implements Algorithm {
      * 系统根路径下主要目录
      */
     private Set<String> dangerDirList = new HashSet<String>(Arrays.asList(
-            "/", "/home", "/etc",
+            "/", "/home", "/etc", "/opt",
             "/usr", "/usr/local",
             "/var/log", "/proc",
             "/sys", "/root",
-            "C:\\", "D:\\", "E:\\")
+            "C:\\", "D:\\", "E:\\", "F:\\", "G:\\")
     );
 
     public FileListAlgorithm(Map<String, String> configMaps, RaspLog logger, String metaInfo) {

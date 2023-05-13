@@ -26,7 +26,7 @@ public class FileUploadAlgorithm implements Algorithm {
     private String[] travelStr = new String[]{"../", "..\\"};
 
     //禁止上传脚本文件
-    private String[] fileUploadBlackList = new String[]{".jsp", ".asp", ".phar", ".phtml", ".sh", ".py", ".pl", ".rb"};
+    private String[] fileUploadBlackList = new String[]{".jsp", ".asp", ".phar", ".phtml", ".sh", ".py", ".pl", ".rb",".exe", ".dll", ".scr", ".vbs", ".cmd", ".bat"};
 
     @Override
     public String getType() {

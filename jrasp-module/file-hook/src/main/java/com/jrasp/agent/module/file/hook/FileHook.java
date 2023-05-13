@@ -189,7 +189,10 @@ public class FileHook implements Module, LoadCompleted {
                                 } else {
                                     type = FILE_READ;
                                 }
-                                algorithmManager.doCheck(type, requestInfoThreadLocal.get(), file);
+                                // bugfix: jar/war包读取时误报
+                                if (file != null && !file.getName().endsWith(".jar") && !file.getName().endsWith(".war")) {
+                                    algorithmManager.doCheck(type, requestInfoThreadLocal.get(), file);
+                                }
                             }
 
                             @Override

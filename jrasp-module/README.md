@@ -15,7 +15,7 @@ jrasp-agent 的安全模块，目前支持的模块有：
 - 9.SSRF 
 - 10.danger protocol  (进行中)
 - 11.DNS查询  (进行中)
-- 12.Memory  (进行中)
+- 12.Memory
 - 13.类加载器 (进行中)
 - 14.attach (进行中)
 
@@ -58,15 +58,31 @@ logger.info(String message);
 
 ### 模块引入依赖
 
-比如模块Hook的类在`运行时`的 tomcat 中，为了避免反射，在编译时引入必须引入tomcat依赖，因此依赖项的`scope`必须为`provided`
+比如模块Hook的类在`运行时`的 tomcat 中，为了避免反射，在编译时必须引入tomcat依赖，因此依赖项的`scope`必须为`provided`
 
 ```java
 <dependency>
-<groupId>org.apache.tomcat</groupId>
-<artifactId>tomcat-catalina</artifactId>
-<version>9.0.56</version>
-<scope>provided</scope><!--运行环境提供-->
+    <groupId>org.apache.tomcat</groupId>
+    <artifactId>tomcat-catalina</artifactId>
+    <version>9.0.56</version>
+    <scope>provided</scope><!--运行环境提供-->
 </dependency>
+```
+
+或者将运行时获取的类和方法写入到`jrasp-maven`工程中
+例如
+```java
+package com.mysql.cj.jdbc;
+
+/**
+ * 这里的类和方法保证模块编译时通过即可，实际依赖是运行时真实的类
+ * mysql8.0
+ */
+public class ClientPreparedStatement {
+    public String getPreparedSql() {
+        return "";
+    }
+}
 ```
 
 ### 模块类匹配
@@ -79,7 +95,7 @@ forkAndExec(I[B[B[BI[BI[B[IZ)I
 
 #### 获取描述符号的方法
 
-##### 方式1：解压jar包反编译
+##### 方式1：解压类所在的jar包并反编译
 
 解压`rt.jar`包（类所在的jar包）后（解压命令：jar -xvf rt.jar）:
 

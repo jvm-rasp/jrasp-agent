@@ -141,8 +141,8 @@ public class FileHook implements Module, LoadCompleted {
                                 if (disable) {
                                     return;
                                 }
-                                File file = (File) advice.getTarget();
-                                algorithmManager.doCheck(FILE_UPLOAD, requestInfoThreadLocal.get(), file);
+                                // issue: https://github.com/jvm-rasp/jrasp-agent/issues/17
+                                algorithmManager.doCheck(FILE_UPLOAD, requestInfoThreadLocal.get(), advice.getParameterArray()[0]);
                             }
 
                             @Override
@@ -189,7 +189,10 @@ public class FileHook implements Module, LoadCompleted {
                                 } else {
                                     type = FILE_READ;
                                 }
-                                algorithmManager.doCheck(type, requestInfoThreadLocal.get(), file);
+                                // bugfix: jar/war包读取时误报
+                                if (file != null && !file.getName().endsWith(".jar") && !file.getName().endsWith(".war")) {
+                                    algorithmManager.doCheck(type, requestInfoThreadLocal.get(), file);
+                                }
                             }
 
                             @Override

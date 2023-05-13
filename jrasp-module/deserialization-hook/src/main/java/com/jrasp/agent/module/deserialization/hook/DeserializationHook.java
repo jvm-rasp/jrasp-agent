@@ -56,7 +56,7 @@ public class DeserializationHook extends ModuleLifecycleAdapter implements Modul
     @Override
     public boolean update(Map<String, String> configMaps) {
         this.disable = ParamSupported.getParameter(configMaps, "disable", Boolean.class, false);
-        return false;
+        return true;
     }
 
     @Override

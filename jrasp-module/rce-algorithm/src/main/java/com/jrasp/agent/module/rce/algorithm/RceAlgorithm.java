@@ -41,9 +41,14 @@ public class RceAlgorithm extends ModuleLifecycleAdapter implements Module, Algo
     /**
      * 命令执行黑名单
      */
-    private volatile List<String> rceBlockList = Arrays.asList("curl", "wget",
-            "echo", "touch", "gawk", "telnet", "xterm", "perl", "python", "python3",
-            "ruby", "lua", "whoami", "php", "pwd", "ifconfig", "alias", "export"
+    private volatile List<String> rceBlockList = Arrays.asList("curl", "wget", "echo", "touch", "gawk", "telnet",
+            "xterm", "perl", "python", "python3", "ruby", "lua", "whoami", "dir", "ls", "ping", "ip", "cat",
+            "type", "php", "pwd", "ifconfig", "ipconfig", "alias", "export", "nc", "crontab", "find", "wmic", "net",
+            "tac", "more", "bzmore", "less", "bzless", "head", "tail", "nl", "sed", "sort", "uniq", "rev", "od", "vim",
+            "vi", "man", "paste", "grep", "file", "dd", "systeminfo", "findstr", "tasklist", "netstat", "netsh",
+            "powershell", "for", "arp", "quser", "chmod", "useradd", "hostname", "pwd", "cd", "cp", "mv", "history",
+            "tar", "zip", "route", "uname", "id", "passwd", "rpm", "dmesg", "env", "ps", "top", "dpkg", "ss", "lsof",
+            "chkconfig"
     );
 
     private Set<String> rceDangerStackSet = new HashSet<String>(Arrays.asList(

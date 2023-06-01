@@ -2,6 +2,7 @@ package com.jrasp.agent.module.deserialization.algorithm;
 
 import com.jrasp.agent.api.Module;
 import com.jrasp.agent.api.ModuleLifecycleAdapter;
+import com.jrasp.agent.api.RaspConfig;
 import com.jrasp.agent.api.algorithm.AlgorithmManager;
 import com.jrasp.agent.api.annotation.Information;
 import com.jrasp.agent.api.annotation.RaspResource;
@@ -25,6 +26,9 @@ public class DeserializationAlgorithm extends ModuleLifecycleAdapter implements 
     private RaspLog logger;
 
     @RaspResource
+    private RaspConfig raspConfig;
+
+    @RaspResource
     private AlgorithmManager algorithmManager;
 
     @RaspResource
@@ -38,9 +42,9 @@ public class DeserializationAlgorithm extends ModuleLifecycleAdapter implements 
 
     @Override
     public boolean update(Map<String, String> configMaps) {
-        oisAlgorithm = new OisAlgorithm(logger, configMaps, metaInfo);
-        jsonAlgorithm = new JsonAlgorithm(logger, configMaps, metaInfo);
-        xmlAlgorithm = new XmlAlgorithm(logger, configMaps, metaInfo);
+        oisAlgorithm = new OisAlgorithm(logger, raspConfig, configMaps, metaInfo);
+        jsonAlgorithm = new JsonAlgorithm(logger, raspConfig, configMaps, metaInfo);
+        xmlAlgorithm = new XmlAlgorithm(logger, raspConfig, configMaps, metaInfo);
         algorithmManager.register(oisAlgorithm);
         algorithmManager.register(jsonAlgorithm);
         algorithmManager.register(xmlAlgorithm);
@@ -49,9 +53,9 @@ public class DeserializationAlgorithm extends ModuleLifecycleAdapter implements 
 
     @Override
     public void loadCompleted() {
-        oisAlgorithm = new OisAlgorithm(logger, metaInfo);
-        jsonAlgorithm = new JsonAlgorithm(logger, metaInfo);
-        xmlAlgorithm = new XmlAlgorithm(logger, metaInfo);
+        oisAlgorithm = new OisAlgorithm(logger);
+        jsonAlgorithm = new JsonAlgorithm(logger);
+        xmlAlgorithm = new XmlAlgorithm(logger);
         algorithmManager.register(oisAlgorithm);
         algorithmManager.register(jsonAlgorithm);
         algorithmManager.register(xmlAlgorithm);

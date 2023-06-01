@@ -1,9 +1,14 @@
 {
   "moduleName": "expression-algorithm",
+  "cn_map": {
+    "ognl_black_list_action": "拦截OGNL表达式注入攻击",
+    "spel_black_list_action": "拦截SPEL表达式注入攻击",
+    "primefaces_action": "拦截Primefaces EL表达式注入攻击"
+  },
   "parameters": {
     "ognl_min_length": 30,
     "ognl_max_limit_length": 200,
-    "ognl_black_list_action": 0,
+    "ognl_black_list_action": 1,
     "ognl_max_limit_length_action": 0,
     "ognl_black_list": [
       "java.lang.Runtime",
@@ -27,7 +32,7 @@
     ],
     "spel_min_length": 30,
     "spel_max_limit_length": 400,
-    "spel_black_list_action": 0,
+    "spel_black_list_action": 1,
     "spel_max_limit_length_action": 0,
     "spel_black_list": [
       "java.lang.Runtime",
@@ -37,6 +42,7 @@
       "org.springframework.cglib.core.ReflectUtils",
       "java.io.File",
       "javax.management.remote.rmi.RMIConnector"
-    ]
+    ],
+    "primefaces_action": 1
   }
 }

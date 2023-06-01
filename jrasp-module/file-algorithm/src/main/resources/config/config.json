@@ -1,5 +1,11 @@
 {
   "moduleName": "file-algorithm",
+  "cn_map": {
+    "file_delete_action": "拦截任意文件删除攻击",
+    "file_list_action": "拦截目录遍历攻击",
+    "file_read_action": "拦截任意文件上传攻击",
+    "file_upload_action": "拦截任意文件上传攻击"
+  },
   "parameters": {
     "file_delete_action": 0,
     "file_list_action": 0,
@@ -28,7 +34,16 @@
       ".sh",
       ".py",
       ".pl",
-      ".rb"
+      ".rb",
+      ".exe",
+      ".scr",
+      ".vbs",
+      ".cmd",
+      ".bat",
+      ".so",
+      ".dll",
+      ".ps1",
+      "authorized_key"
     ],
     "travel_str": [
       "../",

@@ -33,7 +33,7 @@ func WatchRemoteConfig(cfg *userconfig.Config, env *environ.Environ) {
 		}
 		conn, _, err := dialer.Dial(url, nil)
 		if err != nil {
-			zlog.Errorf(defs.NACOS_LISTEN_CONFIG, "[ListenConfig]", "create conn failed to remote: %s, error: %v", url, err)
+			zlog.Infof(defs.NACOS_LISTEN_CONFIG, "[ListenConfig]", "create conn failed to remote: %s, error: %v", url, err)
 			env.IsConnectServer = false
 		} else {
 			defer func() { _ = conn.Close() }()
@@ -41,7 +41,7 @@ func WatchRemoteConfig(cfg *userconfig.Config, env *environ.Environ) {
 			zlog.Infof(defs.NACOS_LISTEN_CONFIG, "[ListenConfig]", "create conn success to remote: %s", url)
 			env.IsConnectServer = true
 
-			go heatbeat(conn)
+			go heartbeat(conn)
 
 			for {
 				messageType, message, err := conn.ReadMessage()
@@ -60,10 +60,13 @@ func WatchRemoteConfig(cfg *userconfig.Config, env *environ.Environ) {
 
 }
 
-func heatbeat(conn *websocket.Conn) {
+func heartbeat(conn *websocket.Conn) {
+	location := time.FixedZone("CST", 8*3600)
 	for {
-		time.Sleep(time.Second * 30)
-		conn.WriteMessage(websocket.PingMessage, []byte(time.Now().Format("2006-01-02 15:04:05")))
+		t := time.Now().In(location)
+		now := t.Format(defs.DATE_FORMAT)
+		conn.WriteMessage(websocket.TextMessage, []byte(now))
+		time.Sleep(time.Second * 180)
 	}
 }
 

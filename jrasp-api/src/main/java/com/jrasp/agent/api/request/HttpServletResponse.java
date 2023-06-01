@@ -1,6 +1,7 @@
 package com.jrasp.agent.api.request;
 
 import com.jrasp.agent.api.RaspConfig;
+import com.jrasp.agent.api.util.DateTimeUtil;
 import com.jrasp.agent.api.util.Reflection;
 
 /**
@@ -192,7 +193,7 @@ public class HttpServletResponse {
                 }
                 // 插入当前攻击类型和时间戳
                 script = script.replace("%attack_name%", attackInfo.getAttackType());
-                script = script.replace("%attack_time%", String.valueOf(attackInfo.getAttackTime()));
+                script = script.replace("%attack_time%", DateTimeUtil.timestamp2DateTime(attackInfo.getAttackTime()));
                 if (!isCommitted) {
                     resetBuffer();
                     Reflection.invokeMethod(response, "setStatus", new Class[]{int.class}, statusCode);

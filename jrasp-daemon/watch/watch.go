@@ -163,7 +163,7 @@ func (w *Watch) getJavaProcessInfo(procss *process.Process) {
 
 	// IDEA
 	for _, v := range javaProcess.CmdLines {
-		if strings.Contains(v, "IDEA") || strings.Contains(v, "vscode") {
+		if strings.Contains(v, "IDEA") || strings.Contains(v, "GoLand") || strings.Contains(v, "vscode") {
 			zlog.Debugf(defs.WATCH_DEFAULT, "idea or vscode process, java process ignore.", "javaPid:%d", procss.Pid)
 			return
 		}
@@ -183,6 +183,12 @@ func (w *Watch) getJavaProcessInfo(procss *process.Process) {
 			zlog.Debugf(defs.WATCH_DEFAULT, "ZooKeeper process, java process ignore.", "javaPid:%d", procss.Pid)
 			return
 		}
+	}
+
+	// 只有wrapper进程启动的才进行注入
+	if javaProcess.CmdLines[len(javaProcess.CmdLines)-1] != "stop" {
+		zlog.Debugf(defs.WATCH_DEFAULT, "None wrapper start process, java process ignore.", "javaPid:%d", procss.Pid)
+		return
 	}
 
 	// 发下进程到开启注入时间

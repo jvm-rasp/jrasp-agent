@@ -327,7 +327,7 @@ func (jp *JavaProcess) SetAppNames() {
 		zlog.Warnf(defs.WATCH_DEFAULT, "get process cwd error", `{"pid":%d,"err":%v}`, jp.JavaPid, err)
 		return
 	}
-	webapps := filepath.Join(cwd, "..", "..", "..", "webapps")
+	webapps := getWebAppsDir(cwd)
 	pathExists, _ := utils.PathExists(webapps)
 	if !pathExists {
 		return
@@ -342,6 +342,7 @@ func (jp *JavaProcess) SetAppNames() {
 			jp.AppNames = append(jp.AppNames, item.Name())
 		}
 	}
+	zlog.Infof(defs.RESOURCE_NAME_UPDATE, "get resource success", `{"hostName": "%v", "ip": "%v", "resourceName": "%v"}`, jp.env.HostName, jp.env.Ip, jp.AppNames)
 }
 
 func (jp *JavaProcess) GetAppNames() []string {
@@ -407,5 +408,19 @@ func getJattachExe() string {
 		return "jattach.exe"
 	default:
 		return "UNKNOWN"
+	}
+}
+
+func getWebAppsDir(root string) string {
+	findDir := filepath.Join(root, "..")
+	if findDir == root {
+		return ""
+	}
+	webapps := filepath.Join(findDir, "webapps")
+	pathExists, _ := utils.PathExists(webapps)
+	if !pathExists {
+		return getWebAppsDir(findDir)
+	} else {
+		return webapps
 	}
 }

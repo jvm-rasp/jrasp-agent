@@ -37,9 +37,6 @@ public class DeserializationHook extends ModuleLifecycleAdapter implements Modul
     @RaspResource
     private ThreadLocal<Context> context;
 
-    @RaspResource
-    private String metaInfo;
-
     /**
      * object Input stream
      */
@@ -56,7 +53,7 @@ public class DeserializationHook extends ModuleLifecycleAdapter implements Modul
     @Override
     public boolean update(Map<String, String> configMaps) {
         this.disable = ParamSupported.getParameter(configMaps, "disable", Boolean.class, false);
-        return false;
+        return true;
     }
 
     @Override

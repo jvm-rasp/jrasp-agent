@@ -1,11 +1,15 @@
 package com.jrasp.agent.module.expression.algorithm.impl;
 
+import com.epoint.core.utils.classpath.ClassPathUtil;
 import com.jrasp.agent.api.ProcessControlException;
+import com.jrasp.agent.api.ProcessController;
+import com.jrasp.agent.api.RaspConfig;
 import com.jrasp.agent.api.algorithm.Algorithm;
 import com.jrasp.agent.api.log.RaspLog;
 import com.jrasp.agent.api.request.AttackInfo;
 import com.jrasp.agent.api.request.Context;
 import com.jrasp.agent.api.util.ParamSupported;
+import com.jrasp.agent.api.util.StringUtils;
 
 import java.util.Map;
 
@@ -61,22 +65,22 @@ public class OgnlAlgorithm implements Algorithm {
     };
 
     private final RaspLog logger;
+    private RaspConfig raspConfig;
+    private String metaInfo;
 
-    private final String metaInfo;
-
-    public OgnlAlgorithm(RaspLog logger, String metaInfo) {
+    public OgnlAlgorithm(RaspLog logger) {
         this.logger = logger;
-        this.metaInfo = metaInfo;
     }
 
-    public OgnlAlgorithm(RaspLog logger, Map<String, String> configMaps, String metaInfo) {
+    public OgnlAlgorithm(RaspLog logger, RaspConfig raspConfig, Map<String, String> configMaps, String metaInfo) {
         this.logger = logger;
+        this.raspConfig = raspConfig;
+        this.metaInfo = metaInfo;
         this.ognlMinLength = ParamSupported.getParameter(configMaps, "ognl_min_length", Integer.class, ognlMinLength);
         this.ognlMaxLimitLength = ParamSupported.getParameter(configMaps, "ognl_max_limit_length", Integer.class, ognlMaxLimitLength);
         this.ognlBlackListAction = ParamSupported.getParameter(configMaps, "ognl_black_list_action", Integer.class, ognlBlackListAction);
         this.ognlMaxLimitLengthAction = ParamSupported.getParameter(configMaps, "ognl_max_limit_length_action", Integer.class, ognlMaxLimitLengthAction);
         this.ognlBlackList = ParamSupported.getParameter(configMaps, "ognl_black_list", String[].class, ognlBlackList);
-        this.metaInfo = metaInfo;
     }
 
     @Override
@@ -86,6 +90,9 @@ public class OgnlAlgorithm implements Algorithm {
 
     @Override
     public void check(Context context, Object... parameters) throws Exception {
+        if (isWhiteList(context)) {
+            return;
+        }
         if (parameters[0] != null) {
             String expression = String.valueOf(parameters[0]);
             if (expression.length() >= ognlMinLength) {
@@ -110,6 +117,14 @@ public class OgnlAlgorithm implements Algorithm {
         }
     }
 
+    // 处理 Tomcat 启动时注入防护 Agent 产生的误报情况
+    private boolean isWhiteList(Context context) {
+        return context != null
+                && StringUtils.isBlank(context.getMethod())
+                && StringUtils.isBlank(context.getRequestURI())
+                && StringUtils.isBlank(context.getRequestURL());
+    }
+
     @Override
     public String getDescribe() {
         return "ognl check algorithm";
@@ -117,10 +132,10 @@ public class OgnlAlgorithm implements Algorithm {
 
     private void doAction(Context context, String expression, int action, String message, int level) throws ProcessControlException {
         boolean enableBlock = action == 1;
-        AttackInfo attackInfo = new AttackInfo(context, metaInfo, expression, enableBlock, getType(), getDescribe(), message, level);
+        AttackInfo attackInfo = new AttackInfo(context, ClassPathUtil.getWebContext(), metaInfo, expression, enableBlock, "OGNL代码执行", getDescribe(), message, level);
         logger.attack(attackInfo);
         if (enableBlock) {
-            ProcessControlException.throwThrowsImmediately(new RuntimeException("ognl expression block by rasp."));
+            ProcessController.throwsImmediatelyAndSendResponse(attackInfo, raspConfig, new RuntimeException("ognl expression block by EpointRASP."));
         }
     }
 

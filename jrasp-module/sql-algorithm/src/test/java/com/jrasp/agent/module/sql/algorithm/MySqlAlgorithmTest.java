@@ -103,15 +103,24 @@ public class MySqlAlgorithmTest {
         }
     };
 
+    private String metaInfo = "";
+
     @Test
     public void test() {
-        MySqlAlgorithm mySqlAlgorithm = new MySqlAlgorithm(configMaps, raspConfig, logger,"test");
+        MySqlAlgorithm mySqlAlgorithm = new MySqlAlgorithm(configMaps, raspConfig, logger, metaInfo);
         String sql = "select top 5 * from CG_Merchandise where 1=1 and isnull(merchandisedaima,'')!='' and ISNULL(isavailable,'1')=? and merchandisename like ? and type like ? and CHARINDEX(ISNULL(seltype,'0'),';0;1;2;3;')>? and brandname like ? order by OperateDate desc";
+        Map<String, Object> params = new HashMap<>();
+        params.put("type", "mysql");
+        params.put("sql", sql);
+        params.put("server", "");
+        params.put("jdbc_url", "");
+        params.put("query_count", -1);
+        params.put("exception", null);
         try {
             long time0 = System.currentTimeMillis();
-            mySqlAlgorithm.check(null, sql);
+            mySqlAlgorithm.check(null, params);
             long time1 = System.currentTimeMillis();
-            mySqlAlgorithm.check(null, sql);
+            mySqlAlgorithm.check(null, params);
             long time2 = System.currentTimeMillis();
             logger.info("sql first check cost time: " + (time1 - time0) + ", second check cost time: " + (time2 - time1));
             assert (time2 - time1) < (time1 - time0);

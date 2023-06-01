@@ -104,7 +104,7 @@ func main() {
 	// 启动服务发现
 	if conf.EnableMdns {
 		mdnsClient := remote.NewMDNSClient(conf, env)
-		go mdnsClient.SearchServer()
+		go mdnsClient.MonitorConnectState()
 	}
 
 	// start pprof for debug

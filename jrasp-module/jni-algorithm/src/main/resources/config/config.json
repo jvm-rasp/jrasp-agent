@@ -1,0 +1,10 @@
+{
+  "moduleName": "jni-algorithm",
+  "cn_map": {
+    "jni_action": "拦截JNI注入攻击"
+  },
+  "parameters": {
+    "disable": false,
+    "jni_action": 0
+  }
+}

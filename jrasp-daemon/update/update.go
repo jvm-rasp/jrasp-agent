@@ -102,7 +102,7 @@ func (this *Update) UpdateDaemonFile() {
 				}
 			}
 		} else {
-			zlog.Errorf(defs.DOWNLOAD, "[BUG] check new file hash err", "newFileHash:%s,configHash:%s", newHash, this.cfg.RaspBinConfigs.Md5)
+			zlog.Errorf(defs.DOWNLOAD, "[BUG] check new file hash err", "newFileHash:%s, configHash:%s", newHash, this.cfg.RaspBinConfigs.Md5)
 		}
 	}
 }
@@ -133,6 +133,7 @@ func (this *Update) DownLoadAgentFiles() {
 	}
 	// 3.下载
 	if isDown {
+		this.uninstallAgent()
 		this.downLoadAgent(fileHashMap)
 	}
 }

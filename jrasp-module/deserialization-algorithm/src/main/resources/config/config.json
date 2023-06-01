@@ -1,5 +1,10 @@
 {
   "moduleName": "deserialization-algorithm",
+  "cn_map": {
+    "json_black_list_action": "拦截JSON/YAML反序列化攻击",
+    "ois_black_list_action": "拦截ObjectInputStream反序列化攻击",
+    "xml_black_list_action": "拦截XML反序列化攻击"
+  },
   "parameters": {
     "json_black_list_action": 0,
     "json_white_class_list": [
@@ -62,7 +67,7 @@
       "org.apache.ibatis.executor",
       "com.caucho"
     ],
-    "ois_black_list_action": 0,
+    "ois_black_list_action": 1,
     "ois_black_class_list": [
       "org.codehaus.groovy.runtime.ConvertedClosure",
       "org.codehaus.groovy.runtime.ConversionHandler",

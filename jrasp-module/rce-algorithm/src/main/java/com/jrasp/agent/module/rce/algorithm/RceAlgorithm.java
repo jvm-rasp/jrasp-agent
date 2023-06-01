@@ -1,6 +1,6 @@
 package com.jrasp.agent.module.rce.algorithm;
 
-import com.jrasp.agent.api.Module;
+import com.epoint.core.utils.classpath.ClassPathUtil;
 import com.jrasp.agent.api.*;
 import com.jrasp.agent.api.algorithm.Algorithm;
 import com.jrasp.agent.api.algorithm.AlgorithmManager;
@@ -11,6 +11,7 @@ import com.jrasp.agent.api.request.AttackInfo;
 import com.jrasp.agent.api.request.Context;
 import com.jrasp.agent.api.util.ParamSupported;
 import com.jrasp.agent.api.util.StackTrace;
+import com.jrasp.agent.api.util.StringUtils;
 import org.kohsuke.MetaInfServices;
 
 import java.util.*;
@@ -26,10 +27,10 @@ public class RceAlgorithm extends ModuleLifecycleAdapter implements Module, Algo
     private RaspLog logger;
 
     @RaspResource
-    private String metaInfo;
+    private RaspConfig raspConfig;
 
     @RaspResource
-    private RaspConfig raspConfig;
+    private String metaInfo;
 
     private volatile Integer rceAction = 0;
 
@@ -41,9 +42,14 @@ public class RceAlgorithm extends ModuleLifecycleAdapter implements Module, Algo
     /**
      * 命令执行黑名单
      */
-    private volatile List<String> rceBlockList = Arrays.asList("curl", "wget",
-            "echo", "touch", "gawk", "telnet", "xterm", "perl", "python", "python3",
-            "ruby", "lua", "whoami", "php", "pwd", "ifconfig", "alias", "export"
+    private volatile List<String> rceBlockList = Arrays.asList("curl", "wget", "echo", "touch", "gawk", "telnet",
+            "xterm", "perl", "python", "python3", "ruby", "lua", "whoami", "dir", "ls", "ping", "ip", "cat",
+            "type", "php", "pwd", "ifconfig", "ipconfig", "alias", "export", "nc", "crontab", "find", "wmic", "net",
+            "tac", "more", "bzmore", "less", "bzless", "head", "tail", "nl", "sed", "sort", "uniq", "rev", "od", "vim",
+            "vi", "man", "paste", "grep", "file", "dd", "systeminfo", "findstr", "tasklist", "netstat", "netsh",
+            "powershell", "for", "arp", "quser", "chmod", "useradd", "hostname", "pwd", "cd", "cp", "mv", "history",
+            "tar", "zip", "route", "uname", "id", "passwd", "rpm", "dmesg", "env", "ps", "top", "dpkg", "ss", "lsof",
+            "chkconfig"
     );
 
     private Set<String> rceDangerStackSet = new HashSet<String>(Arrays.asList(
@@ -80,12 +86,19 @@ public class RceAlgorithm extends ModuleLifecycleAdapter implements Module, Algo
             "java.sql.DriverManager.getConnection"
     ));
 
+    private Set<String> rceWhiteStackSet = new HashSet<String>(Arrays.asList(
+            "com.epoint.EpointZBTool_BS.ZhaoBiaoFileZW.UploadZWFileUseInitAction",
+            "com.epoint.dzda.os.service.LinuxServiceImpl.getDeskUsage",
+            "com.epoint.security.SNLicense.getProcessorId"
+    ));
+
     @Override
     public boolean update(Map<String, String> configMaps) {
         this.rceAction = ParamSupported.getParameter(configMaps, "rce_action", Integer.class, rceAction);
         this.rceWhiteSet = ParamSupported.getParameter(configMaps, "rce_white_list", Set.class, rceWhiteSet);
         this.rceBlockList = ParamSupported.getParameter(configMaps, "rce_block_list", List.class, rceBlockList);
         this.rceDangerStackSet = ParamSupported.getParameter(configMaps, "rce_danger_stack_list", Set.class, rceDangerStackSet);
+        this.rceWhiteStackSet = ParamSupported.getParameter(configMaps, "rce_white_stack_list", Set.class, rceWhiteStackSet);
         return true;
     }
 
@@ -96,18 +109,25 @@ public class RceAlgorithm extends ModuleLifecycleAdapter implements Module, Algo
 
     @Override
     public void check(Context context, Object... parameters) throws Exception {
+        if (isWhiteList(context)) {
+            return;
+        }
         if (!raspConfig.isCheckDisable() && rceAction > -1) {
             // 命令执行白名单
             String cmd = (String) parameters[0];
             List<String> tokens = getTokens(cmd);
             String javaCmd = tokens.get(0);
+            if (isBehinderRealCMDBackdoor(cmd)) {
+                doActionCtl(1, context, cmd, "Behinder RealCMD backdoor: " + cmd, cmd, 100);
+                return;
+            }
             if (rceWhiteSet.contains(javaCmd)) {
                 return;
             }
             // 检测算法1： 用户输入后门
             // 用户命令是否包含在参数列表中
             if (context != null) {
-                String includeParameter = include(context.getParametersString(), tokens);
+                String includeParameter = include(context.getDecryptParametersString(), tokens);
                 if (includeParameter != null) {
                     doActionCtl(rceAction, context, cmd, "rce token contains in http parameters", includeParameter, 80);
                     return;
@@ -122,7 +142,7 @@ public class RceAlgorithm extends ModuleLifecycleAdapter implements Module, Algo
             //  检测算法2： 包含敏感字符
             for (String item : rceBlockList) {
                 if (javaCmd.contains(item)) {
-                    doActionCtl(rceAction, context, cmd, "java cmd [" + item + "] in black list.", "", 80);
+                    doActionCtl(rceAction, context, cmd, "java cmd [" + item + "] in black list.", cmd, 80);
                     return;
                 }
             }
@@ -131,14 +151,49 @@ public class RceAlgorithm extends ModuleLifecycleAdapter implements Module, Algo
             String[] stackTraceString = StackTrace.getStackTraceString(100, false);
             for (String stack : stackTraceString) {
                 if (rceDangerStackSet.contains(stack)) {
-                    doActionCtl(rceAction, context, cmd, "danger rce stack: " + stack, "", 90);
+                    doActionCtl(rceAction, context, cmd, "danger rce stack: " + stack, cmd, 90);
                     return;
                 }
             }
 
             // 检测算法4：命令执行监控
-            doActionCtl(rceAction, context, cmd, "log all rce", "", 50);
+            doActionCtl(rceAction, context, cmd, "log all rce", cmd, 50);
         }
+    }
+
+    private boolean isWhiteList(Context context) {
+        /*if (context != null
+                && StringUtils.isBlank(context.getMethod())
+                && StringUtils.isBlank(context.getRequestURI())
+                && StringUtils.isBlank(context.getRequestURL())) {
+            return true;
+        }*/
+        for (String stack : StackTrace.getStackTraceString()) {
+            for (String keyword : rceWhiteStackSet) {
+                if (stack.contains(keyword)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private boolean isBehinderRealCMDBackdoor(String cmd) {
+        String[] stacks = StackTrace.getStackTraceString();
+        for (String stack : stacks) {
+            if (stack.contains("RealCMD")) {
+                return true;
+            }
+        }
+        if (stacks.length == 6) {
+            if (stacks[4].contains("run(") && stacks[5].contains("Thread.run")) {
+                return true;
+            }
+        }
+        if (cmd.equals("cmd.exe")) {
+            return true;
+        }
+        return false;
     }
 
     private String include(String httpParameters, List<String> cmdArgs) {
@@ -155,10 +210,10 @@ public class RceAlgorithm extends ModuleLifecycleAdapter implements Module, Algo
     private void doActionCtl(int action, Context context, String cmd, String checkType, String message, int level) throws ProcessControlException {
         if (action > -1) {
             boolean enableBlock = action == 1;
-            AttackInfo attackInfo = new AttackInfo(context, metaInfo, cmd, enableBlock, getType(), checkType, message, level);
+            AttackInfo attackInfo = new AttackInfo(context, ClassPathUtil.getWebContext(), metaInfo, cmd, enableBlock, "命令执行", checkType, message, level);
             logger.attack(attackInfo);
-            if (enableBlock) {
-                ProcessController.throwsImmediatelyAndSendResponse(attackInfo, raspConfig, new RuntimeException("rce block by jrasp."));
+            if (enableBlock && !checkType.equals("log all rce")) {
+                ProcessController.throwsImmediatelyAndSendResponse(attackInfo, raspConfig, new RuntimeException("rce block by EpointRASP."));
             }
         }
     }

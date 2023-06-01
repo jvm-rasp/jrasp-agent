@@ -1,21 +1,31 @@
 {
   "moduleName": "sql-algorithm",
+  "cn_map": {
+    "slow_query_check_action": "开启SQL慢查询检测",
+    "exception_check_action": "开启SQL执行异常检测",
+    "regex_check_action": "开启SQL注入攻击正则算法检测",
+    "input_check_action": "开启SQL注入攻击用户输入算法检测"
+  },
   "parameters": {
     "slow_query_check_action": 0,
     "slow_query_count": 3000,
     "exception_check_action": 0,
     "regex_check_action": 0,
     "input_check_action": 0,
+    "anti_detect_regex": "add|all|alter|analyze|and|any|as|asc|avg|begin|between|by|case|create|count|delete|desc|do|dumpfile|else|elseif|end|exists|false|file|float|flush|follows|from|group|having|identified|if|in|insert|interval|into|join|last|like|limit|loop|not|null|on|or|order|procedure|regexp|return|rlike|select|then|true|union|update|values|xor",
+    "positive_regex": "^(, *)?(([a-zA-Z_]\\w*|[0-9+\\-x\\.]+) *, *)+([a-zA-Z_]\\w*|[0-9+\\-x\\.]+)$",
+    "prefilter_regex": "select|file|from|;",
+    "sql_regex": "",
     "mysql_error_code_list": [
       "1060", "1062", "1064", "1105", "1367", "1037"
     ],
     "mysql_blacklist_function": [
-      "version", "load_file", "database", "schema", "user", "system_user", "session_user", "benchmark",
+      "version", "load_file", "user", "system_user", "session_user", "benchmark",
       "current_user", "sleep", "xmltype", "receive_message", "pg_sleep", "is_srvrolemember",
       "updatexml", "extractvalue", "#hex", "#mid", "#ord", "#ascii", "#bin"
     ],
     "mysql_blacklist_keyword": [
-      "version", "load_file", "schema", "user", "system_user", "session_user", "benchmark",
+      "version", "load_file", "user", "system_user", "session_user", "benchmark",
       "current_user", "sleep", "xmltype", "receive_message", "pg_sleep", "is_srvrolemember",
       "updatexml", "extractvalue", "#hex", "#mid", "#ord", "#ascii", "#bin"
     ],
@@ -416,7 +426,7 @@
       "user", "system_user"
     ],
     "mssql_blacklist_schema": [
-      "master", "sys", "sysobjects", "sysdatabases", "information_schema"
+      "master", "sys", "sysobjects", "sysdatabases"
     ],
     "mssql_blacklist_table": [
       "sysaltfiles", "syslockinfo", "syscacheobjects", "syslogins", "syscharsets", "sysmessages",

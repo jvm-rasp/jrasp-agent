@@ -36,31 +36,29 @@ func (w *Watch) NotifyContainer() {
 	for _, process := range processList {
 		name, err := process.Cmdline()
 		if err != nil {
-			zlog.Errorf(defs.WATCH_DOCKER, "获取进程命令出错", "err:%v", err)
-			continue
+			if strings.Index(err.Error(), "no such file or directory") < 0 {
+				zlog.Errorf(defs.WATCH_DOCKER, "获取进程命令出错", "err:%v", err)
+				continue
+			}
 		}
 		if strings.HasSuffix(name, "stop") {
 			// 如果不是容器环境则跳过
 			if !checkIsContainer(process.Pid) {
 				continue
 			}
-			execPath, err := process.Cwd()
-			if err != nil {
-				zlog.Errorf(defs.WATCH_DOCKER, "获取进程路径出错", "err:%v", err)
-				continue
-			}
-			tomcat := filepath.Join(fmt.Sprintf("/proc/%v", process.Pid), "root", execPath, "../")
-			if !checkExistRASP(tomcat) {
+			if !checkExistRASP(process.Pid) {
+				tomcat := "/usr/local/tomcat"
 				containerId := getContainerIdByPid(int(process.Pid))
-				zlog.Warnf(defs.WATCH_DOCKER, "发现容器未安装RASP", "container id: %v", containerId)
-				copySelfToContainer(w.env.InstallDir, tomcat)
+				zlog.Debugf(defs.WATCH_DOCKER, "发现容器未安装RASP", "container id: %v", containerId)
+				//copySelfToContainer(w.env.InstallDir, tomcat)
+				copySelfToContainerNew(w.env.InstallDir, tomcat, containerId)
 			}
 		}
 	}
 }
 
-func checkExistRASP(tomcatPath string) bool {
-	rasp := filepath.Join(tomcatPath, "jrasp")
+func checkExistRASP(pid int32) bool {
+	rasp := fmt.Sprintf("/proc/%v/root/opt/jrasp", pid)
 	exist, err := utils.PathExists(rasp)
 	if err != nil || !exist {
 		return false
@@ -90,6 +88,56 @@ func copySelfToContainer(installDir string, tomcatPath string) {
 	err := cp.Copy(installDir, rasp, opt)
 	if err != nil {
 		zlog.Errorf(defs.WATCH_DOCKER, "复制RASP至容器内出错", "err:%v", err)
+	}
+}
+
+func copySelfToContainerNew(installDir string, tomcatPath string, containerId string) {
+	docker, err := utils.NewDocker()
+	if err != nil {
+		zlog.Errorf(defs.WATCH_DOCKER, "复制RASP至容器内出错", "初始化docker错误, err:%v", err)
+		return
+	}
+	defer docker.Close()
+	raspDir := "/opt/jrasp"
+	err = docker.Copy(installDir, raspDir, containerId)
+	if err != nil {
+		zlog.Errorf(defs.WATCH_DOCKER, "复制RASP至容器内出错", "复制文件错误, err:%v", err)
+		return
+	}
+	// 删除logs目录
+	cmd := "rm -rf logs run/* tmp/* pid"
+	resp, err := docker.Exec(containerId, raspDir, strings.Split(cmd, " "), []string{}, false)
+	if err != nil {
+		zlog.Errorf(defs.WATCH_DOCKER, "复制RASP至容器内出错", "执行命令%v出错, err:%v", cmd, err)
+		return
+	}
+	if strings.Index(resp, "禁止操作") > 0 {
+		cmd = "busybox rm -rf logs run/* tmp/* pid"
+		_, err = docker.Exec(containerId, raspDir, strings.Split(cmd, " "), []string{}, false)
+		if err != nil {
+			zlog.Errorf(defs.WATCH_DOCKER, "复制RASP至容器内出错", "执行命令%v出错, err:%v", cmd, err)
+			return
+		}
+	}
+	// 新建tomcat日志目录
+	cmd = fmt.Sprintf("mkdir %v/logs/jrasp", tomcatPath)
+	_, err = docker.Exec(containerId, raspDir, strings.Split(cmd, " "), []string{}, false)
+	if err != nil {
+		zlog.Errorf(defs.WATCH_DOCKER, "复制RASP至容器内出错", "执行命令%v出错, err:%v", cmd, err)
+		return
+	}
+	cmd = fmt.Sprintf("ln -s %v logs", filepath.Join(tomcatPath, "logs", "jrasp"))
+	_, err = docker.Exec(containerId, raspDir, strings.Split(cmd, " "), []string{}, false)
+	if err != nil {
+		zlog.Errorf(defs.WATCH_DOCKER, "复制RASP至容器内出错", "执行命令%v出错, err:%v", cmd, err)
+		return
+	}
+	// 启动RASP
+	cmd = "./service.sh"
+	_, err = docker.Exec(containerId, filepath.Join(raspDir, "bin"), strings.Split(cmd, " "), []string{}, true)
+	if err != nil {
+		zlog.Errorf(defs.WATCH_DOCKER, "复制RASP至容器内出错", "执行命令%v出错, err:%v", cmd, err)
+		return
 	}
 }
 
@@ -133,8 +181,12 @@ func getTopProcess(proc *process.Process) (*process.Process, error) {
 	if err != nil {
 		return nil, err
 	}
-	if parent.Pid == 1 {
-		return proc, nil
+	cmd, err := parent.Cmdline()
+	if err != nil {
+		return nil, err
+	}
+	if strings.Index(cmd, "namespace moby") > 0 {
+		return parent, nil
 	} else {
 		return getTopProcess(parent)
 	}

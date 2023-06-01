@@ -1,0 +1,6 @@
+{
+  "moduleName": "jni-hook",
+  "parameters": {
+    "disable": false
+  }
+}

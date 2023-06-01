@@ -1,6 +1,9 @@
 package com.jrasp.agent.module.deserialization.algorithm.impl;
 
+import com.epoint.core.utils.classpath.ClassPathUtil;
 import com.jrasp.agent.api.ProcessControlException;
+import com.jrasp.agent.api.ProcessController;
+import com.jrasp.agent.api.RaspConfig;
 import com.jrasp.agent.api.algorithm.Algorithm;
 import com.jrasp.agent.api.log.RaspLog;
 import com.jrasp.agent.api.request.AttackInfo;
@@ -17,9 +20,11 @@ public class XmlAlgorithm implements Algorithm {
 
     private final RaspLog logger;
 
-    private final String metaInfo;
-
     private Integer xmlBlackListAction = 0;
+
+    private RaspConfig raspConfig;
+
+    private String metaInfo;
 
     //  xml反序列化类黑名单
     private Set<String> xmlBlackClassSet = new HashSet<String>(Arrays.asList(
@@ -40,18 +45,18 @@ public class XmlAlgorithm implements Algorithm {
             "$URLData", "$LazyIterator", "$GetterSetterReflection", "$PrivilegedGetter", "$ProxyLazyValue", "$ServiceNameIterator"
     );
 
-    public XmlAlgorithm(RaspLog logger, String metaInfo) {
+    public XmlAlgorithm(RaspLog logger) {
         this.logger = logger;
-        this.metaInfo = metaInfo;
     }
 
-    public XmlAlgorithm(RaspLog logger, Map<String, String> configMaps, String metaInfo) {
+    public XmlAlgorithm(RaspLog logger, RaspConfig raspConfig, Map<String, String> configMaps, String metaInfo) {
         this.logger = logger;
+        this.raspConfig = raspConfig;
+        this.metaInfo = metaInfo;
         this.xmlBlackListAction = ParamSupported.getParameter(configMaps, "xml_black_list_action", Integer.class, xmlBlackListAction);
         this.xmlBlackClassSet = ParamSupported.getParameter(configMaps, "xml_black_class_list", Set.class, xmlBlackClassSet);
         this.xmlBlackPackageSet = ParamSupported.getParameter(configMaps, "xml_black_package_list", Set.class, xmlBlackPackageSet);
         this.xmlBlackKeyList = ParamSupported.getParameter(configMaps, "xml_black_key_list", List.class, xmlBlackKeyList);
-        this.metaInfo = metaInfo;
     }
 
     @Override
@@ -61,6 +66,9 @@ public class XmlAlgorithm implements Algorithm {
 
     @Override
     public void check(Context context, Object... parameters) throws Exception {
+        if (isWhiteList(context)) {
+            return;
+        }
         if (xmlBlackListAction > -1) {
             if (parameters != null && parameters.length >= 1) {
                 String className = (String) parameters[0];
@@ -88,6 +96,14 @@ public class XmlAlgorithm implements Algorithm {
         }
     }
 
+    // 处理 Tomcat 启动时注入防护 Agent 产生的误报情况
+    private boolean isWhiteList(Context context) {
+        return context != null
+                && StringUtils.isBlank(context.getMethod())
+                && StringUtils.isBlank(context.getRequestURI())
+                && StringUtils.isBlank(context.getRequestURL());
+    }
+
     @Override
     public String getDescribe() {
         return "xml deserialization algorithm";
@@ -95,10 +111,18 @@ public class XmlAlgorithm implements Algorithm {
 
     private void doAction(Context context, String className, int action, String message, int level) throws ProcessControlException {
         boolean enableBlock = action == 1;
-        AttackInfo attackInfo = new AttackInfo(context, metaInfo, className, enableBlock, getType(), getDescribe(), message, level);
+        AttackInfo attackInfo = new AttackInfo(
+                context,
+                ClassPathUtil.getWebContext(),
+                metaInfo,
+                className,
+                enableBlock,
+                "反序列化攻击",
+                getDescribe(),
+                message, level);
         logger.attack(attackInfo);
         if (enableBlock) {
-            ProcessControlException.throwThrowsImmediately(new RuntimeException("xml deserialization attack block by rasp."));
+            ProcessController.throwsImmediatelyAndSendResponse(attackInfo, raspConfig, new RuntimeException("xml deserialization attack block by EpointRASP."));
         }
     }
 

@@ -1,6 +1,22 @@
 {
   "moduleName": "ssrf-algorithm",
+  "cn_map": {
+    "ssrf_action": "拦截服务端请求伪造攻击"
+  },
   "parameters": {
-    "disable": false
+    "disable": false,
+    "ssrf_action": 0,
+    "ssrf_black_hostname": [
+      ".vuleye.pw", ".ceye.io", ".exeye.io", ".vcap.me", ".xip.name", ".xip.io", ".sslip.io", ".nip.io",
+      ".burpcollaborator.net", ".tu4.org", ".2xss.cc", ".bxss.me", ".godns.vip", ".dnslog.cn", ".0kee.360.cn", ".r87.me", ".ngrok.io",
+      ".xn--9tr.com",
+      ".pipedream.net",
+      ".vxtrans.com", ".vxtrans.link",
+      ".hopto.org", ".zapto.org", ".sytes.net", ".ddns.net",
+      ".oast.pro", ".oast.live", ".oast.site", ".oast.online", ".oast.fun", ".oast.me", ".1433.eu.org",
+      ".dns.bypass.eu.org", ".dnslog.pw", ".eyes.sh", ".dnslog.link", ".dnslog.io", ".imgcdnns.com",
+      ".ns.dns3.cf", ".dnslog.cool", ".yunzhanghu.co", ".dnslog.run", ".s0x.cn", ".awvsscan119.autoverify.cn",
+      ".360-cert.com", ".microcoft.cyou", ".mauu.me", ".0x557.wang", ".cybertunnel.run"
+    ]
   }
 }

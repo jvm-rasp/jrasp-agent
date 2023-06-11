@@ -1,7 +1,7 @@
 # jrasp-agent
 
 ![Build Status](https://img.shields.io/badge/Build-passing-brightgreen)
-![Version](https://img.shields.io/badge/Version-1.1.1-informational)
+![Version](https://img.shields.io/badge/Version-1.1.2-informational)
 ![Go Guild Version](https://img.shields.io/badge/Go-v1.16+-blue)
 ![Maven Version](https://img.shields.io/badge/Maven-v3.25-blue)
 ![Java Build Version](https://img.shields.io/badge/Java-v1.6+-blue)

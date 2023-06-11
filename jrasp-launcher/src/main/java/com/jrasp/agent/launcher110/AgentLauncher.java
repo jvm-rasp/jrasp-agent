@@ -181,7 +181,7 @@ public class AgentLauncher {
     private static final String KEY_LAUNCH_MODE = "mode";
 
     private static final String KEY_CORE_VERSION = "coreVersion";
-    private static final String DEFAULT_CORE_VERSION = "1.1.1";
+    private static final String DEFAULT_CORE_VERSION = "1.1.2";
 
     private static final String KEY_NAMESPACE = "namespace";
     private static final String DEFAULT_NAMESPACE = "default";

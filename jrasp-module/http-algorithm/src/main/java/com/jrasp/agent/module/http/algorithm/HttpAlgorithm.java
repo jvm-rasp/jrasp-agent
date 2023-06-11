@@ -2,7 +2,8 @@ package com.jrasp.agent.module.http.algorithm;
 
 import com.jrasp.agent.api.Module;
 import com.jrasp.agent.api.ModuleLifecycleAdapter;
-import com.jrasp.agent.api.ProcessControlException;
+import com.jrasp.agent.api.ProcessController;
+import com.jrasp.agent.api.RaspConfig;
 import com.jrasp.agent.api.algorithm.Algorithm;
 import com.jrasp.agent.api.algorithm.AlgorithmManager;
 import com.jrasp.agent.api.annotation.Information;
@@ -11,6 +12,7 @@ import com.jrasp.agent.api.log.RaspLog;
 import com.jrasp.agent.api.request.AttackInfo;
 import com.jrasp.agent.api.request.Context;
 import com.jrasp.agent.api.util.ParamSupported;
+import com.jrasp.agent.api.util.StringUtils;
 import org.kohsuke.MetaInfServices;
 
 import java.util.Arrays;
@@ -27,6 +29,9 @@ public class HttpAlgorithm extends ModuleLifecycleAdapter implements Module, Alg
 
     @RaspResource
     private AlgorithmManager algorithmManager;
+
+    @RaspResource
+    private RaspConfig raspConfig;
 
     @RaspResource
     private RaspLog logger;
@@ -76,7 +81,10 @@ public class HttpAlgorithm extends ModuleLifecycleAdapter implements Module, Alg
      * 扫描器特征：headers
      * 扫描器特征：body 暂不用
      */
-    private Set<String> scanHeadersOrBody = new HashSet<String>(Arrays.asList("sqlmap", "appscan", "nessus"));
+    private Set<String> scanHeadersOrBody = new HashSet<String>(Arrays.asList(
+            "sqlmap", "appscan", "nessus", "acunetix", "netsparker", "webinspect", "Rsas", "nsfocus", "WebReaver",
+            "zgrab", "goby", "xray"
+    ));
 
     @Override
     public void loadCompleted() {
@@ -91,6 +99,7 @@ public class HttpAlgorithm extends ModuleLifecycleAdapter implements Module, Alg
         this.ipBlackSet = ParamSupported.getParameter(configMaps, "ip_black_list", Set.class, ipBlackSet);
         this.urlBlackSet = ParamSupported.getParameter(configMaps, "url_black_set", Set.class, urlBlackSet);
         this.scanUrlSet = ParamSupported.getParameter(configMaps, "scan_url_set", Set.class, scanUrlSet);
+        this.scanHeadersOrBody = ParamSupported.getParameter(configMaps, "scan_header_set", Set.class, scanHeadersOrBody);
         return true;
     }
 
@@ -112,7 +121,7 @@ public class HttpAlgorithm extends ModuleLifecycleAdapter implements Module, Alg
                         AttackInfo attackInfo = new AttackInfo(context, metaInfo, remoteHost, canBlock, "black ip", getDescribe(), "black ip: " + remoteHost, 95);
                         logger.attack(attackInfo);
                         if (canBlock) {
-                            ProcessControlException.throwThrowsImmediately(new RuntimeException("hit black ip: " + remoteHost));
+                            ProcessController.throwsImmediatelyAndSendResponse(attackInfo, raspConfig, new RuntimeException("hit black ip: " + remoteHost));
                         }
                     }
                 }
@@ -127,7 +136,7 @@ public class HttpAlgorithm extends ModuleLifecycleAdapter implements Module, Alg
                         AttackInfo attackInfo = new AttackInfo(context, metaInfo, key, canBlock, "scan url", getDescribe(), "scan url: " + key, 50);
                         logger.attack(attackInfo);
                         if (canBlock) {
-                            ProcessControlException.throwThrowsImmediately(new RuntimeException("hit url scan feature: " + requestURL));
+                            ProcessController.throwsImmediatelyAndSendResponse(attackInfo, raspConfig, new RuntimeException("hit url scan feature: " + requestURL));
                         }
                     }
                 }
@@ -135,14 +144,14 @@ public class HttpAlgorithm extends ModuleLifecycleAdapter implements Module, Alg
                 // 扫描器header特征
                 String headerStr = context.getHeaderString();
                 if (headerStr != null) {
-                    String headerLower = headerStr.toLowerCase();
                     for (String key : scanHeadersOrBody) {
-                        if (headerLower.contains(key)) {
+                        // TODO headerStr.toLowerCase() 只调用一次
+                        if (headerStr.toLowerCase().contains(key.toLowerCase())) {
                             boolean canBlock = scanListAction == 1;
-                            AttackInfo attackInfo = new AttackInfo(context, metaInfo, key, canBlock, "scan header", getDescribe(), "scan header: " + key, 50);
+                            AttackInfo attackInfo = new AttackInfo(context, metaInfo, key, canBlock, "扫描器扫描", getDescribe(), "scan header: " + key, 50);
                             logger.attack(attackInfo);
                             if (canBlock) {
-                                ProcessControlException.throwThrowsImmediately(new RuntimeException("hit header scan feature: " + key));
+                                ProcessController.throwsImmediatelyAndSendResponse(attackInfo, raspConfig, new RuntimeException("hit header scan feature: " + key));
                             }
                         }
                     }
@@ -158,7 +167,7 @@ public class HttpAlgorithm extends ModuleLifecycleAdapter implements Module, Alg
                         AttackInfo attackInfo = new AttackInfo(context, metaInfo, contextRequestURL, canBlock, "block url", getDescribe(), "block url: " + url, 50);
                         logger.attack(attackInfo);
                         if (canBlock) {
-                            ProcessControlException.throwThrowsImmediately(new RuntimeException("hit black url: " + contextRequestURL));
+                            ProcessController.throwsImmediatelyAndSendResponse(attackInfo, raspConfig, new RuntimeException("hit black url: " + contextRequestURL));
                         }
                     }
                 }

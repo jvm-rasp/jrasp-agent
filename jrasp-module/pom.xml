@@ -12,8 +12,6 @@
     <artifactId>jrasp-module</artifactId>
     <packaging>pom</packaging>
     <modules>
-        <module>mysql-hook</module>
-        <module>sql-algorithm</module>
         <module>expression-hook</module>
         <module>expression-algorithm</module>
         <module>xxe-hook</module>

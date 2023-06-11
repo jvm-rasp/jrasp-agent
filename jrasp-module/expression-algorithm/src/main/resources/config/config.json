@@ -1,5 +1,9 @@
 {
   "moduleName": "expression-algorithm",
+  "cn_map": {
+    "ognl_black_list_action": "拦截OGNL表达式注入攻击",
+    "spel_black_list_action": "拦截SPEL表达式注入攻击"
+  },
   "parameters": {
     "ognl_min_length": 30,
     "ognl_max_limit_length": 200,

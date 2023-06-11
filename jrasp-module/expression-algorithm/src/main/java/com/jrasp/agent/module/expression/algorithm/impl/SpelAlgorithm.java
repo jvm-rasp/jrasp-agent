@@ -1,11 +1,14 @@
 package com.jrasp.agent.module.expression.algorithm.impl;
 
 import com.jrasp.agent.api.ProcessControlException;
+import com.jrasp.agent.api.ProcessController;
+import com.jrasp.agent.api.RaspConfig;
 import com.jrasp.agent.api.algorithm.Algorithm;
 import com.jrasp.agent.api.log.RaspLog;
 import com.jrasp.agent.api.request.AttackInfo;
 import com.jrasp.agent.api.request.Context;
 import com.jrasp.agent.api.util.ParamSupported;
+import com.jrasp.agent.api.util.StringUtils;
 
 import java.util.Map;
 
@@ -51,21 +54,23 @@ public class SpelAlgorithm implements Algorithm {
 
     private final RaspLog logger;
 
+    private final RaspConfig raspConfig;
+
     private final String metaInfo;
 
-    public SpelAlgorithm(RaspLog logger, String metaInfo) {
+    public SpelAlgorithm(RaspLog logger, RaspConfig raspConfig, String metaInfo) {
         this.logger = logger;
+        this.raspConfig = raspConfig;
         this.metaInfo = metaInfo;
     }
 
-    public SpelAlgorithm(RaspLog logger, Map<String, String> configMaps, String metaInfo) {
-        this.logger = logger;
+    public SpelAlgorithm(RaspLog logger, RaspConfig raspConfig, Map<String, String> configMaps, String metaInfo) {
+        this(logger, raspConfig, metaInfo);
         this.spelMinLength = ParamSupported.getParameter(configMaps, "spel_min_length", Integer.class, spelMinLength);
         this.spelMaxLimitLength = ParamSupported.getParameter(configMaps, "spel_max_limit_length", Integer.class, spelMaxLimitLength);
         this.spelMaxLimitLengthAction = ParamSupported.getParameter(configMaps, "spel_max_limit_length_action", Integer.class, spelMaxLimitLengthAction);
         this.spelBlackList = ParamSupported.getParameter(configMaps, "spel_black_list", String[].class, spelBlackList);
         this.spelBlackListAction = ParamSupported.getParameter(configMaps, "spel_black_list_action", Integer.class, spelBlackListAction);
-        this.metaInfo = metaInfo;
     }
 
     @Override
@@ -106,7 +111,7 @@ public class SpelAlgorithm implements Algorithm {
         AttackInfo attackInfo = new AttackInfo(context, metaInfo, expression, enableBlock, getType(), getDescribe(), message, level);
         logger.attack(attackInfo);
         if (enableBlock) {
-            ProcessControlException.throwThrowsImmediately(new RuntimeException("spel expression block by rasp."));
+            ProcessController.throwsImmediatelyAndSendResponse(attackInfo, raspConfig, new RuntimeException("spel expression block by EpointRASP."));
         }
     }
 }

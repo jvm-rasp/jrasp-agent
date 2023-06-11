@@ -35,9 +35,6 @@ public class HttpHook extends ModuleLifecycleAdapter implements Module {
     @RaspResource
     private ThreadLocal<Context> requestContext;
 
-    @RaspResource
-    private String metaInfo;
-
     private final static String TYPE = "http";
 
     /**

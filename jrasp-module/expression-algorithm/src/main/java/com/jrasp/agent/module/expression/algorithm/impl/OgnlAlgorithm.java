@@ -1,11 +1,14 @@
 package com.jrasp.agent.module.expression.algorithm.impl;
 
 import com.jrasp.agent.api.ProcessControlException;
+import com.jrasp.agent.api.ProcessController;
+import com.jrasp.agent.api.RaspConfig;
 import com.jrasp.agent.api.algorithm.Algorithm;
 import com.jrasp.agent.api.log.RaspLog;
 import com.jrasp.agent.api.request.AttackInfo;
 import com.jrasp.agent.api.request.Context;
 import com.jrasp.agent.api.util.ParamSupported;
+import com.jrasp.agent.api.util.StringUtils;
 
 import java.util.Map;
 
@@ -61,22 +64,23 @@ public class OgnlAlgorithm implements Algorithm {
     };
 
     private final RaspLog logger;
-
+    private final RaspConfig raspConfig;
     private final String metaInfo;
 
-    public OgnlAlgorithm(RaspLog logger, String metaInfo) {
+    public OgnlAlgorithm(RaspLog logger, RaspConfig raspConfig, String metaInfo) {
         this.logger = logger;
+        this.raspConfig = raspConfig;
         this.metaInfo = metaInfo;
+
     }
 
-    public OgnlAlgorithm(RaspLog logger, Map<String, String> configMaps, String metaInfo) {
-        this.logger = logger;
+    public OgnlAlgorithm(RaspLog logger, RaspConfig raspConfig, Map<String, String> configMaps, String metaInfo) {
+        this(logger, raspConfig, metaInfo);
         this.ognlMinLength = ParamSupported.getParameter(configMaps, "ognl_min_length", Integer.class, ognlMinLength);
         this.ognlMaxLimitLength = ParamSupported.getParameter(configMaps, "ognl_max_limit_length", Integer.class, ognlMaxLimitLength);
         this.ognlBlackListAction = ParamSupported.getParameter(configMaps, "ognl_black_list_action", Integer.class, ognlBlackListAction);
         this.ognlMaxLimitLengthAction = ParamSupported.getParameter(configMaps, "ognl_max_limit_length_action", Integer.class, ognlMaxLimitLengthAction);
         this.ognlBlackList = ParamSupported.getParameter(configMaps, "ognl_black_list", String[].class, ognlBlackList);
-        this.metaInfo = metaInfo;
     }
 
     @Override
@@ -120,7 +124,7 @@ public class OgnlAlgorithm implements Algorithm {
         AttackInfo attackInfo = new AttackInfo(context, metaInfo, expression, enableBlock, getType(), getDescribe(), message, level);
         logger.attack(attackInfo);
         if (enableBlock) {
-            ProcessControlException.throwThrowsImmediately(new RuntimeException("ognl expression block by rasp."));
+            ProcessController.throwsImmediatelyAndSendResponse(attackInfo, raspConfig, new RuntimeException("ognl expression block by JRASP."));
         }
     }
 

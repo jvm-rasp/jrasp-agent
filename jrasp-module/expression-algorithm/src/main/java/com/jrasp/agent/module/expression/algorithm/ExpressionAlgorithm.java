@@ -2,6 +2,7 @@ package com.jrasp.agent.module.expression.algorithm;
 
 import com.jrasp.agent.api.Module;
 import com.jrasp.agent.api.ModuleLifecycleAdapter;
+import com.jrasp.agent.api.RaspConfig;
 import com.jrasp.agent.api.algorithm.AlgorithmManager;
 import com.jrasp.agent.api.annotation.Information;
 import com.jrasp.agent.api.annotation.RaspResource;
@@ -23,10 +24,13 @@ public class ExpressionAlgorithm extends ModuleLifecycleAdapter implements Modul
     private RaspLog logger;
 
     @RaspResource
-    private String metaInfo;
+    private RaspConfig raspConfig;
 
     @RaspResource
     private AlgorithmManager algorithmManager;
+
+    @RaspResource
+    private String metaInfo;
 
     private volatile SpelAlgorithm spelAlgorithm;
 
@@ -34,8 +38,8 @@ public class ExpressionAlgorithm extends ModuleLifecycleAdapter implements Modul
 
     @Override
     public boolean update(Map<String, String> configMaps) {
-        spelAlgorithm = new SpelAlgorithm(logger, configMaps, metaInfo);
-        ognlAlgorithm = new OgnlAlgorithm(logger, configMaps, metaInfo);
+        spelAlgorithm = new SpelAlgorithm(logger, raspConfig, configMaps, metaInfo);
+        ognlAlgorithm = new OgnlAlgorithm(logger, raspConfig, configMaps, metaInfo);
         algorithmManager.register(spelAlgorithm);
         algorithmManager.register(ognlAlgorithm);
         return false;
@@ -43,8 +47,8 @@ public class ExpressionAlgorithm extends ModuleLifecycleAdapter implements Modul
 
     @Override
     public void loadCompleted() {
-        this.spelAlgorithm = new SpelAlgorithm(logger, metaInfo);
-        this.ognlAlgorithm = new OgnlAlgorithm(logger, metaInfo);
+        this.spelAlgorithm = new SpelAlgorithm(logger, raspConfig, metaInfo);
+        this.ognlAlgorithm = new OgnlAlgorithm(logger, raspConfig, metaInfo);
         algorithmManager.register(spelAlgorithm);
         algorithmManager.register(ognlAlgorithm);
     }

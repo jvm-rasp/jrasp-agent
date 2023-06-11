@@ -162,7 +162,7 @@ public class OisAlgorithm implements Algorithm {
         AttackInfo attackInfo = new AttackInfo(context, metaInfo, className, enableBlock, getType(), getDescribe(), message, level);
         logger.attack(attackInfo);
         if (enableBlock) {
-            ProcessController.throwsImmediatelyAndSendResponse(attackInfo, raspConfig, new RuntimeException("ois deserialization attack block by EpointRASP."));
+            ProcessController.throwsImmediatelyAndSendResponse(attackInfo, raspConfig, new RuntimeException("ois deserialization attack block by JRASP."));
         }
     }
 }

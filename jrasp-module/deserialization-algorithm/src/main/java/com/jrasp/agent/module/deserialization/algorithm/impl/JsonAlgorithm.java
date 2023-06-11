@@ -1,6 +1,8 @@
 package com.jrasp.agent.module.deserialization.algorithm.impl;
 
 import com.jrasp.agent.api.ProcessControlException;
+import com.jrasp.agent.api.ProcessController;
+import com.jrasp.agent.api.RaspConfig;
 import com.jrasp.agent.api.algorithm.Algorithm;
 import com.jrasp.agent.api.log.RaspLog;
 import com.jrasp.agent.api.request.AttackInfo;
@@ -16,15 +18,16 @@ import java.util.Set;
 /**
  * @author jrasp
  * 包括 json、yaml
- * TODO yaml 已经测试　需要找一个cve场景来验证
  */
 public class JsonAlgorithm implements Algorithm {
 
     private final RaspLog logger;
 
-    private final String metaInfo;
-
     private Integer jsonBlackListAction = 0;
+
+    private final RaspConfig raspConfig;
+
+    private final String metaInfo;
 
     // json反序列化类白名单
     private Set<String> jsonWhiteClassSet = new HashSet<String>();
@@ -91,18 +94,18 @@ public class JsonAlgorithm implements Algorithm {
             "com.caucho"
     ));
 
-    public JsonAlgorithm(RaspLog logger, String metaInfo) {
+    public JsonAlgorithm(RaspLog logger, RaspConfig raspConfig, String metaInfo) {
         this.logger = logger;
         this.metaInfo = metaInfo;
+        this.raspConfig = raspConfig;
     }
 
-    public JsonAlgorithm(RaspLog logger, Map<String, String> configMaps, String metaInfo) {
-        this.logger = logger;
+    public JsonAlgorithm(RaspLog logger, RaspConfig raspConfig, Map<String, String> configMaps, String metaInfo) {
+        this(logger, raspConfig, metaInfo);
         this.jsonBlackListAction = ParamSupported.getParameter(configMaps, "json_black_list_action", Integer.class, jsonBlackListAction);
         this.jsonWhiteClassSet = ParamSupported.getParameter(configMaps, "json_white_class_list", Set.class, jsonWhiteClassSet);
         this.jsonBlackClassSet = ParamSupported.getParameter(configMaps, "json_black_class_list", Set.class, jsonBlackClassSet);
         this.jsonBlackPackageSet = ParamSupported.getParameter(configMaps, "json_black_package_list", Set.class, jsonBlackPackageSet);
-        this.metaInfo = metaInfo;
     }
 
     @Override
@@ -143,7 +146,7 @@ public class JsonAlgorithm implements Algorithm {
         AttackInfo attackInfo = new AttackInfo(context, metaInfo, className, enableBlock, getType(), getDescribe(), message, level);
         logger.attack(attackInfo);
         if (enableBlock) {
-            ProcessControlException.throwThrowsImmediately(new RuntimeException("json/yaml deserialization attack block by rasp."));
+            ProcessController.throwsImmediatelyAndSendResponse(attackInfo, raspConfig, new RuntimeException("json/yaml deserialization attack block by EpointRASP."));
         }
     }
 }

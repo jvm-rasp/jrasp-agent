@@ -63,6 +63,8 @@
       "com.caucho"
     ],
     "ois_black_list_action": 0,
+    "ois_white_class_list": [
+    ],
     "ois_black_class_list": [
       "org.codehaus.groovy.runtime.ConvertedClosure",
       "org.codehaus.groovy.runtime.ConversionHandler",
@@ -139,6 +141,8 @@
       "org.apache.myfaces.view.facelets.el"
     ],
     "xml_black_list_action": 0,
+    "xml_white_class_list": [
+    ],
     "xml_black_class_list": [
       "java.io.PrintWriter",
       "java.io.FileInputStream",

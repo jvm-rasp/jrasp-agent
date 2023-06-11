@@ -1,6 +1,8 @@
 package com.jrasp.agent.module.deserialization.algorithm.impl;
 
 import com.jrasp.agent.api.ProcessControlException;
+import com.jrasp.agent.api.ProcessController;
+import com.jrasp.agent.api.RaspConfig;
 import com.jrasp.agent.api.algorithm.Algorithm;
 import com.jrasp.agent.api.log.RaspLog;
 import com.jrasp.agent.api.request.AttackInfo;
@@ -22,10 +24,12 @@ public class OisAlgorithm implements Algorithm {
 
     private final String metaInfo;
 
+    private final RaspConfig raspConfig;
+
     private Integer oisBlackListAction = 0;
 
     // jdk反序列化类白名单
-    private Set<String> whiteClassSet = new HashSet<String>();
+    private Set<String> oisWhiteClassSet = new HashSet<String>();
 
     // jdk反序列化类黑名单
     private Set<String> oisBlackClassSet = new HashSet<String>(Arrays.asList(
@@ -106,17 +110,18 @@ public class OisAlgorithm implements Algorithm {
             "org.apache.myfaces.view.facelets.el"
     ));
 
-    public OisAlgorithm(RaspLog logger, String metaInfo) {
+    public OisAlgorithm(RaspLog logger, RaspConfig raspConfig, String metaInfo) {
         this.logger = logger;
         this.metaInfo = metaInfo;
+        this.raspConfig = raspConfig;
     }
 
-    public OisAlgorithm(RaspLog logger, Map<String, String> configMaps, String metaInfo) {
-        this.logger = logger;
+    public OisAlgorithm(RaspLog logger, RaspConfig raspConfig, Map<String, String> configMaps, String metaInfo) {
+        this(logger, raspConfig, metaInfo);
         this.oisBlackListAction = ParamSupported.getParameter(configMaps, "ois_black_list_action", Integer.class, oisBlackListAction);
+        this.oisWhiteClassSet = ParamSupported.getParameter(configMaps, "ois_white_class_list", Set.class, oisWhiteClassSet);
         this.oisBlackClassSet = ParamSupported.getParameter(configMaps, "ois_black_class_list", Set.class, oisBlackClassSet);
         this.oisBlackPackageSet = ParamSupported.getParameter(configMaps, "ois_black_package_list", Set.class, oisBlackPackageSet);
-        this.metaInfo = metaInfo;
     }
 
     @Override
@@ -129,7 +134,7 @@ public class OisAlgorithm implements Algorithm {
         if (oisBlackListAction > -1) {
             if (parameters != null && parameters.length >= 1) {
                 String className = (String) parameters[0];
-                if (whiteClassSet.contains(className)) {
+                if (oisWhiteClassSet.contains(className)) {
                     return;
                 }
                 // 类名称匹配
@@ -140,7 +145,7 @@ public class OisAlgorithm implements Algorithm {
                 // 包名称匹配
                 String pkg = StringUtils.isContainsPackage(className, oisBlackPackageSet);
                 if (pkg != null) {
-                    doCheck(context, className, oisBlackListAction, "deserialization class hit black list, package: " + pkg, 80);
+                    doCheck(context, className, oisBlackListAction, "deserialization class hit black list, package: " + pkg, 50);
                     return;
                 }
             }
@@ -157,7 +162,7 @@ public class OisAlgorithm implements Algorithm {
         AttackInfo attackInfo = new AttackInfo(context, metaInfo, className, enableBlock, getType(), getDescribe(), message, level);
         logger.attack(attackInfo);
         if (enableBlock) {
-            ProcessControlException.throwThrowsImmediately(new RuntimeException("ois deserialization attack block by rasp."));
+            ProcessController.throwsImmediatelyAndSendResponse(attackInfo, raspConfig, new RuntimeException("ois deserialization attack block by EpointRASP."));
         }
     }
 }

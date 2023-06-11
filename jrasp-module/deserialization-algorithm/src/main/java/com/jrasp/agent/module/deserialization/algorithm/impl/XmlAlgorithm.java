@@ -1,6 +1,8 @@
 package com.jrasp.agent.module.deserialization.algorithm.impl;
 
 import com.jrasp.agent.api.ProcessControlException;
+import com.jrasp.agent.api.ProcessController;
+import com.jrasp.agent.api.RaspConfig;
 import com.jrasp.agent.api.algorithm.Algorithm;
 import com.jrasp.agent.api.log.RaspLog;
 import com.jrasp.agent.api.request.AttackInfo;
@@ -19,7 +21,12 @@ public class XmlAlgorithm implements Algorithm {
 
     private final String metaInfo;
 
+    private final RaspConfig raspConfig;
+
     private Integer xmlBlackListAction = 0;
+
+    // xml反序列化类白名单
+    private Set<String> xmlWhiteClassSet = new HashSet<String>();
 
     //  xml反序列化类黑名单
     private Set<String> xmlBlackClassSet = new HashSet<String>(Arrays.asList(
@@ -40,18 +47,19 @@ public class XmlAlgorithm implements Algorithm {
             "$URLData", "$LazyIterator", "$GetterSetterReflection", "$PrivilegedGetter", "$ProxyLazyValue", "$ServiceNameIterator"
     );
 
-    public XmlAlgorithm(RaspLog logger, String metaInfo) {
+    public XmlAlgorithm(RaspLog logger, RaspConfig raspConfig, String metaInfo) {
         this.logger = logger;
         this.metaInfo = metaInfo;
+        this.raspConfig = raspConfig;
     }
 
-    public XmlAlgorithm(RaspLog logger, Map<String, String> configMaps, String metaInfo) {
-        this.logger = logger;
+    public XmlAlgorithm(RaspLog logger, RaspConfig raspConfig, Map<String, String> configMaps, String metaInfo) {
+        this(logger, raspConfig, metaInfo);
         this.xmlBlackListAction = ParamSupported.getParameter(configMaps, "xml_black_list_action", Integer.class, xmlBlackListAction);
+        this.xmlWhiteClassSet = ParamSupported.getParameter(configMaps, "xml_white_list_action", Set.class, xmlWhiteClassSet);
         this.xmlBlackClassSet = ParamSupported.getParameter(configMaps, "xml_black_class_list", Set.class, xmlBlackClassSet);
         this.xmlBlackPackageSet = ParamSupported.getParameter(configMaps, "xml_black_package_list", Set.class, xmlBlackPackageSet);
         this.xmlBlackKeyList = ParamSupported.getParameter(configMaps, "xml_black_key_list", List.class, xmlBlackKeyList);
-        this.metaInfo = metaInfo;
     }
 
     @Override
@@ -64,6 +72,11 @@ public class XmlAlgorithm implements Algorithm {
         if (xmlBlackListAction > -1) {
             if (parameters != null && parameters.length >= 1) {
                 String className = (String) parameters[0];
+                // 白名单
+                if (xmlWhiteClassSet.contains(className)) {
+                    return;
+                }
+
                 // 类名称匹配
                 if (xmlBlackClassSet.contains(className)) {
                     doAction(context, className, xmlBlackListAction, "deserialization class hit black list, class: " + className, 90);
@@ -98,7 +111,7 @@ public class XmlAlgorithm implements Algorithm {
         AttackInfo attackInfo = new AttackInfo(context, metaInfo, className, enableBlock, getType(), getDescribe(), message, level);
         logger.attack(attackInfo);
         if (enableBlock) {
-            ProcessControlException.throwThrowsImmediately(new RuntimeException("xml deserialization attack block by rasp."));
+            ProcessController.throwsImmediatelyAndSendResponse(attackInfo, raspConfig, new RuntimeException("xml deserialization attack block by JRASP."));
         }
     }
 

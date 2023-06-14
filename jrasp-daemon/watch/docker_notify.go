@@ -28,6 +28,10 @@ func (w *Watch) ContainerTimer() {
 }
 
 func (w *Watch) NotifyContainer() {
+	if !w.env.IsConnectServer {
+		// 如果宿主机未连接上管理端则不复制自身到容器内等待连接成功
+		return
+	}
 	processList, err := process.Processes()
 	if err != nil {
 		zlog.Errorf(defs.WATCH_DOCKER, "获取进程列表出错", "err:%v", err)
@@ -49,9 +53,11 @@ func (w *Watch) NotifyContainer() {
 			if !checkExistRASP(process.Pid) {
 				tomcat := "/usr/local/tomcat"
 				containerId := getContainerIdByPid(int(process.Pid))
-				zlog.Debugf(defs.WATCH_DOCKER, "发现容器未安装RASP", "container id: %v", containerId)
-				//copySelfToContainer(w.env.InstallDir, tomcat)
-				copySelfToContainerNew(w.env.InstallDir, tomcat, containerId)
+				if containerId != "" {
+					zlog.Debugf(defs.WATCH_DOCKER, "发现容器未安装RASP", "container id: %v", containerId)
+					//copySelfToContainer(w.env.InstallDir, tomcat)
+					copySelfToContainerNew(w.env.InstallDir, tomcat, containerId)
+				}
 			}
 		}
 	}
@@ -105,14 +111,15 @@ func copySelfToContainerNew(installDir string, tomcatPath string, containerId st
 		return
 	}
 	// 删除logs目录
-	cmd := "rm -rf logs run/* tmp/* pid"
+	cmd := "busybox rm -rf /opt/jrasp/logs /opt/jrasp/run /opt/jrasp/tmp /opt/jrasp/pid"
 	resp, err := docker.Exec(containerId, raspDir, strings.Split(cmd, " "), []string{}, false)
 	if err != nil {
 		zlog.Errorf(defs.WATCH_DOCKER, "复制RASP至容器内出错", "执行命令%v出错, err:%v", cmd, err)
 		return
 	}
-	if strings.Index(resp, "禁止操作") > 0 {
-		cmd = "busybox rm -rf logs run/* tmp/* pid"
+	zlog.Infof(defs.WATCH_DOCKER, fmt.Sprintf("执行命令: %v 成功", cmd), "命令执行结果: %v", resp)
+	if strings.Index(resp, "OCI runtime exec failed") > 0 {
+		cmd = "rm -rf /opt/jrasp/logs /opt/jrasp/run /opt/jrasp/tmp /opt/jrasp/pid"
 		_, err = docker.Exec(containerId, raspDir, strings.Split(cmd, " "), []string{}, false)
 		if err != nil {
 			zlog.Errorf(defs.WATCH_DOCKER, "复制RASP至容器内出错", "执行命令%v出错, err:%v", cmd, err)
@@ -121,24 +128,29 @@ func copySelfToContainerNew(installDir string, tomcatPath string, containerId st
 	}
 	// 新建tomcat日志目录
 	cmd = fmt.Sprintf("mkdir %v/logs/jrasp", tomcatPath)
-	_, err = docker.Exec(containerId, raspDir, strings.Split(cmd, " "), []string{}, false)
+	resp, err = docker.Exec(containerId, raspDir, strings.Split(cmd, " "), []string{}, false)
 	if err != nil {
 		zlog.Errorf(defs.WATCH_DOCKER, "复制RASP至容器内出错", "执行命令%v出错, err:%v", cmd, err)
 		return
 	}
-	cmd = fmt.Sprintf("ln -s %v logs", filepath.Join(tomcatPath, "logs", "jrasp"))
-	_, err = docker.Exec(containerId, raspDir, strings.Split(cmd, " "), []string{}, false)
+	zlog.Infof(defs.WATCH_DOCKER, fmt.Sprintf("执行命令: %v 成功", cmd), "命令执行结果: %v", resp)
+
+	cmd = fmt.Sprintf("ln -s %v /opt/jrasp/logs", filepath.Join(tomcatPath, "logs", "jrasp"))
+	resp, err = docker.Exec(containerId, raspDir, strings.Split(cmd, " "), []string{}, false)
 	if err != nil {
 		zlog.Errorf(defs.WATCH_DOCKER, "复制RASP至容器内出错", "执行命令%v出错, err:%v", cmd, err)
 		return
 	}
+	zlog.Infof(defs.WATCH_DOCKER, fmt.Sprintf("执行命令: %v 成功", cmd), "命令执行结果: %v", resp)
+
 	// 启动RASP
-	cmd = "./service.sh"
-	_, err = docker.Exec(containerId, filepath.Join(raspDir, "bin"), strings.Split(cmd, " "), []string{}, true)
+	cmd = "/opt/jrasp/bin/service.sh"
+	resp, err = docker.Exec(containerId, filepath.Join(raspDir, "bin"), strings.Split(cmd, " "), []string{}, true)
 	if err != nil {
 		zlog.Errorf(defs.WATCH_DOCKER, "复制RASP至容器内出错", "执行命令%v出错, err:%v", cmd, err)
 		return
 	}
+	zlog.Infof(defs.WATCH_DOCKER, fmt.Sprintf("执行命令: %v 成功", cmd), "命令执行结果: %v", resp)
 }
 
 func checkIsContainer(pid int32) bool {
@@ -154,11 +166,30 @@ func getContainerIdByPid(pid int) string {
 	proc, err := getProcessInfoByPid(pid)
 	if err != nil {
 		zlog.Errorf(defs.WATCH_DOCKER, "获取进程信息出错", "err:%v", err)
+		return ""
 	}
-	topProc, err := getTopProcess(proc)
+	// 获取所有容器ID
+	d, err := utils.NewDocker()
 	if err != nil {
-		zlog.Errorf(defs.WATCH_DOCKER, "获取父进程信息出错", "err:%v", err)
+		zlog.Errorf(defs.WATCH_DOCKER, "获取容器id列表出错", "err:%v", err)
+		return ""
 	}
+	dockerList, err := d.List()
+	if err != nil {
+		zlog.Errorf(defs.WATCH_DOCKER, "获取容器id列表出错", "err:%v", err)
+		return ""
+	}
+	var ids []string
+	for _, item := range dockerList {
+		ids = append(ids, item.ID)
+	}
+
+	topProc, err := getTopProcess(proc, ids)
+	if err != nil || topProc == nil {
+		zlog.Errorf(defs.WATCH_DOCKER, "获取父进程信息出错", "err:%v", err)
+		return ""
+	}
+
 	cmd, err := topProc.Cmdline()
 	if err != nil {
 		zlog.Errorf(defs.WATCH_DOCKER, "获取进程cmd出错", "err:%v", err)
@@ -176,7 +207,10 @@ func getProcessInfoByPid(pid int) (*process.Process, error) {
 	return proc, nil
 }
 
-func getTopProcess(proc *process.Process) (*process.Process, error) {
+func getTopProcess(proc *process.Process, idList []string) (*process.Process, error) {
+	if proc.Pid == 1 {
+		return nil, nil
+	}
 	parent, err := proc.Parent()
 	if err != nil {
 		return nil, err
@@ -185,9 +219,23 @@ func getTopProcess(proc *process.Process) (*process.Process, error) {
 	if err != nil {
 		return nil, err
 	}
-	if strings.Index(cmd, "namespace moby") > 0 {
+	//if strings.Index(cmd, "namespace moby") > 0 {
+	//	return parent, nil
+	//} else {
+	//	return getTopProcess(parent)
+	//}
+	if isInDockerList(cmd, idList) {
 		return parent, nil
 	} else {
-		return getTopProcess(parent)
+		return getTopProcess(parent, idList)
 	}
+}
+
+func isInDockerList(cmd string, idList []string) bool {
+	for _, item := range idList {
+		if strings.Index(cmd, item) >= 0 {
+			return true
+		}
+	}
+	return false
 }

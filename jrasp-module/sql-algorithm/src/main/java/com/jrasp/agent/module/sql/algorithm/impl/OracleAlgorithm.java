@@ -4,6 +4,7 @@ import com.jrasp.agent.api.RaspConfig;
 import com.jrasp.agent.api.algorithm.Algorithm;
 import com.jrasp.agent.api.log.RaspLog;
 import com.jrasp.agent.api.request.Context;
+import com.jrasp.agent.api.util.LRUCache;
 import com.jrasp.agent.api.util.ParamSupported;
 import com.jrasp.agent.module.sql.hook.checker.util.SQLUtil;
 import com.jrasp.agent.module.sql.hook.checker.util.TokenInfo;
@@ -27,6 +28,8 @@ public class OracleAlgorithm extends AbstractAlgorithm implements Algorithm {
 
     private static final List<String> defaultBlacklistVariant = new ArrayList<>(Arrays.asList("user", "uid"));
 
+    private LRUCache<String, Object> SQL_LRU_CACHE = new LRUCache<String, Object>(1024);
+
     static {
         defaultFunctionCount.put("char", 5);
         defaultFunctionCount.put("chr", 5);
@@ -36,8 +39,6 @@ public class OracleAlgorithm extends AbstractAlgorithm implements Algorithm {
         this.logger = logger;
         this.metaInfo = metaInfo;
         this.raspConfig = raspConfig;
-        this.slowQueryCount = ParamSupported.getParameter(configMaps, "slow_query_count", Integer.class, slowQueryCount);
-        this.slowQueryCheckAction = ParamSupported.getParameter(configMaps, "slow_query_check_action", Integer.class, slowQueryCheckAction);
         this.exceptionCheckAction = ParamSupported.getParameter(configMaps, "exception_check_action", Integer.class, exceptionCheckAction);
         this.regexCheckAction = ParamSupported.getParameter(configMaps, "regex_check_action", Integer.class, regexCheckAction);
         this.inputCheckAction = ParamSupported.getParameter(configMaps, "input_check_action", Integer.class, inputCheckAction);
@@ -76,29 +77,30 @@ public class OracleAlgorithm extends AbstractAlgorithm implements Algorithm {
         }
         @SuppressWarnings("unchecked") Map<String, Object> params = (Map<String, Object>) parameters[0];
 
-        // type = slowQuery exception injection
+        // type = exception injection
         String type = (String) params.getOrDefault("type", "");
         String sql = (String) params.getOrDefault("sql", "");
+
+        boolean containsKey = SQL_LRU_CACHE.isContainsKey(sql);
+        if (containsKey) {
+            return;
+        }
+
         String server = (String) params.getOrDefault("server", "");
         List<TokenInfo> tokens = SQLUtil.sqlTokenize(sql, type);
         String jdbcUrl = (String) params.getOrDefault("jdbc_url", "");
-        Integer queryCount = (Integer) params.getOrDefault("query_count", -1);
         SQLException exception = (SQLException) params.getOrDefault("exception", null);
 
         switch (type) {
-            case "slowQuery":
-                slowQueryCheck(context, server, queryCount);
-                break;
             case "exception":
                 exceptionCheck(context, server, exception, sql);
                 break;
             case "injection":
-                if (userInputCheck(context, server, sql, tokens)) {
-                    break;
-                } else if (regexCheck(context, server, sql)) {
-                    break;
-                } else if (policyCheck(context, sql, server, tokens)) {
-                    break;
+                boolean isSqlInjection = userInputCheck(context, server, sql, tokens);
+                if (!isSqlInjection) {
+                    // 正常sql加入缓存，后面不再判断
+                    SQL_LRU_CACHE.put(sql, false);
+                    return;
                 }
                 break;
         }

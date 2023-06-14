@@ -17,6 +17,9 @@ public class FileCheck {
         for (String param : allParams) {
             String simpleParam;
             String simpleTarget;
+            if (param == null || cachePath == null) {
+                return false;
+            }
             if (param.startsWith("file://") && isAbsolutePath && param.endsWith(cachePath)) {
                 return true;
             }

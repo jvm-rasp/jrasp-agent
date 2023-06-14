@@ -20,6 +20,8 @@ const UNLOAD byte = 0x06
 const ACTIVE byte = 0x07
 const FROZEN byte = 0x08
 const CONFIG byte = 0x09
+const SEARCH_SERVER byte = 0x10
+const UPDATE_SERVER byte = 0x11
 
 type SocketClient struct {
 	Ip   string
@@ -40,19 +42,19 @@ func (this *SocketClient) Send(message string, t byte) {
 		return
 	}
 	pack := &Package{
-		Magic:     magicBytes,
+		Magic:     MagicBytes,
 		Version:   PROTOCOL_VERSION,
 		Type:      t,
 		BodySize:  int32(len(message)),
 		TimeStamp: time.Now().Unix(),
-		Signature: emptySignature,
+		Signature: EmptySignature,
 		Body:      []byte((message)),
 	}
 
 	pack.Pack(conn)
 	scanner := bufio.NewScanner(conn)
 	scanner.Split(func(data []byte, atEOF bool) (advance int, token []byte, err error) {
-		if !atEOF && string(data[0:3]) == string(magicBytes[:]) {
+		if !atEOF && string(data[0:3]) == string(MagicBytes[:]) {
 			if len(data) > 5 {
 				length := int32(0)
 				binary.Read(bytes.NewReader(data[5:9]), binary.BigEndian, &length)

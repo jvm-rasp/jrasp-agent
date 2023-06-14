@@ -248,7 +248,11 @@ public class FileHook implements Module, LoadCompleted {
                                         // Usage of API documented as @since 1.7+  忽略
                                         // jdk6上运行时如果匹配不到java.nio.file.Files类，也不会走到这里的逻辑，也就没有类加载不到的风险
                                         java.nio.file.Path filePath = (java.nio.file.Path) advice.getParameterArray()[0];
-                                        algorithmManager.doCheck(FILE_UPLOAD, requestInfoThreadLocal.get(), filePath.toFile());
+                                        try {
+                                            File file = filePath.toFile();
+                                            algorithmManager.doCheck(FILE_UPLOAD, requestInfoThreadLocal.get(), file);
+                                        } catch (UnsupportedOperationException ignored) {
+                                        }
                                     }
 
                                     @Override
@@ -272,7 +276,11 @@ public class FileHook implements Module, LoadCompleted {
                                         // Usage of API documented as @since 1.7+  忽略
                                         // jdk6上运行时如果匹配不到java.nio.file.Files类，也不会走到这里的逻辑，也就没有类加载不到的风险
                                         java.nio.file.Path filePath = (java.nio.file.Path) advice.getParameterArray()[0];
-                                        algorithmManager.doCheck(FILE_DELETE, requestInfoThreadLocal.get(), filePath.toFile());
+                                        try {
+                                            File file = filePath.toFile();
+                                            algorithmManager.doCheck(FILE_DELETE, requestInfoThreadLocal.get(), file);
+                                        } catch (UnsupportedOperationException ignored) {
+                                        }
                                     }
 
                                     @Override
@@ -295,7 +303,11 @@ public class FileHook implements Module, LoadCompleted {
                                             return;
                                         }
                                         java.nio.file.Path filePath = (java.nio.file.Path) advice.getParameterArray()[0];
-                                        algorithmManager.doCheck(FILE_LIST, requestInfoThreadLocal.get(), filePath.toFile());
+                                        try {
+                                            File file = filePath.toFile();
+                                            algorithmManager.doCheck(FILE_LIST, requestInfoThreadLocal.get(), file);
+                                        } catch (UnsupportedOperationException ignored) {
+                                        }
                                     }
 
                                     @Override

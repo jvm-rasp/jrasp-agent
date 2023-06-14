@@ -114,8 +114,14 @@ func NewEnviron() (*Environ, error) {
 }
 
 func getHostname() string {
-	hostname, _ := os.Hostname()
-	return hostname
+	hostName := ""
+	isContainer, _ := utils.PathExists("/.dockerenv")
+	if isContainer {
+		hostName = os.Getenv("ctnruuid")
+	} else {
+		hostName, _ = os.Hostname()
+	}
+	return hostName
 }
 
 func getExternalIP() (string, error) {

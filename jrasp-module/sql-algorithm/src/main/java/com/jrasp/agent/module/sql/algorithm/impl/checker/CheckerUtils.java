@@ -7,8 +7,9 @@ import java.io.UnsupportedEncodingException;
 
 public class CheckerUtils {
     public static String tryDecodeString(String src) {
-        if (src == null)
+        if (src == null) {
             return null;
+        }
         boolean isBase64 = true;
         int length = src.length();
         for (int i = 0; i < length; i++) {

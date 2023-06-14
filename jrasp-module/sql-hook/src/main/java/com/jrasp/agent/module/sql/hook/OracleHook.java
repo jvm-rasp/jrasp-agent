@@ -19,7 +19,7 @@ public class OracleHook {
     private AlgorithmManager algorithmManager;
     private ModuleEventWatcher moduleEventWatcher;
     private ThreadLocal<Context> context;
-    
+
     public OracleHook(ModuleEventWatcher moduleEventWatcher, AlgorithmManager algorithmManager, ThreadLocal<Context> context) {
         this.context = context;
         this.algorithmManager = algorithmManager;
@@ -27,7 +27,6 @@ public class OracleHook {
         hookExecute();
         hookConnection();
         hookPreparedStatementException();
-        hookSlowQuery();
     }
 
     private void hookExecute() {
@@ -91,13 +90,6 @@ public class OracleHook {
                 .onClass(new ClassMatcher("oracle/jdbc/driver/OracleDriver")
                         .onMethod("connect(Ljava/lang/String;Ljava/util/Properties;)Ljava/sql/Connection;",
                                 new SqlConnectionAdviceListener()))
-                .build();
-    }
-
-    private void hookSlowQuery() {
-        new EventWatchBuilder(moduleEventWatcher)
-                .onClass(new ClassMatcher("oracle/jdbc/driver/OracleResultSetImpl")
-                        .onMethod("next()Z", new SqlResultSetAdviceListener()))
                 .build();
     }
 
@@ -196,22 +188,6 @@ public class OracleHook {
                 params.put("jdbc_url", advice.getParameterArray()[0]);
                 algorithmManager.doCheck(TYPE, context.get(), params);
             }
-        }
-    }
-
-    private class SqlResultSetAdviceListener extends AdviceListener {
-
-        @Override
-        protected void before(Advice advice) throws Throwable {
-            if (SQLHook.disable) {
-                return;
-            }
-            ResultSet sqlResultSet = (ResultSet) advice.getTarget();
-            Map<String, Object> params = new HashMap<String, Object>();
-            params.put("server", "oracle");
-            params.put("type", "slowQuery");
-            params.put("query_count", sqlResultSet.getRow());
-            algorithmManager.doCheck(TYPE, context.get(), params);
         }
     }
 }

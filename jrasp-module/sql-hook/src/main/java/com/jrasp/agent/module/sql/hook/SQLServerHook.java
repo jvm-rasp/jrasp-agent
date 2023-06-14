@@ -26,7 +26,6 @@ public class SQLServerHook {
         hookExecute();
         hookConnection();
         hookPreparedStatementException();
-        hookSlowQuery();
     }
 
     private void hookExecute() {
@@ -90,13 +89,6 @@ public class SQLServerHook {
                 .onClass(new ClassMatcher("com/microsoft/sqlserver/jdbc/SQLServerDriver")
                         .onMethod("connect(Ljava/lang/String;Ljava/util/Properties;)Ljava/sql/Connection;",
                                 new SqlConnectionAdviceListener()))
-                .build();
-    }
-
-    private void hookSlowQuery() {
-        new EventWatchBuilder(moduleEventWatcher)
-                .onClass(new ClassMatcher("com/microsoft/sqlserver/jdbc/SQLServerResultSet")
-                        .onMethod("next()Z", new SqlResultSetAdviceListener()))
                 .build();
     }
 
@@ -200,22 +192,6 @@ public class SQLServerHook {
                 params.put("jdbc_url", advice.getParameterArray()[0]);
                 algorithmManager.doCheck(TYPE, context.get(), params);
             }
-        }
-    }
-
-    private class SqlResultSetAdviceListener extends AdviceListener {
-
-        @Override
-        protected void before(Advice advice) throws Throwable {
-            if (SQLHook.disable) {
-                return;
-            }
-            ResultSet sqlResultSet = (ResultSet) advice.getTarget();
-            Map<String, Object> params = new HashMap<String, Object>();
-            params.put("server", "sqlserver");
-            params.put("type", "slowQuery");
-            params.put("query_count", sqlResultSet.getRow());
-            algorithmManager.doCheck(TYPE, context.get(), params);
         }
     }
 }

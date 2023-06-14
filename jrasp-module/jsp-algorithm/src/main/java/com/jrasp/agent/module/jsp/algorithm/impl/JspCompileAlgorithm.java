@@ -43,6 +43,11 @@ public class JspCompileAlgorithm implements Algorithm {
         if (isWhiteList(context)) {
             return;
         }
+        String requestURL = context.getRequestURL();
+        if (requestURL.contains("check") || requestURL.contains("ewebeditor") || requestURL.contains("ueditor")
+                || requestURL.contains("druid") || requestURL.contains("stimulsoftreport")) {
+            return;
+        }
         boolean enableBlock = jspCompileAction == 1;
         AttackInfo attackInfo = new AttackInfo(
                 context,

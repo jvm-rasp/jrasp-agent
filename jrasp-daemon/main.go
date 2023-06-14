@@ -103,8 +103,8 @@ func main() {
 
 	// 启动服务发现
 	if conf.EnableMdns {
-		mdnsClient := remote.NewMDNSClient(conf, env)
-		go mdnsClient.MonitorConnectState()
+		udpClient := remote.NewUDPClient(conf, env)
+		go udpClient.MonitorConnectState()
 	}
 
 	// start pprof for debug

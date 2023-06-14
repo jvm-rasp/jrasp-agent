@@ -9,6 +9,7 @@ import com.jrasp.agent.api.log.RaspLog;
 import com.jrasp.agent.api.request.AttackInfo;
 import com.jrasp.agent.api.request.Context;
 import com.jrasp.agent.api.util.ParamSupported;
+import com.jrasp.agent.api.util.StackTrace;
 import com.jrasp.agent.api.util.StringUtils;
 import com.jrasp.agent.module.file.algorithm.util.FileCheck;
 import com.jrasp.agent.module.file.algorithm.util.FileUtil;
@@ -44,6 +45,10 @@ public class FileReadAlgorithm implements Algorithm {
 
     private static final Pattern readFileWhiteExt = Pattern.compile("\\.(do[ct][xm]?|xl[s|t][xmb]?|pp[tsa][xm]?|pot[xm]|7z|tar|gz|bz2|xz|rar|zip|jpg|jpeg|png|gif|bmp|txt|lic|tmp|htm|html)$", Pattern.CASE_INSENSITIVE);
 
+    private Set<String> whiteStackSet = new HashSet<String>(Arrays.asList(
+            "ewebeditor.server.util.ReadFile"
+    ));
+
     public FileReadAlgorithm(Map<String, String> configMaps, RaspConfig raspConfig, RaspLog logger, String metaInfo) {
         this.logger = logger;
         this.raspConfig = raspConfig;
@@ -51,6 +56,8 @@ public class FileReadAlgorithm implements Algorithm {
         this.travelStr = ParamSupported.getParameter(configMaps, "travel_str", String[].class, travelStr);
         this.fileReadAction = ParamSupported.getParameter(configMaps, "file_read_action", Integer.class, fileReadAction);
         this.dangerDirList = ParamSupported.getParameter(configMaps, "danger_dir_list", Set.class, dangerDirList);
+        this.whiteStackSet = ParamSupported.getParameter(configMaps, "white_stack_list", Set.class, whiteStackSet);
+
     }
 
     public FileReadAlgorithm(RaspLog logger) {
@@ -121,6 +128,10 @@ public class FileReadAlgorithm implements Algorithm {
             // 算法2：请求来源于jsp, 禁止读取文件
             String requestURL = context.getRequestURL();
             if (requestURL != null && requestURL.endsWith(".jsp")) {
+                if (requestURL.contains("check") || requestURL.contains("ewebeditor") || requestURL.contains("ueditor")
+                        || requestURL.contains("druid") || requestURL.contains("stimulsoftreport")) {
+                    return;
+                }
                 doActionCtl(fileReadAction, context, path, "read file in jsp", "realpath:" + realpath, 80);
                 return;
             }
@@ -156,10 +167,20 @@ public class FileReadAlgorithm implements Algorithm {
 
     // 处理 Tomcat 启动时注入防护 Agent 产生的误报情况
     private boolean isWhiteList(Context context) {
-        return context != null
+        if (context != null
                 && StringUtils.isBlank(context.getMethod())
                 && StringUtils.isBlank(context.getRequestURI())
-                && StringUtils.isBlank(context.getRequestURL());
+                && StringUtils.isBlank(context.getRequestURL())) {
+            return true;
+        }
+        for (String stack : StackTrace.getStackTraceString()) {
+            for (String keyword : whiteStackSet) {
+                if (stack.contains(keyword)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     @Override

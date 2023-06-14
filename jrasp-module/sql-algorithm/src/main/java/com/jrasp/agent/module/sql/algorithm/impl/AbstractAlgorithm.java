@@ -53,7 +53,7 @@ public abstract class AbstractAlgorithm {
     protected static final PolicyAction policyActionReadonlyTable = PolicyAction.LOG;
     protected static final PolicyAction policyActionBlacklistSchema = PolicyAction.BLOCK;
     protected static final PolicyAction policyActionBlacklistObject = PolicyAction.BLOCK;
-    protected static final PolicyAction policyActionBlacklistTable = PolicyAction.BLOCK;
+    protected static final PolicyAction policyActionBlacklistTable = PolicyAction.IGNORE;
     protected static final PolicyAction policyActionBlacklistVariant = PolicyAction.BLOCK;
     protected static final PolicyAction policyActionBlacklistStructure = PolicyAction.BLOCK;
     protected static final PolicyAction policyActionDeleteNoneCondition = PolicyAction.LOG;
@@ -176,11 +176,11 @@ public abstract class AbstractAlgorithm {
     protected RaspConfig raspConfig;
 
     protected String metaInfo;
-    protected volatile Integer slowQueryCheckAction = 0;
-    protected volatile Integer slowQueryCount = 3000;
     protected volatile Integer exceptionCheckAction = 0;
     protected volatile Integer regexCheckAction = 0;
     protected volatile Integer inputCheckAction = 0;
+
+    protected static final Pattern SQL_INJECT_PATTERN = Pattern.compile("^[_A-Za-z0-9\\-]+$");
 
     protected void doActionCtl(int action, Context context, String payload, String algorithm, String message, int level) throws ProcessControlException {
         if (action > -1) {
@@ -190,23 +190,6 @@ public abstract class AbstractAlgorithm {
             if (enableBlock) {
                 ProcessController.throwsImmediatelyAndSendResponse(attackInfo, raspConfig, new RuntimeException("behinder backdoor block by EpointRASP."));
             }
-        }
-    }
-
-    protected void slowQueryCheck(Context context, String server, Integer queryCount) throws ProcessControlException {
-        boolean enableBlock = slowQueryCheckAction == 1;
-        if (queryCount >= slowQueryCount) {
-            AttackInfo attackInfo = new AttackInfo(
-                    context,
-                    ClassPathUtil.getWebContext(),
-                    metaInfo,
-                    String.valueOf(queryCount),
-                    enableBlock,
-                    "SQL查询结果集过大",
-                    "slowQuery",
-                    "sql result set greater than " + slowQueryCount,
-                    50);
-            logger.attack(attackInfo);
         }
     }
 
@@ -236,6 +219,43 @@ public abstract class AbstractAlgorithm {
         return false;
     }
 
+    private static String[] splitField(String field) {
+        String[] fieldName;
+        // 如果这边字段名中是以表名或者别名.列名（t.a）这种形式拼接的那么就在做一把处理-- edit by xuebing
+        //这种情况别名和列名都要做注入校验，因此返回数组。by cjli ---2023-03-17
+        if (field.indexOf('.') != -1) {
+            String[] nffs = field.split("\\.");
+            fieldName = new String[]{nffs[0].trim(), nffs[1].trim()};
+        } else {
+            fieldName = new String[]{field.trim()};
+        }
+        return fieldName;
+    }
+
+    private boolean checkField(String field) {
+        Pattern SQL_INJECT_PATTERNEXTRE = Pattern.compile("^[_A-Za-z0-9=.\\s\\-()]+$");
+        // 如果传入的字段有多个
+        if (StringUtils.isNotBlank(field)) {
+            String[] ff = field.split(",");
+            for (String item : ff) {
+                String[] fieldNames = splitField(item);
+                //兼容字段名中是以表名或者别名.列名（t.a）这种形式拼接的情况，左右值都要进行校验。
+                for (String fieldName : fieldNames) {
+                    if (!"*".equals(fieldName)) {
+                        // 直接取前者即可
+                        if (!SQL_INJECT_PATTERN.matcher(fieldName).matches()
+                                && (SQL_INJECT_PATTERNEXTRE == null || SQL_INJECT_PATTERNEXTRE != null
+                                && !SQL_INJECT_PATTERNEXTRE.matcher(fieldName).matches())) {
+                            return false;
+                        }
+                    }
+                }
+
+            }
+        }
+        return true;
+    }
+
     protected boolean userInputCheck(Context context, String server, String sql, List<TokenInfo> tokens) throws ProcessControlException {
         boolean enableBlock = inputCheckAction == 1;
         Map<String, String[]> params = context.getDecryptParameters();
@@ -248,6 +268,9 @@ public abstract class AbstractAlgorithm {
                 if (value.startsWith("{\"pageUrl\":\"")) {
                     continue;
                 }
+                if (checkField(value)) {
+                    continue;
+                }
                 AttackInfo attackInfo = new AttackInfo(
                         context,
                         ClassPathUtil.getWebContext(),
@@ -256,7 +279,7 @@ public abstract class AbstractAlgorithm {
                         false,
                         "SQL注入",
                         "sqlInjection(input param check)",
-                        "sql injection attack, sql: " + sql,
+                        "sql injection attack, injection point: " + value + " sql: " + sql,
                         100);
                 logger.attack(attackInfo);
                 if (enableBlock) {
@@ -766,7 +789,7 @@ public abstract class AbstractAlgorithm {
         Queue<String> queue = new LinkedList<>(Arrays.asList(values));
         while (!queue.isEmpty()) {
             String checkValue[], value = queue.remove();
-            if (value.length() < 3) {
+            if (value == null || value.length() < 3) {
                 continue;
             }
             String decoded = CheckerUtils.tryDecodeString(value);

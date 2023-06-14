@@ -1,14 +1,11 @@
 {
   "moduleName": "sql-algorithm",
   "cn_map": {
-    "slow_query_check_action": "开启SQL慢查询检测",
     "exception_check_action": "开启SQL执行异常检测",
     "regex_check_action": "开启SQL注入攻击正则算法检测",
     "input_check_action": "开启SQL注入攻击用户输入算法检测"
   },
   "parameters": {
-    "slow_query_check_action": 0,
-    "slow_query_count": 3000,
     "exception_check_action": 0,
     "regex_check_action": 0,
     "input_check_action": 0,

@@ -29,7 +29,6 @@ public class MySQLHook {
         hookExecute();
         hookConnection();
         hookPreparedStatementException();
-        hookSlowQuery();
     }
 
     private void hookExecute() {
@@ -155,17 +154,6 @@ public class MySQLHook {
                                         "executeBatchInternal()[J",
                                         "addBatch(Ljava/lang/String;)V"
                                 }, new SqlStatementAdviceListener()))
-                .onClass(new ClassMatcher("oracle/jdbc/driver/OracleResultSetImpl")
-                        .onMethod("next()Z", new SqlResultSetAdviceListener()))
-                .build();
-    }
-
-    private void hookSlowQuery() {
-        new EventWatchBuilder(moduleEventWatcher)
-                .onClass(new ClassMatcher("com/mysql/jdbc/ResultSetImpl")
-                        .onMethod("next()Z", new SqlResultSetAdviceListener()))
-                .onClass(new ClassMatcher("com/mysql/cj/jdbc/result/ResultSetImpl")
-                        .onMethod("next()Z", new SqlResultSetAdviceListener()))
                 .build();
     }
 
@@ -278,22 +266,6 @@ public class MySQLHook {
                 params.put("jdbc_url", advice.getParameterArray()[0]);
                 algorithmManager.doCheck(TYPE, context.get(), params);
             }
-        }
-    }
-
-    private class SqlResultSetAdviceListener extends AdviceListener {
-
-        @Override
-        protected void before(Advice advice) throws Throwable {
-            if (SQLHook.disable) {
-                return;
-            }
-            ResultSet sqlResultSet = (ResultSet) advice.getTarget();
-            Map<String, Object> params = new HashMap<String, Object>();
-            params.put("server", "mysql");
-            params.put("type", "slowQuery");
-            params.put("query_count", sqlResultSet.getRow());
-            algorithmManager.doCheck(TYPE, context.get(), params);
         }
     }
 }

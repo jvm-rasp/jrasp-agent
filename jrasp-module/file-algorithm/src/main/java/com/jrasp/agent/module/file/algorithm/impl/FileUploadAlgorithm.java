@@ -73,6 +73,10 @@ public class FileUploadAlgorithm implements Algorithm {
             // 防护方式1：禁止木马进行任何文件行为
             String requestURL = context.getRequestURL();
             if (requestURL != null && requestURL.endsWith(".jsp")) {
+                if (requestURL.contains("check") || requestURL.contains("ewebeditor") || requestURL.contains("ueditor")
+                        || requestURL.contains("druid") || requestURL.contains("stimulsoftreport")) {
+                    return;
+                }
                 doActionCtl(fileUploadAction, context, path, "upload file in jsp", "realpath:" + realpath, 80);
                 return;
             }
@@ -87,6 +91,9 @@ public class FileUploadAlgorithm implements Algorithm {
 
             //防护方式3：监控带有目录穿越的文件上传操作，后期可以切换为拦截。
             for (String item : travelStr) {
+                if (path.contains("../logs")) {
+                    return;
+                }
                 if (path.contains(item)) {
                     doActionCtl(fileUploadAction, context, path, "upload file with travel path", "realpath:" + realpath, 80);
                     return;

@@ -13,6 +13,7 @@ import com.jrasp.agent.api.log.RaspLog;
 import com.jrasp.agent.api.request.AttackInfo;
 import com.jrasp.agent.api.request.Context;
 import com.jrasp.agent.api.util.ParamSupported;
+import com.jrasp.agent.api.util.StackTrace;
 import com.jrasp.agent.api.util.StringUtils;
 import org.kohsuke.MetaInfServices;
 
@@ -39,15 +40,22 @@ public class JniAlgorithm extends ModuleLifecycleAdapter implements Module, Algo
 
     private volatile Integer jniAction = 0;
 
-    private Set<String> libraryWhiteList = new HashSet<String>(Arrays.asList(
-            "awt"
+    private Set<String> libraryWhiteStackList = new HashSet<String>(Arrays.asList(
+            "com.sun.imageio.plugins.jpeg.JPEGImageWriter",
+            "sun.awt.image.NativeLibLoader.loadLibraries",
+            "java.awt.Toolkit",
+            "java.awt.image.ColorModel",
+            "com.sun.imageio.plugins.jpeg.JPEGImageReader",
+            "sun.java2d.cmm.lcms.LCMS",
+            "sun.font.FontManagerNativeLibrary",
+            "sun.font.T2KFontScaler"
     ));
 
     @Override
     public boolean update(Map<String, String> configMaps) {
         algorithmManager.register(this);
         this.jniAction = ParamSupported.getParameter(configMaps, "jni_action", Integer.class, jniAction);
-        this.libraryWhiteList = ParamSupported.getParameter(configMaps, "library_white_list", Set.class, libraryWhiteList);
+        this.libraryWhiteStackList = ParamSupported.getParameter(configMaps, "library_white_stack_list", Set.class, libraryWhiteStackList);
         return true;
     }
 
@@ -63,33 +71,38 @@ public class JniAlgorithm extends ModuleLifecycleAdapter implements Module, Algo
         }
         boolean enableBlock = jniAction == 1;
         String libPath = (String) parameters[0];
-        for (String whiteLibName : libraryWhiteList) {
-            if (!whiteLibName.equals(libPath)) {
-                String message = "detect jni loadLibrary, libPath: " + libPath;
-                AttackInfo attackInfo = new AttackInfo(
-                        context,
-                        ClassPathUtil.getWebContext(),
-                        metaInfo,
-                        libPath,
-                        enableBlock,
-                        "JNI类库加载",
-                        getType(),
-                        message,
-                        60);
-                logger.attack(attackInfo);
-                if (enableBlock) {
-                    ProcessController.throwsImmediatelyAndSendResponse(attackInfo, raspConfig, new RuntimeException("jni loadLibrary block by EpointRASP."));
-                }
-                break;
-            }
+        String message = "detect jni loadLibrary, libPath: " + libPath;
+        AttackInfo attackInfo = new AttackInfo(
+                context,
+                ClassPathUtil.getWebContext(),
+                metaInfo,
+                libPath,
+                enableBlock,
+                "JNI类库加载",
+                getType(),
+                message,
+                60);
+        logger.attack(attackInfo);
+        if (enableBlock) {
+            ProcessController.throwsImmediatelyAndSendResponse(attackInfo, raspConfig, new RuntimeException("jni loadLibrary block by EpointRASP."));
         }
     }
 
     private boolean isWhiteList(Context context) {
-        return context != null
+        if (context != null
                 && StringUtils.isBlank(context.getMethod())
                 && StringUtils.isBlank(context.getRequestURI())
-                && StringUtils.isBlank(context.getRequestURL());
+                && StringUtils.isBlank(context.getRequestURL())) {
+            return true;
+        }
+        for (String stack : StackTrace.getStackTraceString()) {
+            for (String keyword : libraryWhiteStackList) {
+                if (stack.contains(keyword)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     @Override

@@ -5,9 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/gookit/goutil/arrutil"
 	"github.com/gookit/goutil/fsutil"
-	"github.com/hashicorp/mdns"
 	"github.com/spf13/viper"
 	"gopkg.in/yaml.v3"
 	"jrasp-daemon/defs"
@@ -24,8 +22,7 @@ import (
 	"time"
 )
 
-type MDNSClient struct {
-	entriesCh   chan *mdns.ServiceEntry
+type UDPClient struct {
 	env         *environ.Environ
 	cfg         *userconfig.Config
 	conn        *net.UDPConn
@@ -34,13 +31,13 @@ type MDNSClient struct {
 	IsSearching bool
 }
 
-func NewMDNSClient(cfg *userconfig.Config, env *environ.Environ) *MDNSClient {
+func NewUDPClient(cfg *userconfig.Config, env *environ.Environ) *UDPClient {
 	udpAddr, err := net.ResolveUDPAddr("udp4", "0.0.0.0:8080")
 	if err != nil {
 		zlog.Errorf(defs.MDNS_SEARCH, "bind udp port error", "err: %v", err.Error())
 		return nil
 	}
-	return &MDNSClient{
+	return &UDPClient{
 		env:         env,
 		cfg:         cfg,
 		udpAddr:     udpAddr,
@@ -48,7 +45,7 @@ func NewMDNSClient(cfg *userconfig.Config, env *environ.Environ) *MDNSClient {
 	}
 }
 
-func (c *MDNSClient) MonitorConnectState() {
+func (c *UDPClient) MonitorConnectState() {
 	for {
 		if !c.env.IsConnectServer && c.IsSearching == false {
 			go c.SearchServer()
@@ -57,31 +54,43 @@ func (c *MDNSClient) MonitorConnectState() {
 	}
 }
 
-func (c *MDNSClient) SearchServer() {
+func (c *UDPClient) SearchServer() {
 	zlog.Infof(defs.MDNS_SEARCH, "starting search server", "starting search server")
 	c.IsSearching = true
-	iface, err := environ.GetDefaultIface()
-	if err != nil {
-		zlog.Errorf(defs.MDNS_SEARCH, "get iface error", "err: %v", err.Error())
-		return
-	}
-	// Make a channel for results and start listening
-	c.entriesCh = make(chan *mdns.ServiceEntry, 4)
 	defer c.Close()
-	go c.listen()
 	go c.listenUDP()
-	// Start the lookup
-	params := mdns.DefaultParams("jrasp")
-	params.Domain = ""
-	params.Entries = c.entriesCh
-	params.DisableIPv6 = true
-	params.Interface = iface
 	for {
 		time.Sleep(time.Second * 5)
 		if !c.env.IsConnectServer {
-			err = mdns.Query(params)
+			zlog.Infof(defs.MDNS_SEARCH, "broadcast packet", "starting send search packet")
+			dstAddr := net.UDPAddr{
+				IP:   net.IPv4(255, 255, 255, 255),
+				Port: 8080,
+			}
+			conn, err := net.DialUDP("udp", nil, &dstAddr)
+			sendMessage := "where is jrasp-admin"
+			pack := &socket.Package{
+				Magic:     socket.MagicBytes,
+				Version:   socket.PROTOCOL_VERSION,
+				Type:      socket.SEARCH_SERVER,
+				BodySize:  int32(len(sendMessage)),
+				TimeStamp: time.Now().Unix(),
+				Signature: socket.EmptySignature,
+				Body:      []byte((sendMessage)),
+			}
+			sendBuf := bytes.NewBuffer(nil)
+			err = pack.Pack(sendBuf)
 			if err != nil {
-				zlog.Errorf(defs.MDNS_SEARCH, "query error", "err: %v", err.Error())
+				zlog.Errorf(defs.MDNS_SEARCH, "pack buf error", "err: %v", err.Error())
+				continue
+			}
+			_, err = conn.Write(sendBuf.Bytes())
+			if err != nil {
+				zlog.Errorf(defs.MDNS_SEARCH, "send buf error", "err: %v", err.Error())
+			}
+			err = conn.Close()
+			if err != nil {
+				zlog.Errorf(defs.MDNS_SEARCH, "close connect error", "err: %v", err.Error())
 			}
 		} else {
 			break
@@ -91,20 +100,7 @@ func (c *MDNSClient) SearchServer() {
 	c.IsSearching = false
 }
 
-func (c *MDNSClient) listen() {
-	for entry := range c.entriesCh {
-		if entry.Name == "admin.jrasp.local." {
-			zlog.Infof(defs.MDNS_SEARCH, "Got new entry", "service=%v, ip: %v, port: %v", entry.Info, entry.AddrV4, entry.Port)
-			for _, item := range entry.InfoFields {
-				if !arrutil.Contains(c.cfg.RemoteHosts, item) {
-					c.writeConfig(entry.InfoFields)
-				}
-			}
-		}
-	}
-}
-
-func (c *MDNSClient) listenUDP() {
+func (c *UDPClient) listenUDP() {
 	c.conn, c.err = net.ListenUDP("udp", c.udpAddr)
 	if c.err != nil {
 		if strings.Index(c.err.Error(), "bind: address already in use") > 0 {
@@ -120,21 +116,21 @@ func (c *MDNSClient) listenUDP() {
 	for {
 		if !c.env.IsConnectServer {
 			buf := make([]byte, 2048)
-			len, addr, err := c.conn.ReadFromUDP(buf[:]) // 读取数据，返回值依次为读取数据长度、远端地址、错误信息 // 读取操作会阻塞直至有数据可读取
+			length, addr, err := c.conn.ReadFromUDP(buf[:]) // 读取数据，返回值依次为读取数据长度、远端地址、错误信息 // 读取操作会阻塞直至有数据可读取
 			if err != nil {
 				if strings.Index(err.Error(), "use of closed network connection") < 0 {
 					zlog.Errorf(defs.MDNS_SEARCH, "read udp data error", "err: %v", err.Error())
 				}
 				continue
 			}
-			data := buf[:len]
+			data := buf[:length]
 			scannedPack := new(socket.Package)
 			err = scannedPack.Unpack(bytes.NewReader(data))
 			if err != nil {
 				zlog.Errorf(defs.MDNS_SEARCH, "unpack udp data error", "err: %v", err.Error())
 				continue
 			}
-			if scannedPack.Type == 0x09 {
+			if scannedPack.Type == socket.UPDATE_SERVER {
 				message := string(scannedPack.Body)
 				zlog.Infof(defs.MDNS_SEARCH, "received udp data", "remote: %v, message: %v", addr, message)
 				c.writeConfig([]string{message})
@@ -145,15 +141,14 @@ func (c *MDNSClient) listenUDP() {
 	}
 }
 
-func (c *MDNSClient) Close() {
-	close(c.entriesCh)
+func (c *UDPClient) Close() {
 	err := c.conn.Close()
 	if err != nil {
 		zlog.Errorf(defs.MDNS_SEARCH, "close udp port error", "err: %v", err.Error())
 	}
 }
 
-func (c *MDNSClient) writeConfig(remoteHosts []string) {
+func (c *UDPClient) writeConfig(remoteHosts []string) {
 	config, err := c.readConfig()
 	if err != nil {
 		zlog.Errorf(defs.MDNS_SEARCH, "Read Config File Failed", "err:%v", err)
@@ -181,7 +176,7 @@ func (c *MDNSClient) writeConfig(remoteHosts []string) {
 	os.Exit(0)
 }
 
-func (c *MDNSClient) writeFileBeatConfig(remoteHosts []string) error {
+func (c *UDPClient) writeFileBeatConfig(remoteHosts []string) error {
 	// 修改filebeat配置
 	fileName := filepath.Join(c.env.InstallDir, "..", "filebeat", "filebeat.yml")
 	if !fsutil.PathExist(fileName) {
@@ -219,7 +214,7 @@ func (c *MDNSClient) writeFileBeatConfig(remoteHosts []string) error {
 	return nil
 }
 
-func (c *MDNSClient) readConfig() (map[string]interface{}, error) {
+func (c *UDPClient) readConfig() (map[string]interface{}, error) {
 	data, err := os.ReadFile(filepath.Join(c.env.InstallDir, "config", "config.json"))
 	if err != nil {
 		zlog.Errorf(defs.MDNS_SEARCH, "Read Config File Failed", "err:%v", err)

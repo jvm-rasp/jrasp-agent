@@ -11,6 +11,9 @@
     "file_list_action": 0,
     "file_read_action": 0,
     "file_upload_action": 0,
+    "white_stack_list": [
+      "ewebeditor.server.util.ReadFile"
+    ],
     "danger_dir_list": [
       "/",
       "/home",

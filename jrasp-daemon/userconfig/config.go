@@ -73,6 +73,8 @@ type Config struct {
 	MinJvmStartTime int64 `json:"minJvmStartTime"` // java进程启动最小时间间隔，单位分钟，默认3分钟
 
 	EnableMdns bool `json:"enableMdns"` // 是否开启mdns功能
+
+	ConnectTime int64 `json:"connectTime"` // 重连server时间
 }
 
 // ModuleConfig module信息
@@ -187,6 +189,8 @@ func setDefaultValue(vp *viper.Viper) {
 	vp.SetDefault("MinJvmStartTime", 3)
 
 	vp.SetDefault("EnableMdns", true)
+
+	vp.SetDefault("ConnectTime", 60)
 
 	// vp.SetDefault("RaspBridgeJar", "")
 	// vp.SetDefault("RaspCoreJar", "")

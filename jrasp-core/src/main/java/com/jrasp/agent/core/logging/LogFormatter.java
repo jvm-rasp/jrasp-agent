@@ -3,12 +3,14 @@ package com.jrasp.agent.core.logging;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.net.InetAddress;
 import java.text.SimpleDateFormat;
 import java.util.logging.Formatter;
 import java.util.logging.LogRecord;
 
 /**
  * 自定义日志格式，来源于 tomcat-juli
+ *
  * @author jrasp
  */
 public class LogFormatter extends Formatter {
@@ -16,6 +18,8 @@ public class LogFormatter extends Formatter {
     private static final String LINE_SEP = System.getProperty("line.separator");
 
     private static final String DEFAULT_TIME_FORMAT = "yyyy-MM-dd HH:mm:ss.SSS";
+
+    private static String hostname = "";
 
     @Override
     public String format(LogRecord record) {
@@ -30,6 +34,10 @@ public class LogFormatter extends Formatter {
         // Severity
         sb.append(' ');
         sb.append(record.getLevel());
+
+        // hostname
+        sb.append(' ');
+        sb.append(getHostname());
 
         // Thread
         sb.append(' ');
@@ -77,5 +85,19 @@ public class LogFormatter extends Formatter {
             super.print('\t');
             super.println(x);
         }
+    }
+
+    private static String getHostname() {
+        if ("".equals(hostname)) {
+            try {
+                InetAddress inetadd = InetAddress.getLocalHost();
+                if (inetadd != null) {
+                    return inetadd.getHostName();
+                }
+            } catch (Exception e) {
+                return "UNKNOWN";
+            }
+        }
+        return hostname;
     }
 }

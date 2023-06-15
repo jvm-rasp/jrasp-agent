@@ -55,7 +55,7 @@ func WatchRemoteConfig(cfg *userconfig.Config, env *environ.Environ) {
 				}
 			}
 		}
-		time.Sleep(time.Second * 10)
+		time.Sleep(time.Second * time.Duration(cfg.ConnectTime))
 	}
 
 }

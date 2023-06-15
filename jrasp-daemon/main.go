@@ -67,6 +67,9 @@ func main() {
 	// 可执行文件下载
 	ossClient := update.NewUpdateClient(conf, env)
 
+	// 清理无效或者过期的pid目录
+	ossClient.CleanPidFiles()
+
 	// 下载最新的可执行文件
 	ossClient.UpdateDaemonFile()
 
@@ -92,11 +95,16 @@ func main() {
 	// 进程状态定时上报
 	go newWatch.JavaStatusTimer()
 
+	// 容器状态定时检查
+	//if runtime.GOOS == "linux" && !env.IsContainer {
+	//	go newWatch.ContainerTimer()
+	//}
+
 	// 启动服务发现
-	if conf.EnableMdns {
-		mdnsClient := remote.NewMDNSClient(conf, env)
-		go mdnsClient.SearchServer()
-	}
+	//if conf.EnableMdns {
+	//	udpClient := remote.NewUDPClient(conf, env)
+	//	go udpClient.MonitorConnectState()
+	//}
 
 	// start pprof for debug
 	go debug(conf)

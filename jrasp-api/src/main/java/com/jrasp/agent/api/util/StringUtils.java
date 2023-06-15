@@ -1,5 +1,6 @@
 package com.jrasp.agent.api.util;
 
+import java.io.UnsupportedEncodingException;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -212,6 +213,25 @@ public class StringUtils {
                 return b.toString();
             }
             b.append(",");
+        }
+    }
+
+    public static String escape(String src) {
+        try {
+            char j;
+            StringBuilder tmp = new StringBuilder();
+            for (int i = 0; i < src.length(); i++) {
+                j = src.charAt(i);
+                if (j < 256) {
+                    tmp.append(j);
+                } else {
+                    tmp.append("\\u");
+                    tmp.append(Integer.toString(j, 16));
+                }
+            }
+            return new String(tmp.toString().getBytes("UTF-8"));
+        } catch (Exception ignored) {
+            return "escape failed";
         }
     }
 }

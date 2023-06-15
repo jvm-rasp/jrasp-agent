@@ -12,8 +12,6 @@
     <artifactId>jrasp-module</artifactId>
     <packaging>pom</packaging>
     <modules>
-        <module>mysql-hook</module>
-        <module>sql-algorithm</module>
         <module>expression-hook</module>
         <module>expression-algorithm</module>
         <module>xxe-hook</module>
@@ -28,8 +26,12 @@
         <module>file-hook</module>
         <module>file-algorithm</module>
         <module>ssrf-algorithm</module>
-        <module>memory-shell-algorithm</module>
         <module>memory-shell-hook</module>
+        <module>memory-shell-algorithm</module>
+        <module>jni-hook</module>
+        <module>jni-algorithm</module>
+        <module>jsp-hook</module>
+        <module>jsp-algorithm</module>
     </modules>
 
     <dependencies>

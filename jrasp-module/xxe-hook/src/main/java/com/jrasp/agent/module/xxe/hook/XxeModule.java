@@ -35,9 +35,6 @@ public class XxeModule implements Module, LoadCompleted {
     @RaspResource
     private ThreadLocal<Context> context;
 
-    @RaspResource
-    private String metaInfo;
-
     private volatile boolean disable = false;
 
     @Override

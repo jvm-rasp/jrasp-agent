@@ -46,7 +46,7 @@ func NewLog(logPath, hostName, ip string, logLevel int) *Log {
 		EncodeLevel:  zapcore.CapitalLevelEncoder, //将日志级别转换成大写（INFO，WARN，ERROR等）
 		EncodeCaller: zapcore.ShortCallerEncoder,  //采用短文件路径编码输出（test/main.go:14 ）
 		EncodeTime: func(t time.Time, enc zapcore.PrimitiveArrayEncoder) {
-		    // 设置时区
+			location := time.FixedZone("CST", 8*3600)
 			location, _ := time.LoadLocation("Asia/Shanghai")
 			t = t.In(location)
 			enc.AppendString(t.Format(defs.DATE_FORMAT))

@@ -50,6 +50,8 @@ type Environ struct {
 
 	PidFile string `json:"pidFile"`
 
+	// 是否为容器环境
+	IsContainer bool `json:"isContainer"`
 	// 是否已连接server
 	IsConnectServer bool `json:"isConnectServer"`
 }
@@ -86,6 +88,9 @@ func NewEnviron() (*Environ, error) {
 	// cpu cnt
 	cpuCounts, err := cpu.Counts(true)
 
+	// .dockerenv
+	isContainer, err := utils.PathExists("/.dockerenv")
+
 	env := &Environ{
 		HostName:        getHostname(),
 		Ip:              ipAddress,
@@ -102,14 +107,21 @@ func NewEnviron() (*Environ, error) {
 		BuildDecryptKey: BuildDecryptKey,
 		BuildGitCommit:  BuildGitCommit,
 		PidFile:         filepath.Join(execDir, defs.DAEMON_PID_FILE),
+		IsContainer:     isContainer,
 		IsConnectServer: false,
 	}
 	return env, nil
 }
 
 func getHostname() string {
-	hostname, _ := os.Hostname()
-	return hostname
+	hostName := ""
+	isContainer, _ := utils.PathExists("/.dockerenv")
+	if isContainer {
+		hostName = os.Getenv("ctnruuid")
+	} else {
+		hostName, _ = os.Hostname()
+	}
+	return hostName
 }
 
 func getExternalIP() (string, error) {

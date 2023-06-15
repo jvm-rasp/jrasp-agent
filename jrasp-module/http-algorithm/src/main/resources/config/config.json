@@ -1,6 +1,43 @@
 {
   "moduleName": "http-algorithm",
+  "cn_map": {
+    "ip_black_list_action": "开启IP黑名单拦截",
+    "url_black_list_action": "开启URL黑名单拦截",
+    "scan_list_action": "开启漏洞扫描器特征拦截"
+  },
   "parameters": {
-    "disable": false
+    "disable": false,
+    "ip_black_list_action": 0,
+    "url_black_list_action": 1,
+    "scan_list_action": 1,
+    "ip_black_list": [],
+    "url_black_set": [],
+    "scan_url_set": [
+      "acunetix-wvs-test-for-some-inexistent-file",
+      "by_wvs",
+      "acunetix_wvs_security_test",
+      "acunetix",
+      "acunetix_wvs",
+      "acunetix_test",
+      "nessus",
+      "Nessus",
+      "Appscan",
+      "nsfocus",
+      "sqlmap"
+    ],
+    "scan_header_set": [
+      "sqlmap",
+      "appscan",
+      "nessus",
+      "acunetix",
+      "netsparker",
+      "webinspect",
+      "Rsas",
+      "nsfocus",
+      "WebReaver",
+      "zgrab",
+      "goby",
+      "xray"
+    ]
   }
 }

@@ -47,6 +47,7 @@ type Config struct {
 	PidExistsTicker       uint32 `json:"pidExistsTicker"`
 	ProcessInjectTicker   uint32 `json:"processInjectTicker"`
 	HeartBeatReportTicker uint   `json:"heartBeatReportTicker"`
+	ContainerTicker       uint32 `json:"containerTicker"`
 	DependencyTicker      uint32 `json:"dependencyTicker"`
 
 	// agent lib核心包下载链接
@@ -72,6 +73,8 @@ type Config struct {
 	MinJvmStartTime int64 `json:"minJvmStartTime"` // java进程启动最小时间间隔，单位分钟，默认3分钟
 
 	EnableMdns bool `json:"enableMdns"` // 是否开启mdns功能
+
+	ConnectTime int64 `json:"connectTime"` // 重连server时间
 }
 
 // ModuleConfig module信息
@@ -160,6 +163,7 @@ func setDefaultValue(vp *viper.Viper) {
 	vp.SetDefault("PidExistsTicker", 10)
 	vp.SetDefault("ProcessInjectTicker", 30)
 	vp.SetDefault("HeartBeatReportTicker", 5)
+	vp.SetDefault("ContainerTicker", 5)
 	vp.SetDefault("DependencyTicker", 12*60*60)
 
 	vp.SetDefault("EnableBlock", false)
@@ -180,11 +184,13 @@ func setDefaultValue(vp *viper.Viper) {
 
 	vp.SetDefault("AgentDownLoadConfigs", nil)
 
-	// wss://www.server.jrasp.com:8088/rasp-admin
-	vp.SetDefault("RemoteHosts", []string{"wss://www.server.jrasp.com:8088/rasp-admin"})
+	vp.SetDefault("RemoteHosts", []string{"ws://localhost:8088/rasp-admin"})
 
 	vp.SetDefault("MinJvmStartTime", 3)
+
 	vp.SetDefault("EnableMdns", true)
+
+	vp.SetDefault("ConnectTime", 60)
 
 	// vp.SetDefault("RaspBridgeJar", "")
 	// vp.SetDefault("RaspCoreJar", "")

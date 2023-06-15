@@ -1,7 +1,10 @@
 {
   "moduleName": "memory-shell-algorithm",
+  "cn_map": {
+    "memory_shell_action": "拦截内存马注入攻击"
+  },
   "parameters": {
     "disable": false,
-    "memory_shell_action": 0
+    "memory_shell_action": 1
   }
 }

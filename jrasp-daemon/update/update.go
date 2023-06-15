@@ -2,10 +2,12 @@ package update
 
 import (
 	"fmt"
+	"github.com/shirou/gopsutil/process"
 	"io/fs"
 	"io/ioutil"
 	"jrasp-daemon/defs"
 	"jrasp-daemon/environ"
+	"jrasp-daemon/java_process"
 	"jrasp-daemon/userconfig"
 	"jrasp-daemon/utils"
 	"jrasp-daemon/zlog"
@@ -13,6 +15,7 @@ import (
 	"path"
 	"path/filepath"
 	"runtime"
+	"strconv"
 	"strings"
 )
 
@@ -49,6 +52,15 @@ func (this *Update) DownLoad(url, filePath string) error {
 
 // UpdateDaemonFile 更新守护进程
 func (this *Update) UpdateDaemonFile() {
+	// 判断bin目录下是否存在daemon.del文件，如果存在则删除
+	exist, _ := utils.PathExists(this.env.BinFileName + ".del")
+	if exist {
+		err := os.Remove(this.env.BinFileName + ".del")
+		if err != nil {
+			zlog.Errorf(defs.DOWNLOAD, "[BUG] delete daemon.del error", "err: %v", err)
+		}
+	}
+
 	cfgMd5, err := this.cfg.RaspBinConfigs.GetMD5ByName(path.Join(runtime.GOOS, runtime.GOARCH, this.env.BinFileName))
 	if err == nil && cfgMd5 != this.env.BinFileHash {
 		newFilePath := filepath.Join(this.env.InstallDir, "bin", this.cfg.RaspBinConfigs.FileName)
@@ -71,6 +83,12 @@ func (this *Update) UpdateDaemonFile() {
 				zlog.Errorf(defs.DOWNLOAD, "[BUG] read zip file data error", "err: %v", err)
 				return
 			}
+			// 兼容windows环境下直接写daemon导致文件被占用的错误，应该先把运行中的daemon重命名为临时文件，再将新的文件覆盖
+			err = os.Rename(this.env.BinFileName, this.env.BinFileName+".del")
+			if err != nil {
+				zlog.Errorf(defs.DOWNLOAD, "[BUG] rename daemon to daemon.del error", "err: %v", err)
+				return
+			}
 			err = os.WriteFile(this.env.BinFileName, data, 0777)
 			if err != nil {
 				zlog.Errorf(defs.DOWNLOAD, "[BUG] replace daemon error", "err: %v", err)
@@ -84,7 +102,7 @@ func (this *Update) UpdateDaemonFile() {
 				}
 			}
 		} else {
-			zlog.Errorf(defs.DOWNLOAD, "[BUG] check new file hash err", "newFileHash:%s,configHash:%s", newHash, this.cfg.RaspBinConfigs.Md5)
+			zlog.Errorf(defs.DOWNLOAD, "[BUG] check new file hash err", "newFileHash:%s, configHash:%s", newHash, this.cfg.RaspBinConfigs.Md5)
 		}
 	}
 }
@@ -115,6 +133,7 @@ func (this *Update) DownLoadAgentFiles() {
 	}
 	// 3.下载
 	if isDown {
+		this.uninstallAgent()
 		this.downLoadAgent(fileHashMap)
 	}
 }
@@ -139,6 +158,30 @@ func (this *Update) DownLoadModuleFiles() {
 	this.downLoad(fileHashMap)
 }
 
+func (this *Update) uninstallAgent() {
+	dirEntry, _ := os.ReadDir(filepath.Join(this.env.InstallDir, "run"))
+	if len(dirEntry) > 0 {
+		zlog.Infof(defs.DOWNLOAD, "starting uninstall agent", "update success will exit...")
+	}
+	for _, item := range dirEntry {
+		if item.IsDir() {
+			pid, _ := strconv.Atoi(item.Name())
+			proc, err := process.NewProcess(int32(pid))
+			if err != nil {
+				zlog.Infof(defs.DOWNLOAD, fmt.Sprintf("process %v not exist will ignore", pid), "err:%v", err)
+				continue
+			}
+			javaProcess := java_process.NewJavaProcess(proc, this.cfg, this.env)
+			// 获取进程的注入状态
+			javaProcess.GetAndMarkStatus()
+			// 如果进程已注入则立即进行卸载
+			if javaProcess.SuccessInject() {
+				javaProcess.ExitInjectImmediately()
+			}
+		}
+	}
+}
+
 func (this *Update) downLoadAgent(fileHashMap map[string]string) {
 	// 1.先下载zip包
 	newFilePath := filepath.Join(this.env.InstallDir, "lib", this.cfg.RaspLibConfigs.FileName)
@@ -155,13 +198,6 @@ func (this *Update) downLoadAgent(fileHashMap map[string]string) {
 	}
 	// 2.校验下载文件的hash
 	if newHash == this.cfg.RaspLibConfigs.Md5 {
-		// 3.先清空lib目录下所有的jar包，然后再释放zip中的文件
-		for k, _ := range fileHashMap {
-			err := os.Remove(filepath.Join(this.env.InstallDir, "lib", k))
-			if err != nil {
-				zlog.Errorf(defs.DOWNLOAD, fmt.Sprintf("remove file %v error", k), "err:%v", err)
-			}
-		}
 		// 4.释放zip文件
 		for _, item := range this.cfg.RaspLibConfigs.ItemsInfo {
 			data, err := utils.ReadFileFromZip(newFilePath, item.FileName)
@@ -171,9 +207,11 @@ func (this *Update) downLoadAgent(fileHashMap map[string]string) {
 			}
 			err = os.WriteFile(filepath.Join(this.env.InstallDir, "lib", item.FileName), data, 0777)
 			if err != nil {
-				zlog.Errorf(defs.DOWNLOAD, "[BUG] replace daemon error", "err: %v", err)
+				zlog.Errorf(defs.DOWNLOAD, fmt.Sprintf("[BUG] write file %v error", item.FileName), "err: %v", err)
 			}
 		}
+		this.clean(newFilePath)
+		os.Exit(0) // 进程退出
 	} else {
 		zlog.Errorf(defs.DOWNLOAD, "[BUG] check new file hash err", "newFileHash:%s,configHash:%s", newHash, this.cfg.RaspBinConfigs.Md5)
 	}
@@ -241,7 +279,7 @@ func (this *Update) calDiskHash(files []fs.FileInfo) map[string]string {
 		// 不在配置列表中的插件，执行删除
 		if notExisted {
 			_ = os.Remove(fileAbsPath)
-			zlog.Warnf(defs.DOWNLOAD, "module is not in config, wile delete", "name:%s", name)
+			zlog.Infof(defs.DOWNLOAD, "module is not in config, will delete", "name:%s", name)
 			continue
 		}
 
@@ -285,6 +323,27 @@ func (this *Update) clean(filePath string) {
 		err = os.Remove(filePath)
 		if err != nil {
 			zlog.Errorf(defs.DOWNLOAD, "[BUG] delete file err", "err:%s", err)
+		}
+	}
+}
+
+func (this *Update) CleanPidFiles() {
+	dirEntry, _ := os.ReadDir(filepath.Join(this.env.InstallDir, "run"))
+	if len(dirEntry) > 0 {
+		zlog.Infof(defs.DOWNLOAD, "clean pid", "starting clean invalid pid")
+	}
+	for _, item := range dirEntry {
+		if item.IsDir() {
+			pid, _ := strconv.Atoi(item.Name())
+			_, err := process.NewProcess(int32(pid))
+			if err == process.ErrorProcessNotRunning {
+				err = os.RemoveAll(filepath.Join(this.env.InstallDir, "run", item.Name()))
+				if err == nil {
+					zlog.Infof(defs.DOWNLOAD, "clean invalid pid file success", "pid:%s", item.Name())
+				} else {
+					zlog.Errorf(defs.DOWNLOAD, "[BUG] clean invalid pid file err", "pid file: %s, err:%s", item.Name(), err)
+				}
+			}
 		}
 	}
 }

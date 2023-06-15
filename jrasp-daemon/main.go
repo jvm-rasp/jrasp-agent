@@ -14,7 +14,6 @@ import (
 	"jrasp-daemon/zlog"
 	"net/http"
 	"os/signal"
-	"runtime"
 	"syscall"
 )
 
@@ -97,15 +96,15 @@ func main() {
 	go newWatch.JavaStatusTimer()
 
 	// 容器状态定时检查
-	if runtime.GOOS == "linux" && !env.IsContainer {
-		go newWatch.ContainerTimer()
-	}
+	//if runtime.GOOS == "linux" && !env.IsContainer {
+	//	go newWatch.ContainerTimer()
+	//}
 
 	// 启动服务发现
-	if conf.EnableMdns {
-		udpClient := remote.NewUDPClient(conf, env)
-		go udpClient.MonitorConnectState()
-	}
+	//if conf.EnableMdns {
+	//	udpClient := remote.NewUDPClient(conf, env)
+	//	go udpClient.MonitorConnectState()
+	//}
 
 	// start pprof for debug
 	go debug(conf)

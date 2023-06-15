@@ -34,33 +34,32 @@ public class MemoryShellHook implements Module, LoadCompleted {
     private final static String TYPE = "内存马注入攻击";
 
     @Override
+    public boolean update(Map<String, String> configMaps) {
+        this.disable = ParamSupported.getParameter(configMaps, "disable", Boolean.class, disable);
+        return true;
+    }
+
+    @Override
     public void loadCompleted() {
         new EventWatchBuilder(moduleEventWatcher)
                 // Filter类型内存马
                 .onClass(new ClassMatcher("org/apache/catalina/core/StandardContext")
-                        .onMethod("addFilterDef(Lorg/apache/tomcat/util/descriptor/web/FilterDef;)V"
-                                , new injectListener()))
-                .onClass(new ClassMatcher("org/apache/catalina/core/StandardContext")
-                        .onMethod("addFilterMapBefore(Lorg/apache/tomcat/util/descriptor/web/FilterMap;)V"
-                                , new injectListener()))
-                .onClass(new ClassMatcher("org/apache/catalina/core/StandardContext")
-                        .onMethod("addFilterMap(Lorg/apache/tomcat/util/descriptor/web/FilterMap;)V"
-                                , new injectListener()))
-                // Servlet类型内存马
-                .onClass(new ClassMatcher("org/apache/catalina/core/StandardContext")
-                        .onMethod("addChild(Lorg/apache/catalina/Container;)V"
-                                , new injectListener()))
-                .onClass(new ClassMatcher("org/apache/catalina/core/StandardContext")
-                        .onMethod("addServletMapping(Ljava/lang/String;Ljava/lang/String;)V"
-                                , new injectListener()))
-                // Listener类型内存马
-                .onClass(new ClassMatcher("org/apache/catalina/core/StandardContext")
-                        .onMethod("addApplicationEventListener(Ljava/lang/Object;)V"
-                                , new injectListener()))
+                        .onMethod(new String[]{
+                                        // Filter类型内存马
+                                        "addFilterDef(Lorg/apache/tomcat/util/descriptor/web/FilterDef;)V",
+                                        "addFilterMapBefore(Lorg/apache/tomcat/util/descriptor/web/FilterMap;)V",
+                                        "addFilterMap(Lorg/apache/tomcat/util/descriptor/web/FilterMap;)V",
+                                        // Servlet类型内存马
+                                        "addChild(Lorg/apache/catalina/Container;)V",
+                                        "addServletMapping(Ljava/lang/String;Ljava/lang/String;)V",
+                                        // Listener类型内存马
+                                        "addApplicationEventListener(Ljava/lang/Object;)V"
+                                }
+                                , new InjectListener()))
                 .build();
     }
 
-    public class injectListener extends AdviceListener {
+    public class InjectListener extends AdviceListener {
 
         @Override
         protected void before(Advice advice) throws Throwable {
@@ -70,11 +69,5 @@ public class MemoryShellHook implements Module, LoadCompleted {
 
             algorithmManager.doCheck(TYPE, context.get());
         }
-    }
-
-    @Override
-    public boolean update(Map<String, String> configMaps) {
-        this.disable = ParamSupported.getParameter(configMaps, "disable", Boolean.class, disable);
-        return true;
     }
 }

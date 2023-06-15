@@ -148,6 +148,7 @@ public class HttpAlgorithm extends ModuleLifecycleAdapter implements Module, Alg
                 // 扫描器header特征
                 String headerStr = context.getHeaderString();
                 if (headerStr != null) {
+                    String headerLower = headerStr.toLowerCase();
                     for (String key : scanHeadersOrBody) {
                         if (headerStr.toLowerCase().contains(key.toLowerCase())) {
                             boolean canBlock = scanListAction == 1;

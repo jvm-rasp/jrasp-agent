@@ -47,6 +47,7 @@ func NewLog(logPath, hostName, ip string, logLevel int) *Log {
 		EncodeCaller: zapcore.ShortCallerEncoder,  //采用短文件路径编码输出（test/main.go:14 ）
 		EncodeTime: func(t time.Time, enc zapcore.PrimitiveArrayEncoder) {
 			location := time.FixedZone("CST", 8*3600)
+			location, _ := time.LoadLocation("Asia/Shanghai")
 			t = t.In(location)
 			enc.AppendString(t.Format(defs.DATE_FORMAT))
 		}, //输出的时间格式

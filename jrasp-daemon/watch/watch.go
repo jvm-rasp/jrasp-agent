@@ -186,10 +186,10 @@ func (w *Watch) getJavaProcessInfo(procss *process.Process) {
 	}
 
 	// 只有wrapper进程启动的才进行注入
-	if javaProcess.CmdLines[len(javaProcess.CmdLines)-1] != "stop" {
-		zlog.Debugf(defs.WATCH_DEFAULT, "None wrapper start process, java process ignore.", "javaPid:%d", procss.Pid)
-		return
-	}
+	//if javaProcess.CmdLines[len(javaProcess.CmdLines)-1] != "stop" {
+	//	zlog.Debugf(defs.WATCH_DEFAULT, "None wrapper start process, java process ignore.", "javaPid:%d", procss.Pid)
+	//	return
+	//}
 
 	// 发下进程到开启注入时间
 	time.Sleep(15 * time.Second)

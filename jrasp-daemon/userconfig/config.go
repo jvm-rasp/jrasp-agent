@@ -182,7 +182,7 @@ func setDefaultValue(vp *viper.Viper) {
 
 	vp.SetDefault("AgentDownLoadConfigs", nil)
 
-	vp.SetDefault("RemoteHosts", []string{"localhost:8088/rasp-admin"})
+	vp.SetDefault("RemoteHosts", []string{"ws://localhost:8088/rasp-admin"})
 
 	vp.SetDefault("MinJvmStartTime", 3)
 

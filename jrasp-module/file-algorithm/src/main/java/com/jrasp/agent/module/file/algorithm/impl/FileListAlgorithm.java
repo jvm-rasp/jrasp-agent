@@ -44,7 +44,6 @@ public class FileListAlgorithm implements Algorithm {
             "/var/log", "/proc",
             "/sys", "/root",
             "C:\\", "D:\\", "E:\\", "F:\\", "G:\\", "/opt")
-            "C:\\", "D:\\", "E:\\", "F:\\", "G:\\")
     );
 
     public FileListAlgorithm(Map<String, String> configMaps, RaspConfig raspConfig, RaspLog logger, String metaInfo) {

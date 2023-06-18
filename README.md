@@ -2,8 +2,8 @@
 
 ![Build Status](https://img.shields.io/badge/Build-passing-brightgreen)
 ![Version](https://img.shields.io/badge/Version-1.1.2-informational)
-![Go Guild Version](https://img.shields.io/badge/Go-v1.16+-blue)
-![Maven Version](https://img.shields.io/badge/Maven-v3.25-blue)
+![Go Guild Version](https://img.shields.io/badge/Go-v1.19.6+-blue)
+![Maven Version](https://img.shields.io/badge/Maven-v3.8.0-blue)
 ![Java Build Version](https://img.shields.io/badge/Java-v1.6+-blue)
 ![License](https://img.shields.io/badge/License-LGPL3.0-informational)
 ![install](https://img.shields.io/badge/install-5000%2B-yellowgreen)

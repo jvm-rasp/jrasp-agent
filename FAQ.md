@@ -10,7 +10,7 @@
 
 ###  前置条件
 
-安装 GoLang SDK >= 1.16
+安装 GoLang SDK >= 1.19.6
 
 ### 安装 Go 插件
 打开IDEA，选择"Preferences"--"Plugins"，搜索`Go`，点击 "install"，重启IDEA

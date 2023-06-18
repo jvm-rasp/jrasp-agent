@@ -1,0 +1,20 @@
+{
+  "moduleName": "jni-algorithm",
+  "cn_map": {
+    "jni_action": "拦截JNI注入攻击"
+  },
+  "parameters": {
+    "disable": false,
+    "jni_action": 0,
+    "library_white_stack_list": [
+      "com.sun.imageio.plugins.jpeg.JPEGImageWriter",
+      "sun.awt.image.NativeLibLoader.loadLibraries",
+      "java.awt.Toolkit",
+      "java.awt.image.ColorModel",
+      "com.sun.imageio.plugins.jpeg.JPEGImageReader",
+      "sun.java2d.cmm.lcms.LCMS",
+      "sun.font.FontManagerNativeLibrary",
+      "sun.font.T2KFontScaler"
+    ]
+  }
+}

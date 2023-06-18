@@ -2,10 +2,12 @@ package com.jrasp.agent.api.request;
 
 import com.jrasp.agent.api.util.EscapeUtil;
 import com.jrasp.agent.api.util.StackTrace;
+import com.jrasp.agent.api.util.StringUtils;
 
 import java.util.Arrays;
 
 import static com.jrasp.agent.api.util.StringUtils.array2String;
+import static com.jrasp.agent.api.util.StringUtils.escape;
 
 /**
  * 攻击特征信息
@@ -17,6 +19,11 @@ public class AttackInfo {
      * 上下文 信息
      */
     private Context context;
+
+    /**
+     * Java 应用名称
+     */
+    private String appName;
 
     /**
      * 模块元数据信息
@@ -64,8 +71,9 @@ public class AttackInfo {
      */
     private int level = 0;
 
-    public AttackInfo(Context context, String metaInfo, String payload, boolean isBlocked, String attackType, String algorithm, String extend, int level) {
+    public AttackInfo(Context context, String appName, String metaInfo, String payload, boolean isBlocked, String attackType, String algorithm, String extend, int level) {
         this.context = context;
+        this.appName = appName;
         this.metaInfo = metaInfo;
         this.stackTrace = StackTrace.getStackTraceString();
         this.payload = payload;
@@ -83,6 +91,14 @@ public class AttackInfo {
 
     public void setContext(Context context) {
         this.context = context;
+    }
+
+    public String getAppName() {
+        return appName;
+    }
+
+    public void setAppName(String appName) {
+        this.appName = appName;
     }
 
     public String[] getStackTrace() {
@@ -157,21 +173,23 @@ public class AttackInfo {
         final StringBuilder sb = new StringBuilder("{");
         sb.append("\"context\":")
                 .append(context.toJSON());
+        sb.append(",\"appName\":\"")
+                .append(appName).append('\"');
         sb.append(",\"metaInfo\":\"")
                 .append(metaInfo).append('\"');
         sb.append(",\"stackTrace\":\"")
-                .append(array2String(stackTrace)).append('\"');
+                .append(array2String(stackTrace).replace("\\", "\\\\")).append('\"');
         sb.append(",\"payload\":")
                 // 转义符号
                 .append(EscapeUtil.quote(payload));
         sb.append(",\"isBlocked\":")
                 .append(isBlocked);
         sb.append(",\"attackType\":\"")
-                .append(attackType).append('\"');
+                .append(escape(attackType)).append('\"');
         sb.append(",\"algorithm\":\"")
-                .append(algorithm).append('\"');
+                .append(escape(algorithm)).append('\"');
         sb.append(",\"extend\":\"")
-                .append(extend).append('\"');
+                .append(escape(extend.replace("\\", "\\\\").replace("\"", "\\\""))).append('\"');
         sb.append(",\"attackTime\":")
                 .append(attackTime);
         sb.append(",\"level\":")
@@ -184,6 +202,7 @@ public class AttackInfo {
     public String toString() {
         return "AttackInfo{" +
                 "context=" + context +
+                "appName=" + appName +
                 ", stackTrace=" + Arrays.toString(stackTrace) +
                 ", payload='" + payload + '\'' +
                 ", isBlocked=" + isBlocked +

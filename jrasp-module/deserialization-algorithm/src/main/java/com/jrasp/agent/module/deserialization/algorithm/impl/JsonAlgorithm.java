@@ -1,5 +1,6 @@
 package com.jrasp.agent.module.deserialization.algorithm.impl;
 
+import com.epoint.core.utils.classpath.ClassPathUtil;
 import com.jrasp.agent.api.ProcessControlException;
 import com.jrasp.agent.api.ProcessController;
 import com.jrasp.agent.api.RaspConfig;
@@ -115,6 +116,9 @@ public class JsonAlgorithm implements Algorithm {
 
     @Override
     public void check(Context context, Object... parameters) throws Exception {
+        if (isWhiteList(context)) {
+            return;
+        }
         if (jsonBlackListAction > -1) {
             if (parameters != null && parameters.length >= 1) {
                 String className = (String) parameters[0];
@@ -136,6 +140,14 @@ public class JsonAlgorithm implements Algorithm {
         }
     }
 
+    // 处理 Tomcat 启动时注入防护 Agent 产生的误报情况
+    private boolean isWhiteList(Context context) {
+        return context != null
+                && StringUtils.isBlank(context.getMethod())
+                && StringUtils.isBlank(context.getRequestURI())
+                && StringUtils.isBlank(context.getRequestURL());
+    }
+
     @Override
     public String getDescribe() {
         return "json/yaml deserialization algorithm";
@@ -143,7 +155,7 @@ public class JsonAlgorithm implements Algorithm {
 
     private void doCheck(Context context, String className, int action, String message, int level) throws ProcessControlException {
         boolean enableBlock = action == 1;
-        AttackInfo attackInfo = new AttackInfo(context, metaInfo, className, enableBlock, getType(), getDescribe(), message, level);
+        AttackInfo attackInfo = new AttackInfo(context, ClassPathUtil.getWebContext(), metaInfo, className, enableBlock, "反序列化攻击", getDescribe(), message, level);
         logger.attack(attackInfo);
         if (enableBlock) {
             ProcessController.throwsImmediatelyAndSendResponse(attackInfo, raspConfig, new RuntimeException("json/yaml deserialization attack block by EpointRASP."));

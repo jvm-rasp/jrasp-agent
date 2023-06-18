@@ -42,7 +42,7 @@ public class ExpressionAlgorithm extends ModuleLifecycleAdapter implements Modul
         ognlAlgorithm = new OgnlAlgorithm(logger, raspConfig, configMaps, metaInfo);
         algorithmManager.register(spelAlgorithm);
         algorithmManager.register(ognlAlgorithm);
-        return false;
+        return true;
     }
 
     @Override

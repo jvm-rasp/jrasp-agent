@@ -2,6 +2,7 @@ package com.jrasp.agent.module.file.algorithm;
 
 import com.jrasp.agent.api.Module;
 import com.jrasp.agent.api.ModuleLifecycleAdapter;
+import com.jrasp.agent.api.RaspConfig;
 import com.jrasp.agent.api.algorithm.AlgorithmManager;
 import com.jrasp.agent.api.annotation.Information;
 import com.jrasp.agent.api.annotation.RaspResource;
@@ -25,10 +26,13 @@ public class FileAlgorithmModule extends ModuleLifecycleAdapter implements Modul
     private RaspLog logger;
 
     @RaspResource
-    private String metaInfo;
+    private RaspConfig raspConfig;
 
     @RaspResource
     private AlgorithmManager algorithmManager;
+
+    @RaspResource
+    private String metaInfo;
 
     private volatile FileDeleteAlgorithm fileDeleteAlgorithm;
 
@@ -42,20 +46,20 @@ public class FileAlgorithmModule extends ModuleLifecycleAdapter implements Modul
 
     @Override
     public boolean update(Map<String, String> configMaps) {
-        this.fileDeleteAlgorithm = new FileDeleteAlgorithm(configMaps, logger, metaInfo);
-        this.fileListAlgorithm = new FileListAlgorithm(configMaps, logger, metaInfo);
-        this.fileReadAlgorithm = new FileReadAlgorithm(configMaps, logger, metaInfo);
-        this.fileUploadAlgorithm = new FileUploadAlgorithm(configMaps, logger, metaInfo);
+        this.fileDeleteAlgorithm = new FileDeleteAlgorithm(configMaps, raspConfig, logger, metaInfo);
+        this.fileListAlgorithm = new FileListAlgorithm(configMaps, raspConfig, logger, metaInfo);
+        this.fileReadAlgorithm = new FileReadAlgorithm(configMaps, raspConfig, logger, metaInfo);
+        this.fileUploadAlgorithm = new FileUploadAlgorithm(configMaps, raspConfig, logger, metaInfo);
         algorithmManager.register(fileListAlgorithm, fileDeleteAlgorithm, fileReadAlgorithm, fileUploadAlgorithm);
-        return false;
+        return true;
     }
 
     @Override
     public void loadCompleted() {
-        this.fileDeleteAlgorithm = new FileDeleteAlgorithm(logger, metaInfo);
-        this.fileListAlgorithm = new FileListAlgorithm(logger, metaInfo);
-        this.fileReadAlgorithm = new FileReadAlgorithm(logger, metaInfo);
-        this.fileUploadAlgorithm = new FileUploadAlgorithm(logger, metaInfo);
+        this.fileDeleteAlgorithm = new FileDeleteAlgorithm(logger);
+        this.fileListAlgorithm = new FileListAlgorithm(logger);
+        this.fileReadAlgorithm = new FileReadAlgorithm(logger);
+        this.fileUploadAlgorithm = new FileUploadAlgorithm(logger);
         algorithmManager.register(fileListAlgorithm, fileDeleteAlgorithm, fileReadAlgorithm, fileUploadAlgorithm);
     }
 

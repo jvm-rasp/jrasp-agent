@@ -81,6 +81,7 @@ func (w *Watch) NotifyJavaProcess() {
 	if err != nil {
 		return
 	}
+	zlog.Infof(defs.WATCH_DEFAULT, "starting watch temp dir", "temp dir is: %v", os.TempDir())
 	PathSep := string(os.PathSeparator)
 	for _, fi := range dir {
 		if fi.IsDir() {

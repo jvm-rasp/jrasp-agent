@@ -1,6 +1,8 @@
 package com.jrasp.agent.module.file.algorithm.impl;
 
+import com.epoint.core.utils.classpath.ClassPathUtil;
 import com.jrasp.agent.api.ProcessController;
+import com.jrasp.agent.api.RaspConfig;
 import com.jrasp.agent.api.algorithm.Algorithm;
 import com.jrasp.agent.api.log.RaspLog;
 import com.jrasp.agent.api.request.AttackInfo;
@@ -25,20 +27,22 @@ public class FileDeleteAlgorithm implements Algorithm {
 
     private Integer fileDeleteAction = 0;
 
+    private RaspConfig raspConfig;
+
     private final RaspLog logger;
 
-    private final String metaInfo;
+    private String metaInfo;
 
-    public FileDeleteAlgorithm(Map<String, String> configMaps, RaspLog logger, String metaInfo) {
+    public FileDeleteAlgorithm(Map<String, String> configMaps, RaspConfig raspConfig, RaspLog logger, String metaInfo) {
         this.logger = logger;
+        this.raspConfig = raspConfig;
+        this.metaInfo = metaInfo;
         this.travelStr = ParamSupported.getParameter(configMaps, "travel_str", String[].class, travelStr);
         this.fileDeleteAction = ParamSupported.getParameter(configMaps, "file_delete_action", Integer.class, fileDeleteAction);
-        this.metaInfo = metaInfo;
     }
 
-    public FileDeleteAlgorithm(RaspLog logger, String metaInfo) {
+    public FileDeleteAlgorithm(RaspLog logger) {
         this.logger = logger;
-        this.metaInfo = metaInfo;
     }
 
     @Override
@@ -48,6 +52,9 @@ public class FileDeleteAlgorithm implements Algorithm {
 
     @Override
     public void check(Context context, Object... parameters) throws Exception {
+        if (isWhiteList(context)) {
+            return;
+        }
         if (fileDeleteAction >= 0) {
             File file = (File) parameters[0];
             String path = file.getPath();
@@ -62,16 +69,24 @@ public class FileDeleteAlgorithm implements Algorithm {
                 for (String item : travelStr) {
                     if (path.contains(item)) {
                         boolean enableBlock = fileDeleteAction == 1;
-                        AttackInfo attackInfo = new AttackInfo(context, metaInfo, path, enableBlock,
-                                getType(), getDescribe(), "realpath: " + realpath, 80);
+                        AttackInfo attackInfo = new AttackInfo(context, ClassPathUtil.getWebContext(), metaInfo, path, enableBlock,
+                                "任意文件删除", getDescribe(), "realpath: " + realpath, 80);
                         logger.attack(attackInfo);
                         if (enableBlock) {
-                            ProcessController.throwsImmediately(new RuntimeException("delete file block by rasp."));
+                            ProcessController.throwsImmediatelyAndSendResponse(attackInfo, raspConfig, new RuntimeException("delete file block by EpointRASP."));
                         }
                     }
                 }
             }
         }
+    }
+
+    // 处理 Tomcat 启动时注入防护 Agent 产生的误报情况
+    private boolean isWhiteList(Context context) {
+        return context != null
+                && StringUtils.isBlank(context.getMethod())
+                && StringUtils.isBlank(context.getRequestURI())
+                && StringUtils.isBlank(context.getRequestURL());
     }
 
     @Override

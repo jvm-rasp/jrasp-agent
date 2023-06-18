@@ -28,6 +28,7 @@ type Watch struct {
 	PidExistsTicker              *time.Ticker          // 进程存活检测定时器
 	LogReportTicker              *time.Ticker          // 进程信息定时上报
 	HeartBeatReportTicker        *time.Ticker          // 心跳定时器
+	ContainerTicker              *time.Ticker          // 容器检查定时器
 	ProcessSyncMap               sync.Map              // 保存监听的java进程
 	JavaProcessHandlerChan       chan *process.Process // java 进程处理chan
 	JavaProcessDeleteHandlerChan chan int32            // java 进程退出处理chan
@@ -44,6 +45,7 @@ func NewWatch(cfg *userconfig.Config, env *environ.Environ, ctx context.Context)
 		scanTicker:                   time.NewTicker(time.Second * time.Duration(cfg.ScanTicker)),
 		PidExistsTicker:              time.NewTicker(time.Second * time.Duration(cfg.PidExistsTicker)),
 		HeartBeatReportTicker:        time.NewTicker(time.Minute * time.Duration(cfg.HeartBeatReportTicker)),
+		ContainerTicker:              time.NewTicker(time.Second * time.Duration(cfg.ContainerTicker)),
 		RebootTicker:                 time.NewTicker(time.Minute * time.Duration(cfg.RebootTicker)),
 		JavaProcessHandlerChan:       make(chan *process.Process, 500),
 		JavaProcessDeleteHandlerChan: make(chan int32, 500),
@@ -156,14 +158,41 @@ func (w *Watch) getJavaProcessInfo(procss *process.Process) {
 	// cmdline 信息
 	javaProcess.SetCmdLines()
 
+	// AppNames 信息
+	javaProcess.SetAppNames()
+
 	// IDEA
 	for _, v := range javaProcess.CmdLines {
-		if strings.Contains(v, "IDEA") || strings.Contains(v, "vscode") {
+		if strings.Contains(v, "IDEA") || strings.Contains(v, "GoLand") || strings.Contains(v, "vscode") {
 			zlog.Debugf(defs.WATCH_DEFAULT, "idea or vscode process, java process ignore.", "javaPid:%d", procss.Pid)
+			return
+		}
+		if strings.Contains(v, "/ECCollect/") {
+			zlog.Debugf(defs.WATCH_DEFAULT, "Epoint ECCollect process, java process ignore.", "javaPid:%d", procss.Pid)
+			return
+		}
+		if strings.Contains(v, "/ECUpdate/") {
+			zlog.Debugf(defs.WATCH_DEFAULT, "Epoint ECUpdate process, java process ignore.", "javaPid:%d", procss.Pid)
+			return
+		}
+		if strings.Contains(v, "/ECReport/") {
+			zlog.Debugf(defs.WATCH_DEFAULT, "Epoint ECReport process, java process ignore.", "javaPid:%d", procss.Pid)
+			return
+		}
+		if strings.Contains(v, "/zookeeper/") {
+			zlog.Debugf(defs.WATCH_DEFAULT, "ZooKeeper process, java process ignore.", "javaPid:%d", procss.Pid)
 			return
 		}
 	}
 
+	// 只有wrapper进程启动的才进行注入
+	//if javaProcess.CmdLines[len(javaProcess.CmdLines)-1] != "stop" {
+	//	zlog.Debugf(defs.WATCH_DEFAULT, "None wrapper start process, java process ignore.", "javaPid:%d", procss.Pid)
+	//	return
+	//}
+
+	// 发下进程到开启注入时间
+	time.Sleep(15 * time.Second)
 	// 设置java进程启动时间
 	startTime := javaProcess.SetStartTime()
 
@@ -174,12 +203,12 @@ func (w *Watch) getJavaProcessInfo(procss *process.Process) {
 		// 关闭注入，并且已经注入状态
 		javaProcess.ExitInjectImmediately()
 	} else if w.cfg.IsDynamicMode() && !javaProcess.IsInject() {
-	    // java进程启动完成之后注入，防止死锁和短生命周期进程如jps等
+		// java进程启动完成之后注入，防止死锁和短生命周期进程如jps等
 		currentTime := time.Now().UnixMilli()
 		period := currentTime - startTime
 		if period > 0 && period < w.cfg.MinJvmStartTime*60*1000 {
 			sleepTime := w.cfg.MinJvmStartTime*60*1000 - period
-			zlog.Infof(defs.JAVA_PROCESS_STARTUP, "attach java goroutine sleep",
+			zlog.Infof(defs.WATCH_DEFAULT, "attach java goroutine sleep",
 				"java process: %d, sleep time(second): %d", procss.Pid, sleepTime/1000)
 			time.Sleep(time.Duration(sleepTime) * time.Millisecond)
 		}

@@ -176,14 +176,25 @@ func (d Docker) Push(image string, user string, password string) (string, error)
 	return buf.String(), err
 }
 
-func (d Docker) Exec(container string, workingDir string, cmd []string, env []string) (string, error) {
-	id, err := d.client.ContainerExecCreate(d.ctx, container, types.ExecConfig{Tty: true, WorkingDir: workingDir, Cmd: cmd, Env: env, AttachStderr: true, AttachStdout: true})
+func (d Docker) Exec(container string, workingDir string, cmd []string, env []string, detach bool) (string, error) {
+	id, err := d.client.ContainerExecCreate(d.ctx, container, types.ExecConfig{
+		Tty:          true,
+		WorkingDir:   workingDir,
+		Cmd:          cmd,
+		Env:          env,
+		AttachStderr: true,
+		AttachStdout: true,
+		Detach:       detach,
+	})
 	if err != nil {
 		return "", err
 	}
 	resp, err := d.client.ContainerExecAttach(d.ctx, id.ID, types.ExecStartCheck{})
 	if err != nil {
 		return "", err
+	}
+	if detach {
+		return "", nil
 	}
 	buf := new(bytes.Buffer)
 	_, err = buf.ReadFrom(resp.Reader)

@@ -2,7 +2,8 @@ package com.jrasp.agent.module.jndi.hook;
 
 import com.jrasp.agent.api.LoadCompleted;
 import com.jrasp.agent.api.Module;
-import com.jrasp.agent.api.ProcessControlException;
+import com.jrasp.agent.api.RaspConfig;
+import com.jrasp.agent.api.algorithm.AlgorithmManager;
 import com.jrasp.agent.api.annotation.Information;
 import com.jrasp.agent.api.annotation.RaspResource;
 import com.jrasp.agent.api.listener.Advice;
@@ -11,7 +12,6 @@ import com.jrasp.agent.api.log.RaspLog;
 import com.jrasp.agent.api.matcher.ClassMatcher;
 import com.jrasp.agent.api.matcher.EventWatchBuilder;
 import com.jrasp.agent.api.matcher.ModuleEventWatcher;
-import com.jrasp.agent.api.request.AttackInfo;
 import com.jrasp.agent.api.request.Context;
 import com.jrasp.agent.api.util.ParamSupported;
 import org.kohsuke.MetaInfServices;
@@ -28,6 +28,12 @@ public class JndiHook implements Module, LoadCompleted {
 
     @RaspResource
     private RaspLog logger;
+
+    @RaspResource
+    private RaspConfig raspConfig;
+
+    @RaspResource
+    private AlgorithmManager algorithmManager;
 
     @RaspResource
     private ModuleEventWatcher moduleEventWatcher;
@@ -47,17 +53,10 @@ public class JndiHook implements Module, LoadCompleted {
 
     private volatile Boolean disable = false;
 
-    // 明确为攻击,可以直接阻断
-    private volatile Integer jndiBlackListAction = 0;
-
-    private volatile String[] dangerProtocol = new String[]{"ldap://", "rmi://"};
-
     @Override
     public boolean update(Map<String, String> configMaps) {
         this.disable = ParamSupported.getParameter(configMaps, "disable", Boolean.class, disable);
-        this.jndiBlackListAction = ParamSupported.getParameter(configMaps, "jndi_black_list_action", Integer.class, jndiBlackListAction);
-        this.dangerProtocol = ParamSupported.getParameter(configMaps, "danger_protocol", String[].class, dangerProtocol);
-        return false;
+        return true;
     }
 
     public void jndiHook() {
@@ -79,7 +78,7 @@ public class JndiHook implements Module, LoadCompleted {
                                             return;
                                         }
                                         String lookupUrl = (String) advice.getParameterArray()[0];
-                                        check(requestContext.get(), lookupUrl);
+                                        algorithmManager.doCheck(TYPE, requestContext.get(), lookupUrl);
                                     }
 
                                     @Override
@@ -125,31 +124,5 @@ public class JndiHook implements Module, LoadCompleted {
                         )
                 )
                 .build();
-    }
-
-    // 拦截所有jndi调用
-    public void check(Context context, Object... parameters) throws Exception {
-        if (this.jndiBlackListAction > -1) {
-            if (parameters != null && parameters.length >= 1) {
-                String lookupUrl = (String) parameters[0];
-                if (hasDangerProtocol(lookupUrl)) {
-                    boolean block = jndiBlackListAction == 1;
-                    AttackInfo attackInfo = new AttackInfo(context, metaInfo, lookupUrl, block, TYPE, "danger jndi url", "", 100);
-                    logger.attack(attackInfo);
-                    if (block) {
-                        ProcessControlException.throwThrowsImmediately(new RuntimeException("jndi inject block by rasp."));
-                    }
-                }
-            }
-        }
-    }
-
-    private boolean hasDangerProtocol(String url) {
-        for (String protocol : dangerProtocol) {
-            if (url.contains(protocol)) {
-                return true;
-            }
-        }
-        return false;
     }
 }

@@ -49,6 +49,8 @@ public class Context {
     // 字段10
     private Map<String, String[]> parameters;
 
+    private Map<String, String[]> decryptParameters;
+
     // 字段11
     private Map<String, String> header;
 
@@ -119,6 +121,21 @@ public class Context {
         if (parameters != null && parameters.size() > 0) {
             StringBuilder sb = new StringBuilder();
             for (Map.Entry<String, String[]> entry : parameters.entrySet()) {
+                String key = entry.getKey();
+                for (String v : entry.getValue()) {
+                    sb.append(key).append("=").append(v).append("&");
+                }
+            }
+            //  去掉最后一个&
+            return sb.substring(0, sb.length() - 1);
+        }
+        return "";
+    }
+
+    public String getDecryptParametersString() {
+        if (decryptParameters != null && decryptParameters.size() > 0) {
+            StringBuilder sb = new StringBuilder();
+            for (Map.Entry<String, String[]> entry : decryptParameters.entrySet()) {
                 String key = entry.getKey();
                 for (String v : entry.getValue()) {
                     sb.append(key).append("=").append(v).append("&");
@@ -350,6 +367,14 @@ public class Context {
 
     public void setResponseContentType(String responseContentType) {
         this.responseContentType = responseContentType;
+    }
+
+    public Map<String, String[]> getDecryptParameters() {
+        return decryptParameters;
+    }
+
+    public void setDecryptParameters(Map<String, String[]> decryptParameters) {
+        this.decryptParameters = decryptParameters;
     }
 
     public String toJSON() {

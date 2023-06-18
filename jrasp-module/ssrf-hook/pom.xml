@@ -12,19 +12,6 @@
     <artifactId>ssrf-hook</artifactId>
 
     <dependencies>
-<!--        <dependency>-->
-<!--            <groupId>com.squareup.okhttp3</groupId>-->
-<!--            <artifactId>okhttp</artifactId>-->
-<!--            <version>4.4.1</version>-->
-<!--            <scope>provided</scope>-->
-<!--        </dependency>-->
-        <!-- https://mvnrepository.com/artifact/com.squareup.okhttp/okhttp -->
-<!--        <dependency>-->
-<!--            <groupId>com.squareup.okhttp</groupId>-->
-<!--            <artifactId>okhttp</artifactId>-->
-<!--            <version>2.7.4</version>-->
-<!--            <scope>provided</scope>-->
-<!--        </dependency>-->
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>

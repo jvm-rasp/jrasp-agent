@@ -6,9 +6,9 @@ import (
 	"io"
 )
 
-var magicBytes = [3]byte{88, 77, 68}
+var MagicBytes = [3]byte{88, 77, 68}
 
-var emptySignature = make([]byte, 128)
+var EmptySignature = make([]byte, 128)
 
 const PROTOCOL_VERSION byte = 101
 
@@ -43,7 +43,7 @@ func (p *Package) Unpack(reader io.Reader) error {
 	err = binary.Read(reader, binary.BigEndian, &p.Type)
 	err = binary.Read(reader, binary.BigEndian, &p.BodySize)
 	err = binary.Read(reader, binary.BigEndian, &p.TimeStamp)
-	p.Signature = emptySignature
+	p.Signature = EmptySignature
 	err = binary.Read(reader, binary.BigEndian, &p.Signature)
 	p.Body = make([]byte, p.BodySize)
 	err = binary.Read(reader, binary.BigEndian, &p.Body)

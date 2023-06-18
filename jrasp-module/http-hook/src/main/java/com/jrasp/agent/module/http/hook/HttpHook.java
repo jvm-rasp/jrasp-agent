@@ -479,6 +479,14 @@ public class HttpHook extends ModuleLifecycleAdapter implements Module {
 
     public static void storeTomcatRequestInfo(Context context, Object object) {
         org.apache.catalina.connector.Request request = (org.apache.catalina.connector.Request) object;
+        String coyoteContentType = request.getCoyoteRequest().getContentType();
+        if (StringUtils.isNotBlank(coyoteContentType)
+                && !coyoteContentType.contains("multipart/form-data")
+                && !coyoteContentType.contains("charset")
+                && !coyoteContentType.endsWith(";")
+                && coyoteContentType.contains("www-form-urlencoded")) {
+            request.getCoyoteRequest().setContentType(String.format("%s; charset=UTF-8;", coyoteContentType));
+        }
         // 本机地址
         String localAddr = request.getLocalAddr();
         context.setLocalAddr(localAddr);

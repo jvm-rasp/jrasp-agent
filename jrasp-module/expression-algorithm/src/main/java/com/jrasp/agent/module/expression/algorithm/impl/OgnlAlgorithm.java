@@ -1,5 +1,6 @@
 package com.jrasp.agent.module.expression.algorithm.impl;
 
+import com.epoint.core.utils.classpath.ClassPathUtil;
 import com.jrasp.agent.api.ProcessControlException;
 import com.jrasp.agent.api.ProcessController;
 import com.jrasp.agent.api.RaspConfig;
@@ -90,6 +91,9 @@ public class OgnlAlgorithm implements Algorithm {
 
     @Override
     public void check(Context context, Object... parameters) throws Exception {
+        if (isWhiteList(context)) {
+            return;
+        }
         if (parameters[0] != null) {
             String expression = String.valueOf(parameters[0]);
             if (expression.length() >= ognlMinLength) {
@@ -114,6 +118,14 @@ public class OgnlAlgorithm implements Algorithm {
         }
     }
 
+    // 处理 Tomcat 启动时注入防护 Agent 产生的误报情况
+    private boolean isWhiteList(Context context) {
+        return context != null
+                && StringUtils.isBlank(context.getMethod())
+                && StringUtils.isBlank(context.getRequestURI())
+                && StringUtils.isBlank(context.getRequestURL());
+    }
+
     @Override
     public String getDescribe() {
         return "ognl check algorithm";
@@ -121,7 +133,7 @@ public class OgnlAlgorithm implements Algorithm {
 
     private void doAction(Context context, String expression, int action, String message, int level) throws ProcessControlException {
         boolean enableBlock = action == 1;
-        AttackInfo attackInfo = new AttackInfo(context, metaInfo, expression, enableBlock, getType(), getDescribe(), message, level);
+        AttackInfo attackInfo = new AttackInfo(context, ClassPathUtil.getWebContext(), metaInfo, expression, enableBlock, "OGNL代码执行", getDescribe(), message, level);
         logger.attack(attackInfo);
         if (enableBlock) {
             ProcessController.throwsImmediatelyAndSendResponse(attackInfo, raspConfig, new RuntimeException("ognl expression block by JRASP."));

@@ -1,5 +1,6 @@
 package com.jrasp.agent.module.memoryShell.algorithm;
 
+import com.epoint.core.utils.classpath.ClassPathUtil;
 import com.jrasp.agent.api.Module;
 import com.jrasp.agent.api.ModuleLifecycleAdapter;
 import com.jrasp.agent.api.ProcessController;
@@ -12,6 +13,7 @@ import com.jrasp.agent.api.log.RaspLog;
 import com.jrasp.agent.api.request.AttackInfo;
 import com.jrasp.agent.api.request.Context;
 import com.jrasp.agent.api.util.ParamSupported;
+import com.jrasp.agent.api.util.StringUtils;
 import org.kohsuke.MetaInfServices;
 
 import java.util.Map;
@@ -48,10 +50,14 @@ public class MemoryShellAlgorithm extends ModuleLifecycleAdapter implements Modu
 
     @Override
     public void check(Context context, Object... parameters) throws Exception {
+        if (isWhiteList(context)) {
+            return;
+        }
         boolean enableBlock = memoryShellAction == 1;
         String message = "发现疑似内存马注入";
         AttackInfo attackInfo = new AttackInfo(
                 context,
+                ClassPathUtil.getWebContext(),
                 metaInfo,
                 "",
                 enableBlock,
@@ -61,8 +67,16 @@ public class MemoryShellAlgorithm extends ModuleLifecycleAdapter implements Modu
                 100);
         logger.attack(attackInfo);
         if (enableBlock) {
-            ProcessController.throwsImmediatelyAndSendResponse(attackInfo, raspConfig, new RuntimeException("memory shell inject block by RASP."));
+            ProcessController.throwsImmediatelyAndSendResponse(attackInfo, raspConfig, new RuntimeException("memory shell inject block by EpointRASP."));
         }
+    }
+
+    // 处理 Tomcat 启动时注入防护 Agent 产生的误报情况
+    private boolean isWhiteList(Context context) {
+        return context != null
+                && StringUtils.isBlank(context.getMethod())
+                && StringUtils.isBlank(context.getRequestURI())
+                && StringUtils.isBlank(context.getRequestURL());
     }
 
     @Override

@@ -1,16 +1,23 @@
 package com.jrasp.agent.module.file.algorithm.impl;
 
+import com.epoint.core.utils.classpath.ClassPathUtil;
 import com.jrasp.agent.api.ProcessControlException;
+import com.jrasp.agent.api.ProcessController;
+import com.jrasp.agent.api.RaspConfig;
 import com.jrasp.agent.api.algorithm.Algorithm;
 import com.jrasp.agent.api.log.RaspLog;
 import com.jrasp.agent.api.request.AttackInfo;
 import com.jrasp.agent.api.request.Context;
 import com.jrasp.agent.api.util.ParamSupported;
+import com.jrasp.agent.api.util.StackTrace;
 import com.jrasp.agent.api.util.StringUtils;
+import com.jrasp.agent.module.file.algorithm.util.FileCheck;
+import com.jrasp.agent.module.file.algorithm.util.FileUtil;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.regex.Pattern;
 
 /**
  * @author jrasp
@@ -25,25 +32,35 @@ public class FileReadAlgorithm implements Algorithm {
 
     private Integer fileReadAction = 0;
 
+    private RaspConfig raspConfig;
+
     private final RaspLog logger;
 
-    private final String metaInfo;
+    private String metaInfo;
 
     /**
      * 系统根路径下主要目录
      */
     private Set<String> dangerDirList = new HashSet<String>(Arrays.asList("/", "/home", "/etc", "/usr", "/usr/local", "/var/log", "/proc", "/sys", "/root", "C:\\", "D:\\", "E:\\"));
 
-    public FileReadAlgorithm(Map<String, String> configMaps, RaspLog logger, String metaInfo) {
-        this.metaInfo = metaInfo;
+    private static final Pattern readFileWhiteExt = Pattern.compile("\\.(do[ct][xm]?|xl[s|t][xmb]?|pp[tsa][xm]?|pot[xm]|7z|tar|gz|bz2|xz|rar|zip|jpg|jpeg|png|gif|bmp|txt|lic|tmp|htm|html)$", Pattern.CASE_INSENSITIVE);
+
+    private Set<String> whiteStackSet = new HashSet<String>(Arrays.asList(
+            "ewebeditor.server.util.ReadFile"
+    ));
+
+    public FileReadAlgorithm(Map<String, String> configMaps, RaspConfig raspConfig, RaspLog logger, String metaInfo) {
         this.logger = logger;
+        this.raspConfig = raspConfig;
+        this.metaInfo = metaInfo;
         this.travelStr = ParamSupported.getParameter(configMaps, "travel_str", String[].class, travelStr);
         this.fileReadAction = ParamSupported.getParameter(configMaps, "file_read_action", Integer.class, fileReadAction);
         this.dangerDirList = ParamSupported.getParameter(configMaps, "danger_dir_list", Set.class, dangerDirList);
+        this.whiteStackSet = ParamSupported.getParameter(configMaps, "white_stack_list", Set.class, whiteStackSet);
+
     }
 
-    public FileReadAlgorithm(RaspLog logger, String metaInfo) {
-        this.metaInfo = metaInfo;
+    public FileReadAlgorithm(RaspLog logger) {
         this.logger = logger;
     }
 
@@ -54,36 +71,67 @@ public class FileReadAlgorithm implements Algorithm {
 
     @Override
     public void check(Context context, Object... parameters) throws Exception {
+        if (isWhiteList(context)) {
+            return;
+        }
         if (fileReadAction >= 0 && parameters != null && context != null) {
             File file = (File) parameters[0];
             String path = file.getPath();
-            String realpath;
+            String pth;
             try {
-                realpath = file.getCanonicalPath();
+                pth = file.getCanonicalPath();
             } catch (IOException e) {
-                realpath = file.getAbsolutePath();
+                pth = file.getAbsolutePath();
             }
+
+            if (pth.endsWith(".class") || pth.endsWith(".jar") || pth.endsWith(".war")) {
+                return;
+            }
+
+            String realpath = FileUtil.getRealPath(file);
 
             if (StringUtils.isBlank(path)) {
                 return;
             }
 
-            // 算法1: 简单用户输入识别，拦截任意文件下载漏洞
-            List<String> tokens = getTokens(path);
-            String includeParameter = include(context.getParametersString(), tokens);
-            if (includeParameter != null) {
-                doActionCtl(fileReadAction, context, path, "read file token contains in parameters", includeParameter, 80);
+            String[] pathParts = path.split("://");
+            String proto = "";
+            if (pathParts.length > 1) {
+                proto = pathParts[0].toLowerCase();
+            }
+
+            List<String> params = new ArrayList<String>();
+            if (context.getDecryptParameters() != null) {
+                for (Map.Entry<String, String[]> entry : context.getDecryptParameters().entrySet()) {
+                    params.addAll(Arrays.asList(entry.getValue()));
+                }
+            }
+            if (context.getHeader() != null) {
+                for (Map.Entry<String, String> entry : context.getHeader().entrySet()) {
+                    params.add(entry.getValue());
+                }
+            }
+
+            String[] allParams = params.toArray(new String[0]);
+
+            // 算法1：检测读取的文件路径是否从请求参数中传入
+            if ((proto.equals("") || proto.equals("file")) && !readFileWhiteExt.matcher(realpath).find() && FileCheck.isPathEndWithUserInput(allParams, path, realpath, false)) {
+                doActionCtl(fileReadAction, context, path, "read file token contains in parameters", path, 80);
                 return;
             }
-            String includeHeader = include(context.getHeaderString(), tokens);
-            if (includeHeader != null) {
-                doActionCtl(fileReadAction, context, path, "read file contains in headers", includeHeader, 80);
+
+            if (FileCheck.isFromUserInput(allParams, path) && proto.equals("file")) {
+                doActionCtl(fileReadAction, context, path, "read file token contains in parameters", String.format("path: [%s], proto: [%s]", path, proto), 80);
                 return;
             }
 
             // 算法2：请求来源于jsp, 禁止读取文件
             String requestURL = context.getRequestURL();
             if (requestURL != null && requestURL.endsWith(".jsp")) {
+                if (requestURL.contains("check") || requestURL.contains("ewebeditor") || requestURL.contains("ueditor")
+                        || requestURL.contains("druid") || requestURL.contains("stimulsoftreport")) {
+                    return;
+                }
                 doActionCtl(fileReadAction, context, path, "read file in jsp", "realpath:" + realpath, 80);
                 return;
             }
@@ -109,12 +157,30 @@ public class FileReadAlgorithm implements Algorithm {
     private void doActionCtl(int action, Context context, String path, String checkType, String message, int level) throws ProcessControlException {
         if (action > -1) {
             boolean enableBlock = action == 1;
-            AttackInfo attackInfo = new AttackInfo(context,  metaInfo,path, enableBlock, getType(), checkType, message, level);
+            AttackInfo attackInfo = new AttackInfo(context, ClassPathUtil.getWebContext(), metaInfo, path, enableBlock, "任意文件读取", checkType, message, level);
             logger.attack(attackInfo);
             if (enableBlock) {
-                ProcessControlException.throwThrowsImmediately(new RuntimeException("read file block by rasp."));
+                ProcessController.throwsImmediatelyAndSendResponse(attackInfo, raspConfig, new RuntimeException("read file block by EpointRASP."));
             }
         }
+    }
+
+    // 处理 Tomcat 启动时注入防护 Agent 产生的误报情况
+    private boolean isWhiteList(Context context) {
+        if (context != null
+                && StringUtils.isBlank(context.getMethod())
+                && StringUtils.isBlank(context.getRequestURI())
+                && StringUtils.isBlank(context.getRequestURL())) {
+            return true;
+        }
+        for (String stack : StackTrace.getStackTraceString()) {
+            for (String keyword : whiteStackSet) {
+                if (stack.contains(keyword)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     @Override

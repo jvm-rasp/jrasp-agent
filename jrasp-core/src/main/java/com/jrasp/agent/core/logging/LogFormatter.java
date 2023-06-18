@@ -37,9 +37,7 @@ public class LogFormatter extends Formatter {
 
         // hostname
         sb.append(' ');
-        sb.append('[');
         sb.append(getHostname());
-        sb.append(']');
 
         // Thread
         sb.append(' ');

@@ -1,6 +1,5 @@
 package com.jrasp.agent.module.http.algorithm;
 
-import com.epoint.core.utils.classpath.ClassPathUtil;
 import com.jrasp.agent.api.Module;
 import com.jrasp.agent.api.ModuleLifecycleAdapter;
 import com.jrasp.agent.api.ProcessController;
@@ -119,7 +118,7 @@ public class HttpAlgorithm extends ModuleLifecycleAdapter implements Module, Alg
                     // todo 需要加强，支持正则表达式
                     if (ipBlackSet.contains(remoteHost)) {
                         boolean canBlock = ipBlackListAction == 1;
-                        AttackInfo attackInfo = new AttackInfo(context, ClassPathUtil.getWebContext(), metaInfo, remoteHost, canBlock, "黑名单IP访问", getDescribe(), "black ip: " + remoteHost, 95);
+                        AttackInfo attackInfo = new AttackInfo(context, metaInfo, remoteHost, canBlock, "黑名单IP访问", getDescribe(), "black ip: " + remoteHost, 95);
                         logger.attack(attackInfo);
                         if (canBlock) {
                             ProcessController.throwsImmediatelyAndSendResponse(attackInfo, raspConfig, new RuntimeException("hit black ip: " + remoteHost));
@@ -134,7 +133,7 @@ public class HttpAlgorithm extends ModuleLifecycleAdapter implements Module, Alg
                 for (String key : scanUrlSet) {
                     if (requestURL.contains(key)) {
                         boolean canBlock = scanListAction == 1;
-                        AttackInfo attackInfo = new AttackInfo(context, ClassPathUtil.getWebContext(), metaInfo, key, canBlock, "扫描器扫描", getDescribe(), "scan url: " + key, 50);
+                        AttackInfo attackInfo = new AttackInfo(context, metaInfo, key, canBlock, "扫描器扫描", getDescribe(), "scan url: " + key, 50);
                         logger.attack(attackInfo);
                         if (canBlock) {
                             ProcessController.throwsImmediatelyAndSendResponse(attackInfo, raspConfig, new RuntimeException("hit url scan feature: " + requestURL));
@@ -150,7 +149,7 @@ public class HttpAlgorithm extends ModuleLifecycleAdapter implements Module, Alg
                         if (headerStr.toLowerCase().contains(key.toLowerCase())) {
                             boolean canBlock = scanListAction == 1;
                             // TODO appname
-                            AttackInfo attackInfo = new AttackInfo(context, "", metaInfo, key, canBlock, "扫描器扫描", getDescribe(), "scan header: " + key, 50);
+                            AttackInfo attackInfo = new AttackInfo(context, metaInfo, key, canBlock, "扫描器扫描", getDescribe(), "scan header: " + key, 50);
                             logger.attack(attackInfo);
                             if (canBlock) {
                                 ProcessController.throwsImmediatelyAndSendResponse(attackInfo, raspConfig, new RuntimeException("hit header scan feature: " + key));
@@ -166,7 +165,7 @@ public class HttpAlgorithm extends ModuleLifecycleAdapter implements Module, Alg
                 for (String url : urlBlackSet) {
                     if (contextRequestURL.contains(url)) {
                         boolean canBlock = urlBlackListAction == 1;
-                        AttackInfo attackInfo = new AttackInfo(context, ClassPathUtil.getWebContext(), metaInfo, contextRequestURL, canBlock, "黑名单URL", getDescribe(), "block url: " + url, 50);
+                        AttackInfo attackInfo = new AttackInfo(context, metaInfo, contextRequestURL, canBlock, "黑名单URL", getDescribe(), "block url: " + url, 50);
                         logger.attack(attackInfo);
                         if (canBlock) {
                             ProcessController.throwsImmediatelyAndSendResponse(attackInfo, raspConfig, new RuntimeException("hit black url: " + contextRequestURL));

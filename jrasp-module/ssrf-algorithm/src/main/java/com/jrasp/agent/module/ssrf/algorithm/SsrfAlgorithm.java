@@ -1,6 +1,5 @@
 package com.jrasp.agent.module.ssrf.algorithm;
 
-import com.epoint.core.utils.classpath.ClassPathUtil;
 import com.jrasp.agent.api.*;
 import com.jrasp.agent.api.algorithm.Algorithm;
 import com.jrasp.agent.api.algorithm.AlgorithmManager;
@@ -134,7 +133,7 @@ public class SsrfAlgorithm extends ModuleLifecycleAdapter implements Module, Alg
 
     private void doActionCtl(int action, Context context, String payload, String algorithm, String message, int level) throws ProcessControlException {
         boolean enableBlock = action == 1;
-        AttackInfo attackInfo = new AttackInfo(context, ClassPathUtil.getWebContext(), metaInfo, payload, enableBlock, "SSRF请求伪造", algorithm, message, level);
+        AttackInfo attackInfo = new AttackInfo(context,metaInfo, payload, enableBlock, "SSRF请求伪造", algorithm, message, level);
         logger.attack(attackInfo);
         if (enableBlock) {
             ProcessController.throwsImmediatelyAndSendResponse(attackInfo, raspConfig, new RuntimeException("ssrf block by EpointRASP."));

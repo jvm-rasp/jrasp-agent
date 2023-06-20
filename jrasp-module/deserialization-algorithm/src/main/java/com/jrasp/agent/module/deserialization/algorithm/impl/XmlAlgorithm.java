@@ -1,6 +1,5 @@
 package com.jrasp.agent.module.deserialization.algorithm.impl;
 
-import com.epoint.core.utils.classpath.ClassPathUtil;
 import com.jrasp.agent.api.ProcessControlException;
 import com.jrasp.agent.api.ProcessController;
 import com.jrasp.agent.api.RaspConfig;
@@ -122,7 +121,6 @@ public class XmlAlgorithm implements Algorithm {
         boolean enableBlock = action == 1;
         AttackInfo attackInfo = new AttackInfo(
                 context,
-                ClassPathUtil.getWebContext(),
                 metaInfo,
                 className,
                 enableBlock,

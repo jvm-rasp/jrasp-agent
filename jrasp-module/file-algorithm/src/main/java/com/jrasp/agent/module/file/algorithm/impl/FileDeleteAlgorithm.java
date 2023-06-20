@@ -1,6 +1,5 @@
 package com.jrasp.agent.module.file.algorithm.impl;
 
-import com.epoint.core.utils.classpath.ClassPathUtil;
 import com.jrasp.agent.api.ProcessController;
 import com.jrasp.agent.api.RaspConfig;
 import com.jrasp.agent.api.algorithm.Algorithm;
@@ -69,7 +68,7 @@ public class FileDeleteAlgorithm implements Algorithm {
                 for (String item : travelStr) {
                     if (path.contains(item)) {
                         boolean enableBlock = fileDeleteAction == 1;
-                        AttackInfo attackInfo = new AttackInfo(context, ClassPathUtil.getWebContext(), metaInfo, path, enableBlock,
+                        AttackInfo attackInfo = new AttackInfo(context, metaInfo, path, enableBlock,
                                 "任意文件删除", getDescribe(), "realpath: " + realpath, 80);
                         logger.attack(attackInfo);
                         if (enableBlock) {

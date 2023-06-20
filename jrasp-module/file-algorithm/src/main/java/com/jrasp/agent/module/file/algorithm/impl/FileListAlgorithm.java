@@ -1,6 +1,5 @@
 package com.jrasp.agent.module.file.algorithm.impl;
 
-import com.epoint.core.utils.classpath.ClassPathUtil;
 import com.jrasp.agent.api.ProcessControlException;
 import com.jrasp.agent.api.ProcessController;
 import com.jrasp.agent.api.RaspConfig;
@@ -120,7 +119,7 @@ public class FileListAlgorithm implements Algorithm {
     private void doActionCtl(int action, Context context, String path, String algorithm, String message, int level) throws ProcessControlException {
         if (action > -1) {
             boolean enableBlock = action == 1;
-            AttackInfo attackInfo = new AttackInfo(context, ClassPathUtil.getWebContext(), metaInfo, path, enableBlock, "目录遍历", algorithm, message, level);
+            AttackInfo attackInfo = new AttackInfo(context,metaInfo, path, enableBlock, "目录遍历", algorithm, message, level);
             logger.attack(attackInfo);
             if (enableBlock) {
                 ProcessController.throwsImmediatelyAndSendResponse(attackInfo, raspConfig, new RuntimeException("list file block by EpointRASP."));

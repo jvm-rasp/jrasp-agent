@@ -1,7 +1,6 @@
 package com.jrasp.agent.module.file.algorithm.impl;
 
 
-import com.epoint.core.utils.classpath.ClassPathUtil;
 import com.jrasp.agent.api.ProcessControlException;
 import com.jrasp.agent.api.ProcessController;
 import com.jrasp.agent.api.RaspConfig;
@@ -120,7 +119,7 @@ public class FileUploadAlgorithm implements Algorithm {
     private void doActionCtl(int action, Context context, String payload, String algorithm, String message, int level) throws ProcessControlException {
         if (action > -1) {
             boolean enableBlock = action == 1;
-            AttackInfo attackInfo = new AttackInfo(context, ClassPathUtil.getWebContext(), metaInfo, payload, enableBlock, "任意文件上传", algorithm, message, level);
+            AttackInfo attackInfo = new AttackInfo(context,metaInfo, payload, enableBlock, "任意文件上传", algorithm, message, level);
             logger.attack(attackInfo);
             if (enableBlock) {
                 ProcessController.throwsImmediatelyAndSendResponse(attackInfo, raspConfig, new RuntimeException("upload file block by EpointRASP."));

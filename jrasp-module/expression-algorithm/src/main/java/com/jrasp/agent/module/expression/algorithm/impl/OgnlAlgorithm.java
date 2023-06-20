@@ -1,6 +1,5 @@
 package com.jrasp.agent.module.expression.algorithm.impl;
 
-import com.epoint.core.utils.classpath.ClassPathUtil;
 import com.jrasp.agent.api.ProcessControlException;
 import com.jrasp.agent.api.ProcessController;
 import com.jrasp.agent.api.RaspConfig;
@@ -133,7 +132,7 @@ public class OgnlAlgorithm implements Algorithm {
 
     private void doAction(Context context, String expression, int action, String message, int level) throws ProcessControlException {
         boolean enableBlock = action == 1;
-        AttackInfo attackInfo = new AttackInfo(context, ClassPathUtil.getWebContext(), metaInfo, expression, enableBlock, "OGNL代码执行", getDescribe(), message, level);
+        AttackInfo attackInfo = new AttackInfo(context, metaInfo, expression, enableBlock, "OGNL代码执行", getDescribe(), message, level);
         logger.attack(attackInfo);
         if (enableBlock) {
             ProcessController.throwsImmediatelyAndSendResponse(attackInfo, raspConfig, new RuntimeException("ognl expression block by JRASP."));

@@ -1,6 +1,5 @@
 package com.jrasp.agent.module.memoryShell.algorithm;
 
-import com.epoint.core.utils.classpath.ClassPathUtil;
 import com.jrasp.agent.api.Module;
 import com.jrasp.agent.api.ModuleLifecycleAdapter;
 import com.jrasp.agent.api.ProcessController;
@@ -57,7 +56,6 @@ public class MemoryShellAlgorithm extends ModuleLifecycleAdapter implements Modu
         String message = "发现疑似内存马注入";
         AttackInfo attackInfo = new AttackInfo(
                 context,
-                ClassPathUtil.getWebContext(),
                 metaInfo,
                 "",
                 enableBlock,

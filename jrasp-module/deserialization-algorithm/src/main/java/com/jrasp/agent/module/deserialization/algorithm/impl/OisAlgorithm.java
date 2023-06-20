@@ -1,6 +1,5 @@
 package com.jrasp.agent.module.deserialization.algorithm.impl;
 
-import com.epoint.core.utils.classpath.ClassPathUtil;
 import com.jrasp.agent.api.ProcessControlException;
 import com.jrasp.agent.api.ProcessController;
 import com.jrasp.agent.api.RaspConfig;
@@ -160,7 +159,7 @@ public class OisAlgorithm implements Algorithm {
 
     private void doCheck(Context context, String className, int action, String message, int level) throws ProcessControlException {
         boolean enableBlock = action == 1;
-        AttackInfo attackInfo = new AttackInfo(context, ClassPathUtil.getWebContext(), metaInfo, className, enableBlock, "反序列化攻击", getDescribe(), message, level);
+        AttackInfo attackInfo = new AttackInfo(context, metaInfo, className, enableBlock, "反序列化攻击", getDescribe(), message, level);
         logger.attack(attackInfo);
         if (enableBlock) {
             ProcessController.throwsImmediatelyAndSendResponse(attackInfo, raspConfig, new RuntimeException("ois deserialization attack block by JRASP."));

@@ -1,6 +1,5 @@
 package com.jrasp.agent.module.rce.algorithm;
 
-import com.epoint.core.utils.classpath.ClassPathUtil;
 import com.jrasp.agent.api.*;
 import com.jrasp.agent.api.algorithm.Algorithm;
 import com.jrasp.agent.api.algorithm.AlgorithmManager;
@@ -210,7 +209,7 @@ public class RceAlgorithm extends ModuleLifecycleAdapter implements Module, Algo
     private void doActionCtl(int action, Context context, String cmd, String checkType, String message, int level) throws ProcessControlException {
         if (action > -1) {
             boolean enableBlock = action == 1;
-            AttackInfo attackInfo = new AttackInfo(context, ClassPathUtil.getWebContext(), metaInfo, cmd, enableBlock, "命令执行", checkType, message, level);
+            AttackInfo attackInfo = new AttackInfo(context,metaInfo, cmd, enableBlock, "命令执行", checkType, message, level);
             logger.attack(attackInfo);
             if (enableBlock && !checkType.equals("log all rce")) {
                 ProcessController.throwsImmediatelyAndSendResponse(attackInfo, raspConfig, new RuntimeException("rce block by EpointRASP."));

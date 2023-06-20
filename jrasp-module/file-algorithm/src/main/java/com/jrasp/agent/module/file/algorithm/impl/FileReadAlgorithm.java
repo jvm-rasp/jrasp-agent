@@ -1,6 +1,5 @@
 package com.jrasp.agent.module.file.algorithm.impl;
 
-import com.epoint.core.utils.classpath.ClassPathUtil;
 import com.jrasp.agent.api.ProcessControlException;
 import com.jrasp.agent.api.ProcessController;
 import com.jrasp.agent.api.RaspConfig;
@@ -157,7 +156,7 @@ public class FileReadAlgorithm implements Algorithm {
     private void doActionCtl(int action, Context context, String path, String checkType, String message, int level) throws ProcessControlException {
         if (action > -1) {
             boolean enableBlock = action == 1;
-            AttackInfo attackInfo = new AttackInfo(context, ClassPathUtil.getWebContext(), metaInfo, path, enableBlock, "任意文件读取", checkType, message, level);
+            AttackInfo attackInfo = new AttackInfo(context,metaInfo, path, enableBlock, "任意文件读取", checkType, message, level);
             logger.attack(attackInfo);
             if (enableBlock) {
                 ProcessController.throwsImmediatelyAndSendResponse(attackInfo, raspConfig, new RuntimeException("read file block by EpointRASP."));

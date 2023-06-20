@@ -4,6 +4,7 @@ import com.jrasp.agent.core.CoreConfigure;
 import com.jrasp.agent.core.JvmSandbox;
 import com.jrasp.agent.core.logging.Loggging;
 import com.jrasp.agent.core.manager.DefaultCoreModuleManager;
+import com.jrasp.agent.core.monitor.Monitor;
 import com.jrasp.agent.core.server.CoreServer;
 import com.jrasp.agent.core.server.socket.handler.PacketHandler;
 import com.jrasp.agent.core.server.socket.handler.impl.*;
@@ -98,6 +99,10 @@ public class SocketServer implements CoreServer {
                     runServer();
                 }
             });
+
+            // 启动资源监控
+            Monitor.Factory.init();
+
             HeartbeatTask.start();
 
             // 初始化加载所有的模块
@@ -111,6 +116,7 @@ public class SocketServer implements CoreServer {
             writeAgentInitResult(local);
             // 耗时瓶颈在于读写文件
             LOGGER.log(Level.INFO, "server socket success init, bind to [{0}:{1}], cost time: {2} ms", new Object[]{local.getHostName(), local.getPort(), System.currentTimeMillis() / 1000 - start});
+
         } catch (Throwable cause) {
             LOGGER.log(Level.WARNING, "initialize server failed.", cause);
             throw new IOException("server bind failed.", cause);
@@ -137,7 +143,9 @@ public class SocketServer implements CoreServer {
                     }
                 }
             });
+
             HeartbeatTask.stop();
+            Monitor.Factory.clear();
             LOGGER.log(Level.INFO, "server socket destroyed.");
         } catch (Throwable cause) {
             throw new IOException("unBind failed.", cause);

@@ -1,6 +1,5 @@
 package com.jrasp.agent.module.jsp.algorithm.impl;
 
-import com.epoint.core.utils.classpath.ClassPathUtil;
 import com.jrasp.agent.api.ProcessController;
 import com.jrasp.agent.api.RaspConfig;
 import com.jrasp.agent.api.algorithm.Algorithm;
@@ -63,7 +62,6 @@ public class JstlImportAlgorithm implements Algorithm {
 
                 AttackInfo attackInfo = new AttackInfo(
                         context,
-                        ClassPathUtil.getWebContext(),
                         metaInfo,
                         realPath,
                         enableBlock,

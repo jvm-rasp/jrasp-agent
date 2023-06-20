@@ -71,9 +71,8 @@ public class AttackInfo {
      */
     private int level = 0;
 
-    public AttackInfo(Context context, String appName, String metaInfo, String payload, boolean isBlocked, String attackType, String algorithm, String extend, int level) {
+    public AttackInfo(Context context, String metaInfo, String payload, boolean isBlocked, String attackType, String algorithm, String extend, int level) {
         this.context = context;
-        this.appName = appName;
         this.metaInfo = metaInfo;
         this.stackTrace = StackTrace.getStackTraceString();
         this.payload = payload;

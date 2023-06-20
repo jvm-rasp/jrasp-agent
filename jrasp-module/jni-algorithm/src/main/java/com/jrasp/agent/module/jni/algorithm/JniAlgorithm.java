@@ -1,6 +1,5 @@
 package com.jrasp.agent.module.jni.algorithm;
 
-import com.epoint.core.utils.classpath.ClassPathUtil;
 import com.jrasp.agent.api.Module;
 import com.jrasp.agent.api.ModuleLifecycleAdapter;
 import com.jrasp.agent.api.ProcessController;
@@ -74,7 +73,6 @@ public class JniAlgorithm extends ModuleLifecycleAdapter implements Module, Algo
         String message = "detect jni loadLibrary, libPath: " + libPath;
         AttackInfo attackInfo = new AttackInfo(
                 context,
-                ClassPathUtil.getWebContext(),
                 metaInfo,
                 libPath,
                 enableBlock,

@@ -57,7 +57,7 @@ The currently supported modules are:
 - shiro
 
 under development:
-- SSRF
+
 - danger protocol
 - DNS query 
 - Memory 

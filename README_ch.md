@@ -45,21 +45,22 @@ jrasp-agent 基于Java Agent技术对Java字节码进行修改，增加安全检
 
 jrasp-agent 的安全模块 
 目前支持的模块有：
-- 1.命令执行模块 （native）
-- 2.反序列化模块（jdk反序列化、fastjson、yaml、stream）
-- 3.http模块（springboot、tomcat、jetty、undertown、spark）（IP黑名单、URL黑名单、扫描器识别）
-- 4.xxe模块 （dom4j、jdom、jdk）
-- 5.文件访问模块（io、nio）
-- 6.表达式注入模块（spel、ognl）
-- 7.sql注入（mysql）
-- 8.JNDI注入
+- 命令执行模块 （native）
+- 反序列化模块（jdk反序列化、fastjson、yaml、stream）
+- http模块（springboot、tomcat、jetty、undertown、spark）（IP黑名单、URL黑名单、扫描器识别）
+- xxe模块 （dom4j、jdom、jdk）
+- 文件访问模块（io、nio）
+- 表达式注入模块（spel、ognl）
+- sql注入（mysql）
+- JNDI注入
+- SSRF
+- shiro
 开发中的进行中的模块：
-- 9.SSRF  (进行中)
-- 10.danger protocol  (进行中)
-- 11.DNS查询  (进行中)
-- 12.Memory  (进行中)
-- 13.类加载器 (进行中)
-- 14.attach (进行中)
+- danger protocol  (进行中)
+- DNS查询  (进行中)
+- Memory  (进行中)
+- 类加载器 (进行中)
+- attach (进行中)
 
 ### 支持的jdk版本
 + jdk6+

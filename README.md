@@ -45,22 +45,24 @@ jrasp-agent based on Java Agent technology, modifies Java bytecode, adds securit
 
 Security module of jrasp agent
 The currently supported modules are:
-- 1. Command execution module (native)
-- 2. Deserialization module (jdk deserialization/fastjson/yaml/stream)
-- 3. HTTP module (springboot/tomcat/jetty/underwown/spark) (IP blacklist/URL blacklist/scanner identification)
-- 4. xxe module (dom4j/jdom/jdk)
-- 5. File access module (io/nio)
-- 6. Expression injection module (spel/ognl)
-- 7. SQL injection (mysql)
-- 8. JNDI injection
+- Command execution module (native)
+- Deserialization module (jdk deserialization/fastjson/yaml/stream)
+- HTTP module (springboot/tomcat/jetty/underwown/spark) (IP blacklist/URL blacklist/scanner identification)
+- xxe module (dom4j/jdom/jdk)
+- File access module (io/nio)
+- Expression injection module (spel/ognl)
+- SQL injection (mysql)
+- JNDI injection
+- SSRF
+- shiro
 
 under development:
-- 9. SSRF
-- 10. danger protocol
-- 11. DNS query 
-- 12. Memory 
-- 13. Class loader 
-- 14. attach
+- SSRF
+- danger protocol
+- DNS query 
+- Memory 
+- Class loader 
+- attach
 
 ### Supported jdk versions
 

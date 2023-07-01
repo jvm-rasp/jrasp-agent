@@ -27,9 +27,9 @@ public interface Monitor {
         public static Map<String, Monitor> maps = new ConcurrentHashMap<String, Monitor>(16);
 
         public static void init() {
-            registor(new JavaMemMonitor());
-            registor(new ProcessMonitor());
-            registor(new ThreadInfoMonitor());
+            register(new JavaMemMonitor());
+            register(new ProcessMonitor());
+            register(new ThreadInfoMonitor());
         }
 
         public static LinkedHashMap<String, Object> collector() {
@@ -45,13 +45,13 @@ public interface Monitor {
             return result;
         }
 
-        public static void registor(Monitor monitor) {
+        public static void register(Monitor monitor) {
             if (monitor != null) {
                 maps.put(monitor.getName(), monitor);
             }
         }
 
-        public static void unRegistor(Monitor monitor) {
+        public static void unRegister(Monitor monitor) {
             if (monitor != null) {
                 maps.remove(monitor.getName());
             }

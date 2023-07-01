@@ -1,0 +1,7 @@
+{
+  "moduleName": "shiro-hook",
+  "parameters": {
+    "disable": false,
+    "shiro_remember_me_action": 0
+  }
+}

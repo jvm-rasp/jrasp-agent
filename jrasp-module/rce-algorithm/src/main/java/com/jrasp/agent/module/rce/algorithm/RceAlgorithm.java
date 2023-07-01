@@ -10,7 +10,6 @@ import com.jrasp.agent.api.request.AttackInfo;
 import com.jrasp.agent.api.request.Context;
 import com.jrasp.agent.api.util.ParamSupported;
 import com.jrasp.agent.api.util.StackTrace;
-import com.jrasp.agent.api.util.StringUtils;
 import org.kohsuke.MetaInfServices;
 
 import java.util.*;
@@ -48,7 +47,7 @@ public class RceAlgorithm extends ModuleLifecycleAdapter implements Module, Algo
             "vi", "man", "paste", "grep", "file", "dd", "systeminfo", "findstr", "tasklist", "netstat", "netsh",
             "powershell", "for", "arp", "quser", "chmod", "useradd", "hostname", "pwd", "cd", "cp", "mv", "history",
             "tar", "zip", "route", "uname", "id", "passwd", "rpm", "dmesg", "env", "ps", "top", "dpkg", "ss", "lsof",
-            "chkconfig"
+            "chkconfig", "/bin/sh", "/bin/bash"
     );
 
     private Set<String> rceDangerStackSet = new HashSet<String>(Arrays.asList(
@@ -88,7 +87,9 @@ public class RceAlgorithm extends ModuleLifecycleAdapter implements Module, Algo
     private Set<String> rceWhiteStackSet = new HashSet<String>(Arrays.asList(
             "com.epoint.EpointZBTool_BS.ZhaoBiaoFileZW.UploadZWFileUseInitAction",
             "com.epoint.dzda.os.service.LinuxServiceImpl.getDeskUsage",
-            "com.epoint.security.SNLicense.getProcessorId"
+            "com.epoint.security.SNLicense.getProcessorId",
+            "com.epoint.ztb.check.upload.service.FileMountService.getFileMountInfo",
+            "com.epoint.core.utils.web.WebUtil.getMACAddress"
     ));
 
     @Override
@@ -108,7 +109,7 @@ public class RceAlgorithm extends ModuleLifecycleAdapter implements Module, Algo
 
     @Override
     public void check(Context context, Object... parameters) throws Exception {
-        if (isWhiteList(context)) {
+        if (isWhiteList()) {
             return;
         }
         if (!raspConfig.isCheckDisable() && rceAction > -1) {
@@ -116,32 +117,45 @@ public class RceAlgorithm extends ModuleLifecycleAdapter implements Module, Algo
             String cmd = (String) parameters[0];
             List<String> tokens = getTokens(cmd);
             String javaCmd = tokens.get(0);
-            if (isBehinderRealCMDBackdoor(cmd)) {
-                doActionCtl(1, context, cmd, "Behinder RealCMD backdoor: " + cmd, cmd, 100);
+            String[] stacks = StackTrace.getStackTraceString();
+
+            // 检测WebShell管理工具命令执行
+            if (isBehinderRealCMDBackdoor(stacks, cmd)) {
+                doActionCtl(1, context, cmd, "Behinder RealCMD backdoor", cmd, "冰蝎命令执行后门", 100);
                 return;
             }
+            if (isBehinderRunCMDBackdoor(stacks)) {
+                doActionCtl(1, context, cmd, "Behinder RunCMD backdoor", cmd, "冰蝎命令执行后门", 100);
+                return;
+            }
+            if (isGodzillaExecCommandBackdoor(stacks)) {
+                doActionCtl(1, context, cmd, "Godzilla exeCommand backdoor", cmd, "哥斯拉命令执行后门", 100);
+                return;
+            }
+
             if (rceWhiteSet.contains(javaCmd)) {
                 return;
             }
+
             // 检测算法1： 用户输入后门
             // 用户命令是否包含在参数列表中
             if (context != null) {
                 String includeParameter = include(context.getDecryptParametersString(), tokens);
                 if (includeParameter != null) {
-                    doActionCtl(rceAction, context, cmd, "rce token contains in http parameters", includeParameter, 80);
+                    doActionCtl(rceAction, context, cmd, "rce token contains in http parameters", includeParameter, "命令执行", 80);
                     return;
                 }
                 String includeHeader = include(context.getHeaderString(), tokens);
                 if (includeHeader != null) {
-                    doActionCtl(rceAction, context, cmd, "rce token contains in http headers", includeHeader, 80);
+                    doActionCtl(rceAction, context, cmd, "rce token contains in http headers", includeHeader, "命令执行", 80);
                     return;
                 }
             }
 
             //  检测算法2： 包含敏感字符
-            for (String item : rceBlockList) {
-                if (javaCmd.contains(item)) {
-                    doActionCtl(rceAction, context, cmd, "java cmd [" + item + "] in black list.", cmd, 80);
+            for (String token : tokens) {
+                if (rceBlockList.contains(token)) {
+                    doActionCtl(rceAction, context, cmd, "java cmd [" + token + "] in black list.", cmd, "命令执行", 80);
                     return;
                 }
             }
@@ -150,23 +164,17 @@ public class RceAlgorithm extends ModuleLifecycleAdapter implements Module, Algo
             String[] stackTraceString = StackTrace.getStackTraceString(100, false);
             for (String stack : stackTraceString) {
                 if (rceDangerStackSet.contains(stack)) {
-                    doActionCtl(rceAction, context, cmd, "danger rce stack: " + stack, cmd, 90);
+                    doActionCtl(rceAction, context, cmd, "danger rce stack: " + stack, cmd, "命令执行", 90);
                     return;
                 }
             }
 
             // 检测算法4：命令执行监控
-            doActionCtl(rceAction, context, cmd, "log all rce", cmd, 50);
+            doActionCtl(rceAction, context, cmd, "log all rce", cmd, "命令执行", 50);
         }
     }
 
-    private boolean isWhiteList(Context context) {
-        /*if (context != null
-                && StringUtils.isBlank(context.getMethod())
-                && StringUtils.isBlank(context.getRequestURI())
-                && StringUtils.isBlank(context.getRequestURL())) {
-            return true;
-        }*/
+    private boolean isWhiteList() {
         for (String stack : StackTrace.getStackTraceString()) {
             for (String keyword : rceWhiteStackSet) {
                 if (stack.contains(keyword)) {
@@ -177,8 +185,7 @@ public class RceAlgorithm extends ModuleLifecycleAdapter implements Module, Algo
         return false;
     }
 
-    private boolean isBehinderRealCMDBackdoor(String cmd) {
-        String[] stacks = StackTrace.getStackTraceString();
+    private boolean isBehinderRealCMDBackdoor(String[] stacks, String cmd) {
         for (String stack : stacks) {
             if (stack.contains("RealCMD")) {
                 return true;
@@ -195,6 +202,31 @@ public class RceAlgorithm extends ModuleLifecycleAdapter implements Module, Algo
         return false;
     }
 
+    private boolean isBehinderRunCMDBackdoor(String[] stacks) {
+        for (int i = 0; i < stacks.length; i++) {
+            if (stacks[i].contains("RunCMD(Cmd") && stacks.length > i + 1 && stacks[i + 1].contains("equals(Cmd")) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean isGodzillaExecCommandBackdoor(String[] stacks) {
+        boolean flag1 = false;
+        boolean flag2 = false;
+        boolean flag3 = false;
+        for (String stack : stacks) {
+            if (stack.contains("execCommand(payload")) {
+                flag1 = true;
+            } else if (stack.contains("run(payload")) {
+                flag2 = true;
+            } else if (stack.contains("toString(payload")) {
+                flag3 = true;
+            }
+        }
+        return flag1 && flag2 && flag3;
+    }
+
     private String include(String httpParameters, List<String> cmdArgs) {
         if (httpParameters != null) {
             for (String item : cmdArgs) {
@@ -206,10 +238,10 @@ public class RceAlgorithm extends ModuleLifecycleAdapter implements Module, Algo
         return null;
     }
 
-    private void doActionCtl(int action, Context context, String cmd, String checkType, String message, int level) throws ProcessControlException {
+    private void doActionCtl(int action, Context context, String cmd, String checkType, String message, String attackType, int level) throws ProcessControlException {
         if (action > -1) {
             boolean enableBlock = action == 1;
-            AttackInfo attackInfo = new AttackInfo(context,metaInfo, cmd, enableBlock, "命令执行", checkType, message, level);
+            AttackInfo attackInfo = new AttackInfo(context, metaInfo, cmd, enableBlock, attackType, checkType, message, level);
             logger.attack(attackInfo);
             if (enableBlock && !checkType.equals("log all rce")) {
                 ProcessController.throwsImmediatelyAndSendResponse(attackInfo, raspConfig, new RuntimeException("rce block by EpointRASP."));
@@ -224,7 +256,7 @@ public class RceAlgorithm extends ModuleLifecycleAdapter implements Module, Algo
 
     public static List<String> getTokens(String str) {
         List<String> tokens = new ArrayList<String>();
-        StringTokenizer tokenizer = new StringTokenizer(str);
+        StringTokenizer tokenizer = new StringTokenizer(str, "\t\n\r\f\";|& ", true);
         while (tokenizer.hasMoreElements()) {
             tokens.add(tokenizer.nextToken());
         }

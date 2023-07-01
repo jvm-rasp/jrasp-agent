@@ -2,7 +2,6 @@ package com.jrasp.agent.api.request;
 
 import com.jrasp.agent.api.util.EscapeUtil;
 import com.jrasp.agent.api.util.StackTrace;
-import com.jrasp.agent.api.util.StringUtils;
 
 import java.util.Arrays;
 

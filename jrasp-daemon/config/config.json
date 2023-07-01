@@ -423,6 +423,16 @@
       "parameters": {
         "disable": false
       }
+    },
+    {
+      "moduleName": "shiro-hook",
+      "parameters": {
+        "disable": false,
+        "shiro_remember_me_action": 0,
+        "shiro_black_key_list": [
+          "kPH\\+bIxk5D2deZiIxcaaaA=="
+        ]
+      }
     }
   ]
 }

@@ -186,7 +186,7 @@ func setDefaultValue(vp *viper.Viper) {
 
 	vp.SetDefault("RemoteHosts", []string{"wss://www.server.jrasp.com:8088/rasp-admin"})
 
-	vp.SetDefault("MinJvmStartTime", 3)
+	vp.SetDefault("MinJvmStartTime", 1)
 
 	vp.SetDefault("EnableMdns", true)
 

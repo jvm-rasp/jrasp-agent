@@ -7,6 +7,8 @@ WorkingDirectory=/usr/local/jrasp/bin
 ExecStart=/usr/local/jrasp/bin/startup.sh
 ExecStop=/usr/local/jrasp/bin/shutdown.sh
 Restart=always
+RestartSec=20
+StartLimitInterval=0
 
 [Install]
 WantedBy=multi-user.target

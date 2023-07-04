@@ -2,6 +2,7 @@ package environ
 
 import (
 	"errors"
+	"fmt"
 	"jrasp-daemon/defs"
 	"jrasp-daemon/utils"
 	"net"
@@ -20,6 +21,11 @@ var (
 	BuildGitBranch  = ""
 	BuildGitCommit  = ""
 	BuildDecryptKey = ""
+)
+
+const (
+	HOST_NAME      = "hostname.txt"
+	HOST_NAME_PERM = 0777
 )
 
 const GB = 1024 * 1024 * 1024
@@ -92,7 +98,7 @@ func NewEnviron() (*Environ, error) {
 	isContainer, err := utils.PathExists("/.dockerenv")
 
 	env := &Environ{
-		HostName:        getHostname(),
+		HostName:        getHostname(execDir),
 		Ip:              ipAddress,
 		InstallDir:      execDir,
 		OsType:          runtime.GOOS,
@@ -113,15 +119,54 @@ func NewEnviron() (*Environ, error) {
 	return env, nil
 }
 
-func getHostname() string {
+func getHostname(execDir string) string {
 	hostName := ""
-	isContainer, _ := utils.PathExists("/.dockerenv")
-	if isContainer {
-		hostName = os.Getenv("ctnruuid")
-	} else {
-		hostName, _ = os.Hostname()
+
+	// 从磁盘读取主机名
+	hostFile := filepath.Join(execDir, "config", HOST_NAME)
+	if hostNameFromFile, err := readHostNameFromFile(hostFile); err == nil {
+		hostName = hostNameFromFile
 	}
+
+	// 如果磁盘上没有主机名，则从环境变量或系统获取
+	if hostName == "" {
+		if isContainer() {
+			hostName = os.Getenv("ctnruuid")
+		} else {
+			hostName, _ = os.Hostname()
+		}
+	}
+
+	// 将主机名写入磁盘
+	if err := writeHostNameToFile(hostFile, hostName); err != nil {
+		fmt.Errorf("write hostname to file error:%v", err)
+	}
+
 	return hostName
+}
+
+func readHostNameFromFile(hostFile string) (string, error) {
+	existed, err := utils.PathExists(hostFile)
+	if !existed {
+		return "", err
+	}
+	b, err := os.ReadFile(hostFile)
+	if err != nil {
+		return "", err
+	}
+	return strings.TrimSpace(string(b)), nil
+}
+
+func writeHostNameToFile(hostFile string, hostName string) error {
+	if err := os.MkdirAll(filepath.Dir(hostFile), HOST_NAME_PERM); err != nil {
+		return err
+	}
+	return os.WriteFile(hostFile, []byte(hostName), HOST_NAME_PERM)
+}
+
+func isContainer() bool {
+	isContainer, _ := utils.PathExists("/.dockerenv")
+	return isContainer
 }
 
 func getExternalIP() (string, error) {

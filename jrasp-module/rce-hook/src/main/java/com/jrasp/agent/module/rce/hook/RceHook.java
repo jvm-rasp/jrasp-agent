@@ -13,10 +13,10 @@ import com.jrasp.agent.api.matcher.EventWatchBuilder;
 import com.jrasp.agent.api.matcher.MethodMatcher;
 import com.jrasp.agent.api.matcher.ModuleEventWatcher;
 import com.jrasp.agent.api.request.Context;
+import com.jrasp.agent.api.util.StringUtils;
 import org.kohsuke.MetaInfServices;
 
-import java.util.Arrays;
-import java.util.Map;
+import java.util.*;
 
 import static com.jrasp.agent.api.util.ParamSupported.getParameter;
 
@@ -24,6 +24,7 @@ import static com.jrasp.agent.api.util.ParamSupported.getParameter;
  * 命令执行方法hook模块
  * hook类是最底层的native方法,不可能绕过
  * 业内第一款能彻底防止绕过的rasp
+ * 2023.7.9 验证通过
  */
 @MetaInfServices(Module.class)
 @Information(id = "rce-hook", author = "jrasp")
@@ -58,18 +59,18 @@ public class RceHook extends ModuleLifecycleAdapter implements Module, LoadCompl
      */
     public void nativeProcessRceHook() {
         new EventWatchBuilder(moduleEventWatcher)
-                .onClass(new ClassMatcher("java/lang/UNIXProcess")
-                        .onMethod(new MethodMatcher("forkAndExec(I[B[B[BI[BI[B[IZ)I",
-                                new UnixCommandAdviceListener()))
-                )
-                .onClass(new ClassMatcher("java/lang/ProcessImpl")
-                        .onMethod(new MethodMatcher("forkAndExec(I[B[B[BI[BI[B[IZ)I",
-                                new UnixCommandAdviceListener()))
-                )
-                .onClass(new ClassMatcher("java/lang/ProcessImpl")
-                        .onMethod(new MethodMatcher("create(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;[JZ)J",
-                                new WindowsCommandAdviceListener())))
-                .build();
+                /**
+                 * @see java.lang.UNIXProcess#forkAndExec
+                 */
+                .onClass(new ClassMatcher("java/lang/UNIXProcess").onMethod(new MethodMatcher("forkAndExec(I[B[B[BI[BI[B[IZ)I", new UnixCommandAdviceListener())))
+                /**
+                 * @see java.lang.ProcessImpl#forkAndExec
+                 */
+                .onClass(new ClassMatcher("java/lang/ProcessImpl").onMethod(new MethodMatcher("forkAndExec(I[B[B[BI[BI[B[IZ)I", new UnixCommandAdviceListener())))
+                /**
+                 * @see java.lang.ProcessImpl#create
+                 */
+                .onClass(new ClassMatcher("java/lang/ProcessImpl").onMethod(new MethodMatcher("create(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;[JZ)J", new WindowsCommandAdviceListener()))).build();
     }
 
     public class UnixCommandAdviceListener extends AdviceListener {
@@ -80,12 +81,7 @@ public class RceHook extends ModuleLifecycleAdapter implements Module, LoadCompl
             }
             byte[] prog = (byte[]) advice.getParameterArray()[2];     // 命令
             byte[] argBlock = (byte[]) advice.getParameterArray()[3]; // 参数
-            String cmd = getCommand(prog);
-            String args = getArgs(argBlock);
-            // 部分命令的参数为空
-            if (args != null && args.length() > 0) {
-                cmd += " " + args;
-            }
+            String cmd = unixCommand(prog, argBlock);
             algorithmManager.doCheck(TYPE, context.get(), cmd);
         }
 
@@ -101,44 +97,46 @@ public class RceHook extends ModuleLifecycleAdapter implements Module, LoadCompl
             if (disable) {
                 return;
             }
-            String cmdStr = (String) advice.getParameterArray()[0];     // 命令
-            algorithmManager.doCheck(TYPE, context.get(), cmdStr);
-        }
-
-        @Override
-        protected void afterThrowing(Advice advice) throws Throwable {
-            context.remove();
+            String cmd = (String) advice.getParameterArray()[0];     // 命令+参数
+            algorithmManager.doCheck(TYPE, context.get(), cmd);
         }
     }
 
     /**
-     * 命令如何转为字符串，参考jdk的方法即可
+     * 参数转换参考 open-rasp 有改动
      *
      * @param command
+     * @param args
      * @return
      */
-    public static String getCommand(byte[] command) {
-        if (command != null && command.length > 0) {
-            // cmd 字符串的范围: [0,command.length - 1), 因为command最后一位为 \u0000 字符，需要去掉
-            return new String(command, 0, command.length - 1);
-        }
-        return "";
-    }
+    public static String unixCommand(byte[] command, byte[] args) {
+        List<String> commands = new ArrayList<String>();
 
-    // 参数
-    public static String getArgs(byte[] args) {
-        StringBuilder stringBuffer = new StringBuilder();
+        // 命令
+        if (command != null && command.length > 0) {
+            /**
+             * 去掉最后一个byte的原因
+             * toCString 方法会给字符串末尾追加一个(byte)0
+             * 因此cmd字符串的范围: [0,command.length - 1), 因为command最后一位为\u0000字符需要去掉
+             * @see java.lang.ProcessImpl#toCString(String)
+             * @see java.lang.UNIXProcess#toCString(String)
+             */
+            commands.add(new String(command, 0, command.length - 1));
+        }
+
+        // 参数
         if (args != null && args.length > 0) {
             int position = 0;
             for (int i = 0; i < args.length; i++) {
-                // 空格是字符或者参数的分割符号
+                // (byte)0 为字符串参数的分割符号
                 if (args[i] == 0) {
-                    stringBuffer.append(new String(Arrays.copyOfRange(args, position, i)));
+                    commands.add(new String(Arrays.copyOfRange(args, position, i)));
                     position = i + 1;
                 }
             }
         }
-        return stringBuffer.toString();
+        // 数组转成字符串，方便检测引擎统一处理
+        return StringUtils.join(commands, " ");
     }
 
 }

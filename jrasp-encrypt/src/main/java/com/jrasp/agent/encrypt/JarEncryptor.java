@@ -86,6 +86,9 @@ public class JarEncryptor {
             throw new RuntimeException(jarPath + " 未匹配到任何类，请检查待加密的模块包路径是否符合规范");
         }
 
+        // 提取注解信息
+
+
         //[3]将正常的class加密，压缩另存
         List<String> encryptClass = encryptClass(classFiles);
         this.encryptFileCount = encryptClass.size();

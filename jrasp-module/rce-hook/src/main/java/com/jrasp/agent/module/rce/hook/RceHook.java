@@ -6,6 +6,7 @@ import com.jrasp.agent.api.ModuleLifecycleAdapter;
 import com.jrasp.agent.api.algorithm.AlgorithmManager;
 import com.jrasp.agent.api.annotation.Information;
 import com.jrasp.agent.api.annotation.RaspResource;
+import com.jrasp.agent.api.annotation.RaspValue;
 import com.jrasp.agent.api.listener.Advice;
 import com.jrasp.agent.api.listener.AdviceListener;
 import com.jrasp.agent.api.matcher.ClassMatcher;
@@ -39,7 +40,8 @@ public class RceHook extends ModuleLifecycleAdapter implements Module, LoadCompl
     @RaspResource
     private AlgorithmManager algorithmManager;
 
-    private volatile Boolean disable = false;
+    @RaspValue(name = "disable", value = "false")
+    private volatile Boolean disable;
 
     private final static String TYPE = "rce";
 

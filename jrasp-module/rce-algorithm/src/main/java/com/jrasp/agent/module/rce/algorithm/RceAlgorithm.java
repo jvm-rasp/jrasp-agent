@@ -30,6 +30,7 @@ public class RceAlgorithm extends ModuleLifecycleAdapter implements Module, Algo
     @RaspResource
     private String metaInfo;
 
+
     private volatile Integer rceAction = 0;
 
     /**
@@ -84,12 +85,9 @@ public class RceAlgorithm extends ModuleLifecycleAdapter implements Module, Algo
             "java.sql.DriverManager.getConnection"
     ));
 
+    // 防止误报，可以加上栈白名单
     private Set<String> rceWhiteStackSet = new HashSet<String>(Arrays.asList(
-            "com.epoint.EpointZBTool_BS.ZhaoBiaoFileZW.UploadZWFileUseInitAction",
-            "com.epoint.dzda.os.service.LinuxServiceImpl.getDeskUsage",
-            "com.epoint.security.SNLicense.getProcessorId",
-            "com.epoint.ztb.check.upload.service.FileMountService.getFileMountInfo",
-            "com.epoint.core.utils.web.WebUtil.getMACAddress"
+            "com.epoint.security.SNLicense.getProcessorId"
     ));
 
     @Override
@@ -109,17 +107,23 @@ public class RceAlgorithm extends ModuleLifecycleAdapter implements Module, Algo
 
     @Override
     public void check(Context context, Object... parameters) throws Exception {
-        if (isWhiteList()) {
-            return;
-        }
-        if (!raspConfig.isCheckDisable() && rceAction > -1) {
-            // 命令执行白名单
+        if (rceAction > -1) {
+
+            // 过滤白栈名单
+            String[] stacks = StackTrace.getStackTraceString();
+            if (isStackContainsWhiteKey(stacks)) {
+                return;
+            }
+
+            // 过滤命令白名单
             String cmd = (String) parameters[0];
             List<String> tokens = getTokens(cmd);
             String javaCmd = tokens.get(0);
-            String[] stacks = StackTrace.getStackTraceString();
+            if (rceWhiteSet.contains(javaCmd)) {
+                return;
+            }
 
-            // 检测WebShell管理工具命令执行
+            // 检测算法1：检测WebShell管理工具命令执行
             if (isBehinderRealCMDBackdoor(stacks, cmd)) {
                 doActionCtl(1, context, cmd, "Behinder RealCMD backdoor", cmd, "冰蝎命令执行后门", 100);
                 return;
@@ -133,49 +137,49 @@ public class RceAlgorithm extends ModuleLifecycleAdapter implements Module, Algo
                 return;
             }
 
-            if (rceWhiteSet.contains(javaCmd)) {
-                return;
-            }
-
-            // 检测算法1： 用户输入后门
+            // 检测算法2： 用户输入后门
             // 用户命令是否包含在参数列表中
             if (context != null) {
-                String includeParameter = include(context.getDecryptParametersString(), tokens);
+                String includeParameter = include(context.getParametersString(), tokens);
                 if (includeParameter != null) {
-                    doActionCtl(rceAction, context, cmd, "rce token contains in http parameters", includeParameter, "命令执行", 80);
+                    doActionCtl(rceAction, context, cmd, "rce token contains in http parameters", includeParameter, "command inject", 80);
                     return;
                 }
                 String includeHeader = include(context.getHeaderString(), tokens);
                 if (includeHeader != null) {
-                    doActionCtl(rceAction, context, cmd, "rce token contains in http headers", includeHeader, "命令执行", 80);
+                    doActionCtl(rceAction, context, cmd, "rce token contains in http headers", includeHeader, "command inject", 80);
                     return;
                 }
             }
 
-            //  检测算法2： 包含敏感字符
+            //  检测算法3： 包含敏感字符
             for (String token : tokens) {
                 if (rceBlockList.contains(token)) {
-                    doActionCtl(rceAction, context, cmd, "java cmd [" + token + "] in black list.", cmd, "命令执行", 80);
+                    doActionCtl(rceAction, context, cmd, "java cmd [" + token + "] in black list.", cmd, "command inject", 80);
                     return;
                 }
             }
 
-            // 检测算法3： 栈特征
+            // 检测算法4： 栈特征
             String[] stackTraceString = StackTrace.getStackTraceString(100, false);
             for (String stack : stackTraceString) {
                 if (rceDangerStackSet.contains(stack)) {
-                    doActionCtl(rceAction, context, cmd, "danger rce stack: " + stack, cmd, "命令执行", 90);
+                    doActionCtl(rceAction, context, cmd, "danger rce stack: " + stack, cmd, "command inject ", 90);
                     return;
                 }
             }
 
-            // 检测算法4：命令执行监控
-            doActionCtl(rceAction, context, cmd, "log all rce", cmd, "命令执行", 50);
+            // 检测算法5：命令执行监控
+            doActionCtl(rceAction, context, cmd, "log all rce", cmd, "command inject", 50);
         }
     }
 
-    private boolean isWhiteList() {
-        for (String stack : StackTrace.getStackTraceString()) {
+    // 白名单直接跳过检测
+    private boolean isStackContainsWhiteKey(String[] currentStack) {
+        if (currentStack == null || currentStack.length == 0) {
+            return false;
+        }
+        for (String stack : currentStack) {
             for (String keyword : rceWhiteStackSet) {
                 if (stack.contains(keyword)) {
                     return true;
@@ -256,7 +260,8 @@ public class RceAlgorithm extends ModuleLifecycleAdapter implements Module, Algo
 
     public static List<String> getTokens(String str) {
         List<String> tokens = new ArrayList<String>();
-        StringTokenizer tokenizer = new StringTokenizer(str, "\t\n\r\f\";|& ", true);
+        // 修改为不包含分割字符
+        StringTokenizer tokenizer = new StringTokenizer(str, "\t\n\r\f\";|& ", false);
         while (tokenizer.hasMoreElements()) {
             tokens.add(tokenizer.nextToken());
         }

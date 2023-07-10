@@ -50,7 +50,7 @@ public class FileHook implements Module, LoadCompleted {
         fileHook();
     }
 
-    private static final String FILE = "file";
+    private static final String FILE_INTI = "file-init"; // 文件构造方法
 
     private static final String FILE_READ = "file-read";
 
@@ -162,6 +162,25 @@ public class FileHook implements Module, LoadCompleted {
                                 }
                                 File file = (File) advice.getTarget();
                                 algorithmManager.doCheck(FILE_LIST, requestInfoThreadLocal.get(), file);
+                            }
+
+                            @Override
+                            protected void afterThrowing(Advice advice) throws Throwable {
+                                requestInfoThreadLocal.remove();
+                            }
+                        })
+                        /**
+                         * 文件访问
+                         * @see java.io.File#File(String)
+                         */
+                        .onMethod("<init>(Ljava/lang/String;)V", new AdviceListener() {
+                            @Override
+                            public void before(Advice advice) throws Throwable {
+                                if (disable) {
+                                    return;
+                                }
+                                String pathname = (String) advice.getParameterArray()[0];
+                                algorithmManager.doCheck(FILE_INTI, requestInfoThreadLocal.get(), pathname);
                             }
 
                             @Override

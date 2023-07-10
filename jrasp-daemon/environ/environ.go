@@ -130,11 +130,7 @@ func getHostname(execDir string) string {
 
 	// 如果磁盘上没有主机名，则从环境变量或系统获取
 	if hostName == "" {
-		if isContainer() {
-			hostName = os.Getenv("ctnruuid")
-		} else {
-			hostName, _ = os.Hostname()
-		}
+		hostName, _ = os.Hostname()
 	}
 
 	// 将主机名写入磁盘

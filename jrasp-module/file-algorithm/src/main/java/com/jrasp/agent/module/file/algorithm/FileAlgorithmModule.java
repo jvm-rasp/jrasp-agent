@@ -7,10 +7,7 @@ import com.jrasp.agent.api.algorithm.AlgorithmManager;
 import com.jrasp.agent.api.annotation.Information;
 import com.jrasp.agent.api.annotation.RaspResource;
 import com.jrasp.agent.api.log.RaspLog;
-import com.jrasp.agent.module.file.algorithm.impl.FileDeleteAlgorithm;
-import com.jrasp.agent.module.file.algorithm.impl.FileListAlgorithm;
-import com.jrasp.agent.module.file.algorithm.impl.FileReadAlgorithm;
-import com.jrasp.agent.module.file.algorithm.impl.FileUploadAlgorithm;
+import com.jrasp.agent.module.file.algorithm.impl.*;
 import org.kohsuke.MetaInfServices;
 
 import java.util.Map;
@@ -42,6 +39,8 @@ public class FileAlgorithmModule extends ModuleLifecycleAdapter implements Modul
 
     private volatile FileUploadAlgorithm fileUploadAlgorithm;
 
+    private volatile FileInitAlgorithm fileInitAlgorithm;
+
     // 其他算法实例这里添加
 
     @Override
@@ -50,7 +49,8 @@ public class FileAlgorithmModule extends ModuleLifecycleAdapter implements Modul
         this.fileListAlgorithm = new FileListAlgorithm(configMaps, raspConfig, logger, metaInfo);
         this.fileReadAlgorithm = new FileReadAlgorithm(configMaps, raspConfig, logger, metaInfo);
         this.fileUploadAlgorithm = new FileUploadAlgorithm(configMaps, raspConfig, logger, metaInfo);
-        algorithmManager.register(fileListAlgorithm, fileDeleteAlgorithm, fileReadAlgorithm, fileUploadAlgorithm);
+        this.fileInitAlgorithm = new FileInitAlgorithm(configMaps, raspConfig, logger, metaInfo);
+        algorithmManager.register(fileListAlgorithm, fileDeleteAlgorithm, fileReadAlgorithm, fileUploadAlgorithm, fileInitAlgorithm);
         return true;
     }
 
@@ -60,7 +60,8 @@ public class FileAlgorithmModule extends ModuleLifecycleAdapter implements Modul
         this.fileListAlgorithm = new FileListAlgorithm(logger);
         this.fileReadAlgorithm = new FileReadAlgorithm(logger);
         this.fileUploadAlgorithm = new FileUploadAlgorithm(logger);
-        algorithmManager.register(fileListAlgorithm, fileDeleteAlgorithm, fileReadAlgorithm, fileUploadAlgorithm);
+        this.fileInitAlgorithm = new FileInitAlgorithm(logger);
+        algorithmManager.register(fileListAlgorithm, fileDeleteAlgorithm, fileReadAlgorithm, fileUploadAlgorithm, fileInitAlgorithm);
     }
 
     @Override
@@ -78,6 +79,9 @@ public class FileAlgorithmModule extends ModuleLifecycleAdapter implements Modul
         }
         if (fileUploadAlgorithm != null) {
             algorithmManager.destroy(fileUploadAlgorithm);
+        }
+        if (fileInitAlgorithm != null) {
+            algorithmManager.destroy(fileInitAlgorithm);
         }
         logger.info("file-algorithm onUnload success.");
     }

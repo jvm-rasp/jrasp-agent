@@ -155,21 +155,33 @@ public class XxeModule implements Module, LoadCompleted {
                  */
                 .onClass(new ClassMatcher("javax/xml/parsers/DocumentBuilderFactory")
                         .onMethod("newInstance()Ljavax/xml/parsers/DocumentBuilderFactory;", new AdviceListener() {
+
                             @Override
                             protected void afterReturning(Advice advice) throws Throwable {
                                 if (disable) {
                                     return;
                                 }
                                 javax.xml.parsers.DocumentBuilderFactory instance = (javax.xml.parsers.DocumentBuilderFactory) advice.getReturnObj();
-                                // 这个是基本的防御方式。 如果DTDs被禁用, 能够防止绝大部分的XXE;
-                                // 如果这里设置为true会影响mybatis-xml的加载
-                                instance.setFeature(FEATURE_DEFAULTS_1, true);
-                                // 如果不能完全禁用DTDs，至少下面的几个需要禁用
-                                instance.setFeature(FEATURE_DEFAULTS_2, false);
-                                instance.setFeature(FEATURE_DEFAULTS_3, false);
-                                instance.setFeature(FEATURE_DEFAULTS_4, false);
-                                instance.setXIncludeAware(false);
-                                instance.setExpandEntityReferences(false);
+                                // bugfix: xercesImpl2.6.2版本没有实现setFeature方法,调用会报错:
+                                // java.lang.AbstractMethodError:javax.xml.parsers.DocumentBuilderFactory.setFeature
+                                // 根因: 业务代码存在多个xml解析器，覆盖了jdk默认的xml解析器
+                                if (instance != null) {
+                                    try {
+                                        instance.getClass().getDeclaredMethod("setFeature", String.class, boolean.class);
+                                    } catch (Exception e) {
+                                        // 找不到方法直接返回
+                                        return;
+                                    }
+                                    // 这个是基本的防御方式。 如果DTDs被禁用, 能够防止绝大部分的XXE;
+                                    // 如果这里设置为true会影响mybatis-xml的加载
+                                    instance.setFeature(FEATURE_DEFAULTS_1, true);
+                                    // 如果不能完全禁用DTDs，至少下面的几个需要禁用
+                                    instance.setFeature(FEATURE_DEFAULTS_2, false);
+                                    instance.setFeature(FEATURE_DEFAULTS_3, false);
+                                    instance.setFeature(FEATURE_DEFAULTS_4, false);
+                                    instance.setXIncludeAware(false);
+                                    instance.setExpandEntityReferences(false);
+                                }
                             }
 
                             @Override

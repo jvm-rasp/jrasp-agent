@@ -11,7 +11,7 @@ import (
 	"strings"
 
 	"github.com/fsnotify/fsnotify"
-	"github.com/shirou/gopsutil/process"
+	"github.com/shirou/gopsutil/v3/process"
 )
 
 // PERF_DATA_FILE_PREFIX The file name prefix for JVM PerfData shared memory files.

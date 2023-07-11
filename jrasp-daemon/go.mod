@@ -4,7 +4,6 @@ go 1.18
 
 require (
 	github.com/gookit/goutil v0.6.8
-	github.com/shirou/gopsutil v3.21.11+incompatible
 	github.com/shirou/gopsutil/v3 v3.22.2
 	github.com/spf13/viper v1.8.0
 	go.uber.org/zap v1.19.1
@@ -21,7 +20,6 @@ require (
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/lufia/plan9stats v0.0.0-20211012122336-39d0f177ccd0 // indirect
 	github.com/magiconair/properties v1.8.5 // indirect
-	github.com/miekg/dns v1.1.41 // indirect
 	github.com/mitchellh/mapstructure v1.4.1 // indirect
 	github.com/moby/sys/sequential v0.5.0 // indirect
 	github.com/morikuni/aec v1.0.0 // indirect
@@ -56,7 +54,6 @@ require (
 	github.com/docker/go-connections v0.4.0
 	github.com/fsnotify/fsnotify v1.6.0
 	github.com/gorilla/websocket v1.5.0
-	github.com/hashicorp/mdns v1.0.5
 	github.com/klauspost/compress v1.16.4 // indirect
 	github.com/moby/patternmatcher v0.5.0 // indirect
 	github.com/moby/term v0.0.0-20221205130635-1aeaba878587 // indirect

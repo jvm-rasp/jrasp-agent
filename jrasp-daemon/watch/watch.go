@@ -13,7 +13,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/shirou/gopsutil/process"
+	"github.com/shirou/gopsutil/v3/process"
 )
 
 // Watch 监控Java进程

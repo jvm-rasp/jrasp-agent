@@ -2,7 +2,7 @@ package update
 
 import (
 	"fmt"
-	"github.com/shirou/gopsutil/process"
+	"github.com/shirou/gopsutil/v3/process"
 	"io/fs"
 	"io/ioutil"
 	"jrasp-daemon/defs"

@@ -152,8 +152,10 @@ public class DeserializationHook extends ModuleLifecycleAdapter implements Modul
                                         if (disable) {
                                             return;
                                         }
-                                        ObjectStreamClass objectStreamClass = (ObjectStreamClass) advice.getParameterArray()[0];
-                                        algorithmManager.doCheck(XML_TYPE, context.get(), objectStreamClass);
+                                        // bugfix：修复类型转换错误
+                                        Object objectStreamClass = advice.getParameterArray()[0];
+                                        String clazzName = objectStreamClass.getClass().getName();
+                                        algorithmManager.doCheck(XML_TYPE, context.get(), clazzName);
                                     }
 
                                     @Override

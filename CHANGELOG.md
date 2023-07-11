@@ -1,11 +1,24 @@
 # 版本迭代
 
-## 1.1.2  【2023-05】迭代中
+## 1.1.2  【2023-07-11】迭代中
+
+> 1.1.2 主要以修复bug为主，新特性暂缓合入
 
 ### Enhancement
++ [agent] 增加jvm性能监控
++ [module] 新增shiro检测模块
 
+### Bugfix
++ [module] xercesImpl 2.6.2 版本没有实现setFeature方法,调用会报错的问题
++ [module] 修复xml反序列化类型转换错误问题
++ [daemon] 修复docker主机名称获取bug
++ [module] 修复sql检测算法cpu耗时高的问题
++ [module] 修复命令token分割失败问题
+
+### TODO
 + [daemon] 支持容器&进程运行时注入
-+ [agent] jrasp日志通过socket传输，去掉filebeat
++ [agent] jrasp agent内置 filebeat
++ [module] 模块参数根据注解自动生成
 
 ## 1.1.1 正式版 【2023-05】
 ### Enhancement

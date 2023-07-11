@@ -86,9 +86,9 @@ public class RceAlgorithm extends ModuleLifecycleAdapter implements Module, Algo
     ));
 
     // 防止误报，可以加上栈白名单
-    private Set<String> rceWhiteStackSet = new HashSet<String>(Arrays.asList(
-            "com.epoint.security.SNLicense.getProcessorId"
-    ));
+    private Set<String> rceWhiteStackSet = new HashSet<String>(
+       
+    );
 
     @Override
     public boolean update(Map<String, String> configMaps) {

@@ -8,11 +8,6 @@
     "rce_white_list": [
     ],
     "rce_white_stack_list": [
-      "com.epoint.EpointZBTool_BS.ZhaoBiaoFileZW.UploadZWFileUseInitAction",
-      "com.epoint.dzda.os.service.LinuxServiceImpl.getDeskUsage",
-      "com.epoint.security.SNLicense.getProcessorId",
-      "com.epoint.ztb.check.upload.service.FileMountService.getFileMountInfo",
-      "com.epoint.core.utils.web.WebUtil.getMACAddress"
     ],
     "rce_danger_stack_list": [
       "com.thoughtworks.xstream.XStream.unmarshal",

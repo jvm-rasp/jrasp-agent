@@ -6,7 +6,7 @@
 ![Maven Version](https://img.shields.io/badge/Maven-v3.8.0-blue)
 ![Java Build Version](https://img.shields.io/badge/Java-v1.6+-blue)
 ![License](https://img.shields.io/badge/License-LGPL3.0-informational)
-![install](https://img.shields.io/badge/install-5000%2B-yellowgreen)
+![install](https://img.shields.io/badge/install-20000%2B-yellowgreen)
 ![platform](https://img.shields.io/badge/platform-linux%7CmacOS%7Cwindows-success)
 
 ## 01 简介
@@ -67,83 +67,15 @@ jrasp-agent 的安全模块
 + jdk6+
 （jdk17以上需要修改jvm参数）
 
-## 03 linux (centos) 快速使用（无需管理端）
+## 03 快速使用
 
-- **1 快速安装**
+参考官网安装文档：[最新版本安装](https://www.jrasp.com/guide/install/v1.1.2/jrasp-agent.html)
 
-```java
-curl https://jrasp-download.oss-cn-shanghai.aliyuncs.com/jrasp-install.sh|bash
-```
+## 04 开发/编译  （可以跳过，使用release包）
 
-需要说明的是：上面的安装脚本会将jrasp安装在`/usr/local/` 目录下 
-
-- **2.1 启动方式1 (debug or test)**
-  
-使用`attach`工具注入Java进程。进入到 jrasp 的安装目录下的bin目录下
-```shell
-cd ./jrasp/bin
-```
-对pid为46575的Java进程注入
-```java
-./attach -p 46575
-```
-
-注入后，日志如下：
-```shell
-2022/09/29 18:04:28 attach java process,pid: 46575
-2022/09/29 18:04:28 jvm create uds socket file success
-2022/09/29 18:04:28 command socket init success: [0.0.0.0:51370]
-2022/09/29 18:04:28 attach jvm success
-```
-agent 初始化日志在`jrasp/logs`目录下的 jrasp-agent-0.log
-
-- **2.2 启动方式2 (启动守护进程，适用于线上生产环境)**
-
-启动守护进程jrasp-daemon， 守护进程会自动发现Java进程、注入和更新配置等。
-进入到 jrasp 的安装目录下的bin目录下，执行：
-```java
-./jrasp-daemon
-```
-成功启动日志如下：
-```
-➜  ./jrasp-daemon 
-       _   _____                _____   _____  
-      | | |  __ \      /\      / ____| |  __ \ 
-      | | | |__) |    /  \    | (___   | |__) |
-  _   | | |  _  /    / /\ \    \___ \  |  ___/ 
- | |__| | | | \ \   / ____ \   ____) | | |   
-  \____/  |_|  \_\ /_/    \_\ |_____/  |_|
-:: JVM RASP ::        (v1.1.1.RELEASE) https://www.jrasp.com
-{"level":"INFO","ts":"2023-01-08 22:30:21.150","caller":"jrasp-daemon/main.go:55","msg":"daemon startup","logId":1000,"ip":"192.168.8.145","hostName":"MacBook-Pro","pid":20333,"detail":"{\"agentMode\":\"dynamic\"}"}
-{"level":"INFO","ts":"2023-01-08 22:30:21.150","caller":"jrasp-daemon/main.go:57","msg":"config id","logId":1030,"ip":"192.168.8.145","hostName":"MacBook-Pro","pid":20333,"detail":"{\"configId\":1}"}
-```
-需要注的是：线上环境 `jrasp-daemon` 配置进程自动拉起的`systemctl`
-
-- **3 日志输出**
-
-所有的日志均在 `jrasp/logs/` 目录下
-
-+ jrasp-agent-0.log 记录java agent 的日志
-+ jrasp-daemon.log 记录守护进程的日志
-+ jrasp-attack-0.log 记录攻击日志
-+ jrasp-module-0.log 模块自身日志
-
-## 04 日志上报到管理端 （非必需，可以跳过）
-
-jrasp-agent 产生的日志在本地磁盘上，可以使用日志收集工具如`filebeat`或者`logtail`传输给kafka
-
-filebeat一键安装命令：
-```java
-curl https://jrasp-download.oss-cn-shanghai.aliyuncs.com/filebeat-install.sh|bash
-```
-
-需要注意的是：仅支持公有云(如阿里云、腾讯云和华为云)环境；日志传输到jrasp官方提供的kafka集群上。
-
-## 05 开发/编译  （可以跳过，使用release包）
-
-+ jdk 1.8 （必需）
-+ golang 1.16+ （必需）
-+ maven 3.2.5 （必需）
++ jdk 1.8 
++ golang 1.19
++ maven 3.8.5 
 
 您可以在macos/linux/windows系统上编译该项目，编译的系统必须与运行系统一致（即windows上编译仅限于windows运行）。
 
@@ -157,28 +89,30 @@ bash packages_linux.sh
 ```shell
 bash packages_darwin.sh
 ```
-## 06 版本记录
+## 05 版本记录
 
 [RELEASE](CHANGELOG.md)
 
-## 07 技术交流群
+## 06 技术交流群
 
 加微信：sear2022
 
-## 08 官网
+## 07 官网
 
  https://www.jrasp.com
 
-## 09 说明
+## 08 说明
 
 基于字节码修改的开源项目[jvm-sandbox](https://github.com/alibaba/jvm-sandbox) ，本项目中的部分hook类与检测算法参考[open-rasp](https://github.com/baidu/openrasp) 感谢优秀的开源项目。 
 
 反哺开源项目：jrasp团队在借鉴开源项目的同时，发现jvm-sandbox/open-rasp等多个bug，并提交给项目社区，受到社区的好评。
 
-## 10 使用者
+## 09 使用者
 
 如果您在使用该项目，请联系我们，添加在这里。
 
-## 11 版权信息
+目前有12家公司使用，agent安装量超过2w，请放心使用。
+
+## 10 版权信息
 
 GPL3.0 （您可以在自身的项目中学习与使用，商业化必须获得授权）

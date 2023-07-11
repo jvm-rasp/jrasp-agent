@@ -1,8 +1,5 @@
 #!/bin/sh
 
-raspPath=$(dirname $(realpath ${BASH_SOURCE}))
-cd $raspPath
-
 while true
 do
   process=`ps aux | grep jrasp-daemon | grep -v grep`;

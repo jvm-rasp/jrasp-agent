@@ -128,15 +128,15 @@ func InitConfig() (*Config, error) {
 	setDefaultValue(v) // 设置系统默认值
 	// 读取配置文件值，并覆盖系统默尔值
 	if err = v.ReadInConfig(); err != nil {
-		// TODO
-		fmt.Printf("%s [WARN] can not read config file, use default config.\n", time.Now().Format(defs.DATE_FORMAT))
+		fmt.Printf("%s [ERROR] can not read config file, use default config, error: %v.\n", time.Now().Format(defs.DATE_FORMAT), err)
+		return nil, err
 	}
 
 	// 配置对象
 	err = v.Unmarshal(&c)
 	if err != nil {
-		// TODO
-		fmt.Printf("unmarshal config failed: %v\n", err)
+		fmt.Printf("%s [ERROR] unmarshal config object failed, error: %v.\n", time.Now().Format(defs.DATE_FORMAT), err)
+		return nil, err
 	}
 	return &c, nil
 }

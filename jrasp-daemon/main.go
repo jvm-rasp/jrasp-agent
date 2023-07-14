@@ -38,7 +38,6 @@ func main() {
 	// 配置初始化
 	conf, err := userconfig.InitConfig()
 	if err != nil {
-		fmt.Printf("userconfig init error %s\n", err.Error())
 		return
 	}
 

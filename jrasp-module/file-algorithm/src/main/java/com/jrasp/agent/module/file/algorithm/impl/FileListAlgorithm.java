@@ -165,7 +165,7 @@ public class FileListAlgorithm implements Algorithm {
         return tokens;
     }
 
-    private String include(String httpParameters, List<String> tokens) {
+    public static String include(String httpParameters, List<String> tokens) {
         if (httpParameters != null) {
             for (String item : tokens) {
                 if (httpParameters.contains(item)) {

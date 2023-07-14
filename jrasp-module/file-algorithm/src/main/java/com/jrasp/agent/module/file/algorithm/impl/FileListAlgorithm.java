@@ -100,7 +100,7 @@ public class FileListAlgorithm implements Algorithm {
 
                 // 算法3: 用户输入匹配
                 List<String> tokens = getTokens(path);
-                String includeParameter = include(context.getDecryptParametersString(), tokens);
+                String includeParameter = include(context.getParametersString(), tokens);
                 if (includeParameter != null) {
                     doActionCtl(fileListAction, context, path, "list file contains in parameters", includeParameter, 80);
                     return;
@@ -157,16 +157,17 @@ public class FileListAlgorithm implements Algorithm {
 
     public static List<String> getTokens(String str) {
         List<String> tokens = new ArrayList<String>();
-        StringTokenizer tokenizer = new StringTokenizer(str);
+        // bugfix: 路径参数分割, 使用自定义分割符号
+        StringTokenizer tokenizer = new StringTokenizer(str, " \t\n\r\f\\/");
         while (tokenizer.hasMoreElements()) {
             tokens.add(tokenizer.nextToken());
         }
         return tokens;
     }
 
-    private String include(String httpParameters, List<String> cmdArgs) {
+    private String include(String httpParameters, List<String> tokens) {
         if (httpParameters != null) {
-            for (String item : cmdArgs) {
+            for (String item : tokens) {
                 if (httpParameters.contains(item)) {
                     return item;
                 }

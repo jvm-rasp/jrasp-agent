@@ -11,6 +11,8 @@ import com.jrasp.agent.api.util.StringUtils;
 
 import java.util.Map;
 
+// 误报较多
+@Deprecated
 public class JspCompileAlgorithm implements Algorithm {
 
     private final RaspLog logger;

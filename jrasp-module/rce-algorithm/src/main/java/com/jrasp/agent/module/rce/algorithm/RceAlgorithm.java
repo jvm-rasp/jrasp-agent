@@ -87,7 +87,7 @@ public class RceAlgorithm extends ModuleLifecycleAdapter implements Module, Algo
 
     // 防止误报，可以加上栈白名单
     private Set<String> rceWhiteStackSet = new HashSet<String>(
-       
+
     );
 
     @Override
@@ -120,6 +120,12 @@ public class RceAlgorithm extends ModuleLifecycleAdapter implements Module, Algo
             List<String> tokens = getTokens(cmd);
             String javaCmd = tokens.get(0);
             if (rceWhiteSet.contains(javaCmd)) {
+                return;
+            }
+
+            // jsp 命令执行
+            if (context != null && context.fromJsp()) {
+                doActionCtl(rceAction, context, cmd, "Command execution from jsp", cmd, "JSP命令执行", 80);
                 return;
             }
 

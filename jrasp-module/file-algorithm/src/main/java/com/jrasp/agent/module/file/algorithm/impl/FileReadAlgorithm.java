@@ -48,6 +48,13 @@ public class FileReadAlgorithm implements Algorithm {
             "ewebeditor.server.util.ReadFile"
     ));
 
+    private List<String> jspShellList = new ArrayList<String>(Arrays.asList(
+            "equals(FileOperation.java)",
+            "filemanager.Dir.equals",
+            "net.rebeyond.behinder",
+            "(payload.java)"
+    ));
+
     public FileReadAlgorithm(Map<String, String> configMaps, RaspConfig raspConfig, RaspLog logger, String metaInfo) {
         this.logger = logger;
         this.raspConfig = raspConfig;
@@ -56,6 +63,7 @@ public class FileReadAlgorithm implements Algorithm {
         this.fileReadAction = ParamSupported.getParameter(configMaps, "file_read_action", Integer.class, fileReadAction);
         this.dangerDirList = ParamSupported.getParameter(configMaps, "danger_dir_list", Set.class, dangerDirList);
         this.whiteStackSet = ParamSupported.getParameter(configMaps, "white_stack_list", Set.class, whiteStackSet);
+        this.jspShellList = ParamSupported.getParameter(configMaps, "jsp_shell_list", List.class, jspShellList);
 
     }
 
@@ -112,6 +120,18 @@ public class FileReadAlgorithm implements Algorithm {
             }
 
             String[] allParams = params.toArray(new String[0]);
+
+            // jsp webshell stack 检测算法
+            if (context != null && context.fromJsp()) {
+                String[] stackTraces = StackTrace.getStackTraceString(100, false);
+                for (String stack : stackTraces) {
+                    for (String webshell : jspShellList) {
+                        if (stack.contains(webshell)) {
+                            doActionCtl(fileReadAction, context, path, "read file with jsp shell", "realpath:" + realpath + ", jsp shell: " + webshell, 100);
+                        }
+                    }
+                }
+            }
 
             // 算法1：检测读取的文件路径是否从请求参数中传入
             if ((proto.equals("") || proto.equals("file")) && !readFileWhiteExt.matcher(realpath).find() && FileCheck.isPathEndWithUserInput(allParams, path, realpath, false)) {

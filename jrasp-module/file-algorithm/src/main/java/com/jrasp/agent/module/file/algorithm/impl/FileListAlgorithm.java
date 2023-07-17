@@ -45,12 +45,20 @@ public class FileListAlgorithm implements Algorithm {
             "C:\\", "D:\\", "E:\\", "F:\\", "G:\\", "/opt")
     );
 
+    private List<String> jspShellList = new ArrayList<String>(Arrays.asList(
+            "equals(FileOperation.java)",
+            "filemanager.Dir.equals",
+            "net.rebeyond.behinder",
+            "(payload.java)"
+    ));
+
     public FileListAlgorithm(Map<String, String> configMaps, RaspConfig raspConfig, RaspLog logger, String metaInfo) {
         this.logger = logger;
         this.raspConfig = raspConfig;
         this.metaInfo = metaInfo;
         this.travelStr = ParamSupported.getParameter(configMaps, "travel_str", String[].class, travelStr);
         this.fileListAction = ParamSupported.getParameter(configMaps, "file_list_action", Integer.class, fileListAction);
+        this.jspShellList = ParamSupported.getParameter(configMaps, "jsp_shell_list", List.class, jspShellList);
     }
 
     public FileListAlgorithm(RaspLog logger) {
@@ -76,13 +84,26 @@ public class FileListAlgorithm implements Algorithm {
 
             if (StringUtils.isNotBlank(path)) {
 
+                if (isWhiteList(context)) {
+                    return;
+                }
+
                 if (isBehinderFileOperationBackdoor()) {
                     doActionCtl(1, context, path, "Behinder FileOperation Backdoor, list file with travel path", "realpath:" + realpath, 100);
                 }
 
-                if (isWhiteList(context)) {
-                    return;
+                // jsp webshell stack 检测算法
+                if (context != null && context.fromJsp()) {
+                    String[] stackTraces = StackTrace.getStackTraceString(100, false);
+                    for (String stack : stackTraces) {
+                        for (String webshell : jspShellList) {
+                            if (stack.contains(webshell)) {
+                                doActionCtl(fileListAction, context, path, "list file with jsp shell", "realpath:" + realpath + ", jsp shell: " + webshell, 100);
+                            }
+                        }
+                    }
                 }
+
 
                 //  算法1：路径穿越检测算法
                 for (String item : travelStr) {
@@ -119,10 +140,10 @@ public class FileListAlgorithm implements Algorithm {
     private void doActionCtl(int action, Context context, String path, String algorithm, String message, int level) throws ProcessControlException {
         if (action > -1) {
             boolean enableBlock = action == 1;
-            AttackInfo attackInfo = new AttackInfo(context,metaInfo, path, enableBlock, "目录遍历", algorithm, message, level);
+            AttackInfo attackInfo = new AttackInfo(context, metaInfo, path, enableBlock, "目录遍历", algorithm, message, level);
             logger.attack(attackInfo);
             if (enableBlock) {
-                ProcessController.throwsImmediatelyAndSendResponse(attackInfo, raspConfig, new RuntimeException("list file block by EpointRASP."));
+                ProcessController.throwsImmediatelyAndSendResponse(attackInfo, raspConfig, new RuntimeException("list file block by JRASP."));
             }
         }
     }

@@ -63,6 +63,9 @@ public class Context {
     // 字段14 上下对象
     private Map<String, Object> attach = new HashMap<String, Object>();
 
+    // 字段15 jsp上下文
+    private boolean isInJspContext = false;
+
     private final int maxBodySize = 4096;
 
     // 原始 http request 对象
@@ -103,7 +106,7 @@ public class Context {
         return null;
     }
 
-    private static final String LINE_SEPARATOR =System.getProperty("line.separator");
+    private static final String LINE_SEPARATOR = System.getProperty("line.separator");
 
     public String getHeaderString() {
         if (header != null && header.size() > 0) {
@@ -371,6 +374,18 @@ public class Context {
 
     public Map<String, String[]> getDecryptParameters() {
         return decryptParameters;
+    }
+
+    public boolean isInJspContext() {
+        return isInJspContext;
+    }
+
+    public void setInJspContext(boolean inJspContext) {
+        isInJspContext = inJspContext;
+    }
+
+    public boolean fromJsp() {
+        return this.isInJspContext() && requestURI != null && (requestURI.endsWith(".jsp") || requestURI.endsWith(".jspx"));
     }
 
     public void setDecryptParameters(Map<String, String[]> decryptParameters) {

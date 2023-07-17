@@ -31,34 +31,46 @@ public class JspHook implements Module, LoadCompleted {
 
     private volatile Boolean disable = false;
 
-    private final static String JSP_COMPILE = "jsp-compile";
     private final static String JSTL_IMPORT = "jstl-import";
 
     @Override
     public void loadCompleted() {
         new EventWatchBuilder(moduleEventWatcher)
-                .onClass(new ClassMatcher("org/apache/jasper/JspCompilationContext")
-                        .onMethod("compile()V"
-                                , new compileListener()))
+
+                // tomcat servlet/jakarta api
+                // jetty/weblogic 也使用 org.apache.jasper
+                // https://tomcat.apache.org/tomcat-9.0-doc/api/org/apache/jasper/runtime/HttpJspBase.html#service(javax.servlet.http.HttpServletRequest,javax.servlet.http.HttpServletResponse)
+                // https://tomcat.apache.org/tomcat-11.0-doc/api/org/apache/jasper/runtime/HttpJspBase.html#service(jakarta.servlet.http.HttpServletRequest,jakarta.servlet.http.HttpServletResponse)
+                .onClass(new ClassMatcher("org/apache/jasper/runtime/HttpJspPage")
+                        .onMethod("service(Ljavax/servlet/http/HttpServletRequest;Ljavax/servlet/http/HttpServletResponse;)V"
+                                , new HttpJspPageServiceListener())
+                        .onMethod("service(Ljakarta/servlet/http/HttpServletRequest;Ljakarta/servlet/http/HttpServletResponse;)V"
+                                , new HttpJspPageServiceListener())
+                )
                 .onClass(new ClassMatcher("org/apache/taglibs/standard/tag/common/core/ImportSupport")
                         .onMethod("targetUrl()Ljava/lang/String;"
-                                , new importListener()))
+                                , new ImportListener()))
                 .build();
     }
 
-    public class compileListener extends AdviceListener {
+    public class HttpJspPageServiceListener extends AdviceListener {
 
         @Override
         protected void before(Advice advice) throws Throwable {
             if (disable) {
                 return;
             }
-
-            algorithmManager.doCheck(JSP_COMPILE, context.get());
+            context.get().setInJspContext(true);
         }
+
+        @Override
+        protected void afterReturning(Advice advice) throws Throwable {
+            context.get().setInJspContext(false);
+        }
+
     }
 
-    public class importListener extends AdviceListener {
+    public class ImportListener extends AdviceListener {
 
         @Override
         protected void after(Advice advice) throws Throwable {

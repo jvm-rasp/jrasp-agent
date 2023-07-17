@@ -9,10 +9,14 @@ import com.jrasp.agent.api.log.RaspLog;
 import com.jrasp.agent.api.request.AttackInfo;
 import com.jrasp.agent.api.request.Context;
 import com.jrasp.agent.api.util.ParamSupported;
+import com.jrasp.agent.api.util.StackTrace;
 import com.jrasp.agent.api.util.StringUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 public class FileUploadAlgorithm implements Algorithm {
@@ -36,6 +40,13 @@ public class FileUploadAlgorithm implements Algorithm {
             ".so", ".dll", ".ps1", "authorized_key"
     };
 
+    private List<String> jspShellList = new ArrayList<String>(Arrays.asList(
+            "equals(FileOperation.java)",
+            "filemanager.Dir.equals",
+            "net.rebeyond.behinder",
+            "(payload.java)"
+    ));
+
     @Override
     public String getType() {
         return "file-upload";
@@ -52,6 +63,7 @@ public class FileUploadAlgorithm implements Algorithm {
         this.travelStr = ParamSupported.getParameter(configMaps, "travel_str", String[].class, travelStr);
         this.fileUploadAction = ParamSupported.getParameter(configMaps, "file_upload_action", Integer.class, fileUploadAction);
         this.fileUploadBlackList = ParamSupported.getParameter(configMaps, "file_upload_black_list", String[].class, fileUploadBlackList);
+        this.jspShellList = ParamSupported.getParameter(configMaps, "jsp_shell_list", List.class, jspShellList);
     }
 
     @Override
@@ -69,6 +81,18 @@ public class FileUploadAlgorithm implements Algorithm {
                 realpath = file.getAbsolutePath();
             }
 
+            // jsp webshell stack 检测算法
+            if (context != null && context.fromJsp()) {
+                String[] stackTraces = StackTrace.getStackTraceString(100, false);
+                for (String stack : stackTraces) {
+                    for (String webshell : jspShellList) {
+                        if (stack.contains(webshell)) {
+                            doActionCtl(fileUploadAction, context, path, "upload file with jsp shell", "realpath:" + realpath + ", jsp shell: " + webshell, 100);
+                        }
+                    }
+                }
+            }
+
             // 防护方式1：禁止木马进行任何文件行为
             String requestURL = context.getRequestURL();
             if (requestURL != null && requestURL.endsWith(".jsp")) {
@@ -79,6 +103,7 @@ public class FileUploadAlgorithm implements Algorithm {
                 doActionCtl(fileUploadAction, context, path, "upload file in jsp", "realpath:" + realpath, 80);
                 return;
             }
+
 
             // 防护方式2：禁止脚本文件的上传
             String s = path.toLowerCase();
@@ -119,10 +144,10 @@ public class FileUploadAlgorithm implements Algorithm {
     private void doActionCtl(int action, Context context, String payload, String algorithm, String message, int level) throws ProcessControlException {
         if (action > -1) {
             boolean enableBlock = action == 1;
-            AttackInfo attackInfo = new AttackInfo(context,metaInfo, payload, enableBlock, "任意文件上传", algorithm, message, level);
+            AttackInfo attackInfo = new AttackInfo(context, metaInfo, payload, enableBlock, "任意文件上传", algorithm, message, level);
             logger.attack(attackInfo);
             if (enableBlock) {
-                ProcessController.throwsImmediatelyAndSendResponse(attackInfo, raspConfig, new RuntimeException("upload file block by EpointRASP."));
+                ProcessController.throwsImmediatelyAndSendResponse(attackInfo, raspConfig, new RuntimeException("upload file block by JRASP."));
             }
         }
     }

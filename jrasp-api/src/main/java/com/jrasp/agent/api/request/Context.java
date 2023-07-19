@@ -109,13 +109,18 @@ public class Context {
     private static final String LINE_SEPARATOR = System.getProperty("line.separator");
 
     public String getHeaderString() {
+        int i = 0;
         if (header != null && header.size() > 0) {
             StringBuilder sb = new StringBuilder();
             for (Map.Entry<String, String> entry : header.entrySet()) {
-                sb.append(entry.getKey()).append(":").append(entry.getValue()).append(LINE_SEPARATOR);
+                sb.append(entry.getKey()).append(":").append(entry.getValue());
+                if (i < header.size() - 1) {
+                    sb.append(LINE_SEPARATOR);
+                }
+                i++;
             }
-            //  去掉最后一个
-            return sb.substring(0, sb.length() - 1);
+            // bugfix: windows系统上 LINE_SEPARATOR="\r\n" 是2个字符
+            return sb.toString();
         }
         return "";
     }

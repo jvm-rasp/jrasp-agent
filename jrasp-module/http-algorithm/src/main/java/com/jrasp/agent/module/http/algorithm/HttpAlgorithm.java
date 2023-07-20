@@ -12,13 +12,9 @@ import com.jrasp.agent.api.log.RaspLog;
 import com.jrasp.agent.api.request.AttackInfo;
 import com.jrasp.agent.api.request.Context;
 import com.jrasp.agent.api.util.ParamSupported;
-import com.jrasp.agent.api.util.StringUtils;
 import org.kohsuke.MetaInfServices;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * 主要是防护扫描器、ip、url
@@ -142,22 +138,17 @@ public class HttpAlgorithm extends ModuleLifecycleAdapter implements Module, Alg
                 }
 
                 // 扫描器header特征
-                String headerStr = context.getHeaderString();
-                if (headerStr != null) {
-                    for (String key : scanHeadersOrBody) {
-                        // TODO headerStr.toLowerCase() 只调用一次
-                        if (headerStr.toLowerCase().contains(key.toLowerCase())) {
-                            boolean canBlock = scanListAction == 1;
-                            // TODO appname
-                            AttackInfo attackInfo = new AttackInfo(context, metaInfo, key, canBlock, "扫描器扫描", getDescribe(), "scan header: " + key, 50);
-                            logger.attack(attackInfo);
-                            if (canBlock) {
-                                ProcessController.throwsImmediatelyAndSendResponse(attackInfo, raspConfig, new RuntimeException("hit header scan feature: " + key));
-                            }
-                        }
+                String key = checkHeaderScan(context.getHeaderString());
+                if (key != null) {
+                    boolean canBlock = scanListAction == 1;
+                    AttackInfo attackInfo = new AttackInfo(context, metaInfo, key, canBlock, "扫描器扫描", getDescribe(), "scan header: " + key, 80);
+                    logger.attack(attackInfo);
+                    if (canBlock) {
+                        ProcessController.throwsImmediatelyAndSendResponse(attackInfo, raspConfig, new RuntimeException("hit header scan feature: " + key));
                     }
                 }
             }
+
 
             // 禁用 url
             if (urlBlackListAction > -1) {
@@ -176,12 +167,31 @@ public class HttpAlgorithm extends ModuleLifecycleAdapter implements Module, Alg
         }
     }
 
-    // 处理 Tomcat 启动时注入防护 Agent 产生的误报情况
-    private boolean isWhiteList(Context context) {
-        return context != null
-                && StringUtils.isBlank(context.getMethod())
-                && StringUtils.isBlank(context.getRequestURI())
-                && StringUtils.isBlank(context.getRequestURL());
+    String checkHeaderScan(String headerStr) {
+        if (headerStr != null) {
+            headerStr = headerStr.toLowerCase();
+            String[] tokensArr = null;
+            for (String key : scanHeadersOrBody) {
+                String keyLower = key.toLowerCase();
+                if (headerStr.contains(keyLower)) {
+                    // 再次校验token
+                    if (tokensArr == null) {
+                        StringTokenizer tokens = new StringTokenizer(headerStr, " =:;|%$&#@*!()<>{}\\/,-\n\r", false);
+                        tokensArr = new String[tokens.countTokens()];
+                        int i = 0;
+                        while (tokens.hasMoreElements()) {
+                            tokensArr[i++] = tokens.nextToken();
+                        }
+                    }
+                    for (String token : tokensArr) {
+                        if (token.equals(keyLower)) {
+                            return key;
+                        }
+                    }
+                }
+            }
+        }
+        return null;
     }
 
     @Override

@@ -220,10 +220,13 @@ public class HttpHook extends ModuleLifecycleAdapter implements Module {
                                 if (ret == -1) {
                                     return;
                                 }
-                                byte[] bytes = (byte[]) advice.getParameterArray()[0];  //　缓冲器
-                                int offset = (Integer) advice.getParameterArray()[1];   //　写入的偏移地址
-                                // int length = (Integer) advice.getParameterArray()[2]; // 写入长度不需要
-                                onInputStreamRead(ret, advice.getTarget(), bytes, offset);
+                                // bugfix: 类型转换校验
+                                if (advice.getParameterArray()[0] instanceof byte[]) {
+                                    byte[] bytes = (byte[]) advice.getParameterArray()[0];  //　缓冲器
+                                    int offset = (Integer) advice.getParameterArray()[1];   //　写入的偏移地址
+                                    // int length = (Integer) advice.getParameterArray()[2]; // 写入长度不需要
+                                    onInputStreamRead(ret, advice.getTarget(), bytes, offset);
+                                }
                             }
 
                             @Override

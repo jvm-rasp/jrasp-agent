@@ -71,7 +71,7 @@ public class JstlImportAlgorithm implements Algorithm {
                         100);
                 logger.attack(attackInfo);
                 if (enableBlock) {
-                    ProcessController.throwsImmediatelyAndSendResponse(attackInfo, raspConfig, new RuntimeException("detect jstl tag import block by EpointRASP."));
+                    ProcessController.throwsImmediatelyAndSendResponse(attackInfo, raspConfig, new RuntimeException("detect jstl tag import block by JRASP."));
                 }
             }
         }

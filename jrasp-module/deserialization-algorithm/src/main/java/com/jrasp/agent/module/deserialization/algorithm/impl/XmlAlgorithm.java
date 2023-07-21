@@ -69,9 +69,6 @@ public class XmlAlgorithm implements Algorithm {
 
     @Override
     public void check(Context context, Object... parameters) throws Exception {
-        if (isWhiteList(context)) {
-            return;
-        }
         if (xmlBlackListAction > -1) {
             if (parameters != null && parameters.length >= 1) {
                 String className = (String) parameters[0];
@@ -102,14 +99,6 @@ public class XmlAlgorithm implements Algorithm {
                 }
             }
         }
-    }
-
-    // 处理 Tomcat 启动时注入防护 Agent 产生的误报情况
-    private boolean isWhiteList(Context context) {
-        return context != null
-                && StringUtils.isBlank(context.getMethod())
-                && StringUtils.isBlank(context.getRequestURI())
-                && StringUtils.isBlank(context.getRequestURL());
     }
 
     @Override

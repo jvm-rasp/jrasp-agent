@@ -267,19 +267,6 @@ public class ExpressionHook implements Module, LoadCompleted {
                                 context.remove();
                             }
                         })
-                ).onClass(new ClassMatcher("org/primefaces/application/StreamedContentHandler")
-                        .onMethod("handle(Ljavax/faces/context/FacesContext;)V"
-                                , new AdviceListener() {
-                                    @Override
-                                    protected void before(Advice advice) throws Throwable {
-                                        if (disable) {
-                                            return;
-                                        }
-
-                                        Object facesContext = advice.getParameterArray()[0];
-                                        algorithmManager.doCheck("primefaces", context.get(), facesContext);
-                                    }
-                                })
                 ).build();
     }
 }

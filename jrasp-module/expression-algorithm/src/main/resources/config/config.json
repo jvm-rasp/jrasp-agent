@@ -2,12 +2,7 @@
   "moduleName": "expression-algorithm",
   "cn_map": {
     "ognl_black_list_action": "拦截OGNL表达式注入攻击",
-<<<<<<< HEAD
     "spel_black_list_action": "拦截SPEL表达式注入攻击"
-=======
-    "spel_black_list_action": "拦截SPEL表达式注入攻击",
-    "primefaces_action": "拦截Primefaces EL表达式注入攻击"
->>>>>>> 1e2e4cae09b5baec00bae001252dc02a4b95dfaf
   },
   "parameters": {
     "ognl_min_length": 30,

@@ -80,9 +80,6 @@ public class SpelAlgorithm implements Algorithm {
 
     @Override
     public void check(Context context, Object... parameters) throws Exception {
-        if (isWhiteList(context)) {
-            return;
-        }
         String expression = (String) parameters[0];
         if (expression != null && expression.length() >= spelMinLength) {
             // 检测算法1: 黑名单
@@ -104,14 +101,6 @@ public class SpelAlgorithm implements Algorithm {
         }
     }
 
-    // 处理 Tomcat 启动时注入防护 Agent 产生的误报情况
-    private boolean isWhiteList(Context context) {
-        return context != null
-                && StringUtils.isBlank(context.getMethod())
-                && StringUtils.isBlank(context.getRequestURI())
-                && StringUtils.isBlank(context.getRequestURL());
-    }
-
     @Override
     public String getDescribe() {
         return "spel check algorithm";
@@ -122,7 +111,7 @@ public class SpelAlgorithm implements Algorithm {
         AttackInfo attackInfo = new AttackInfo(context, metaInfo, expression, enableBlock, "SPEL代码执行", getDescribe(), message, level);
         logger.attack(attackInfo);
         if (enableBlock) {
-            ProcessController.throwsImmediatelyAndSendResponse(attackInfo, raspConfig, new RuntimeException("spel expression block by EpointRASP."));
+            ProcessController.throwsImmediatelyAndSendResponse(attackInfo, raspConfig, new RuntimeException("spel expression block by JRASP."));
         }
     }
 }

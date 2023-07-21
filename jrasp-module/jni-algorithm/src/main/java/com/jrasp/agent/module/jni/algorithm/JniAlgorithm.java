@@ -82,7 +82,7 @@ public class JniAlgorithm extends ModuleLifecycleAdapter implements Module, Algo
                 60);
         logger.attack(attackInfo);
         if (enableBlock) {
-            ProcessController.throwsImmediatelyAndSendResponse(attackInfo, raspConfig, new RuntimeException("jni loadLibrary block by EpointRASP."));
+            ProcessController.throwsImmediatelyAndSendResponse(attackInfo, raspConfig, new RuntimeException("jni loadLibrary block by JRASP."));
         }
     }
 

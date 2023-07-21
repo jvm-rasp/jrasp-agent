@@ -90,9 +90,6 @@ public class OgnlAlgorithm implements Algorithm {
 
     @Override
     public void check(Context context, Object... parameters) throws Exception {
-        if (isWhiteList(context)) {
-            return;
-        }
         if (parameters[0] != null) {
             String expression = String.valueOf(parameters[0]);
             if (expression.length() >= ognlMinLength) {
@@ -115,14 +112,6 @@ public class OgnlAlgorithm implements Algorithm {
                 }
             }
         }
-    }
-
-    // 处理 Tomcat 启动时注入防护 Agent 产生的误报情况
-    private boolean isWhiteList(Context context) {
-        return context != null
-                && StringUtils.isBlank(context.getMethod())
-                && StringUtils.isBlank(context.getRequestURI())
-                && StringUtils.isBlank(context.getRequestURL());
     }
 
     @Override

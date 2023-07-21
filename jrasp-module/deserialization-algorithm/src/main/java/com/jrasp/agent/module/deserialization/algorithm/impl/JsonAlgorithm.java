@@ -18,6 +18,7 @@ import java.util.Set;
 /**
  * @author jrasp
  * 包括 json、yaml
+ * 2023-07-22 验证，没有问题
  */
 public class JsonAlgorithm implements Algorithm {
 
@@ -71,7 +72,7 @@ public class JsonAlgorithm implements Algorithm {
             "org.mozilla.javascript",
             "java.rmi",
             "java.util.prefs",
-            "com.sun",
+            "com.sun", // CVE-2017-7525
             "java.util.logging",
             "org.apache.bcel",
             "org.apache.commons.fileupload",
@@ -129,7 +130,7 @@ public class JsonAlgorithm implements Algorithm {
                 // 包名称匹配
                 String pkg = StringUtils.isContainsPackage(className, jsonBlackPackageSet);
                 if (pkg != null) {
-                    doCheck(context, className, jsonBlackListAction, "deserialization class hit black list, package: " + pkg, 80);
+                    doCheck(context, className, jsonBlackListAction, "deserialization class hit black list, package: " + pkg + ", className: " + className, 80);
                     return;
                 }
             }

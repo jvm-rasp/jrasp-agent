@@ -33,6 +33,10 @@ public class StackTrace {
             }
         }
         int endIndex = Math.min(i + maxStack, stackTraceElements.length - 1);
+        // bugfix: endIndex-i 小于0的场景
+        if(endIndex - i <0){
+            return null;
+        }
         String[] effectiveArray = new String[endIndex - i];
         // 获取有用的栈
         for (int k = i + 1; k <= endIndex; k++) {

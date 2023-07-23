@@ -1,7 +1,7 @@
 @echo off
 setlocal
 
-rem è®¾ç½®é˜¿é‡Œäº‘ä»£ç†
+rem ÉèÖÃ°¢ÀïÔÆ´úÀí
 set "GOPROXY=https://mirrors.aliyun.com/goproxy"
 go env -w GOPROXY=$GOPROXY
 echo GOPROXY:%GOPROXY%
@@ -27,7 +27,7 @@ echo [JRASP INFO] JRASP KEY_VERSION: "%KEY_VERSION%"
 cd %CURRENT_DIR%
 cd ..\
 
-rem ç¼–è¯‘ä¿¡æ¯
+rem ±àÒëĞÅÏ¢
 
 for /f  %%a in ('go list -m') do (
     set moduleName=%%a
@@ -52,11 +52,11 @@ set buildTime=%date:~0,4%%date:~5,2%%date:~8,2%%time:~0,2%%time:~3,2%%time:~6,2%
 echo %buildTime%
 
 
-rem TODO attach å·¥ç¨‹ & windowsç¼–è¯‘è„šæœ¬ åŒæ­¥å®Œå–„
+rem TODO attach ¹¤³Ì & windows±àÒë½Å±¾ Í¬²½ÍêÉÆ
 set buildDecryptKey=%KEY_VERSION%
 
 
-rem environ.go åŒ…å
+rem environ.go °üÃû
 set environPkgName=environ
 
 
@@ -64,7 +64,7 @@ set environPkgName=environ
 set flags=-"X '%moduleName%/%environPkgName%.BuildGitBranch=%branch%' -X '%moduleName%/%environPkgName%.BuildGitCommit=%commit%' -X '%moduleName%/%environPkgName%.BuildDateTime=%buildTime%' -X '%moduleName%/%environPkgName%.BuildDecryptKey=%buildDecryptKey%'"
 echo %flags%
 
-rem ç¼–è¯‘ jrasp-daemon
+rem ±àÒë jrasp-daemon
 cd %CURRENT_DIR%
 cd ..\
 

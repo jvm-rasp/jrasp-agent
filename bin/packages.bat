@@ -1,10 +1,10 @@
 @echo off
-rem windowsç³»ç»Ÿä¸‹ç¼–è¯‘jrasp-agent
-rem ç¼–è¯‘æ‰“åŒ…è„šæœ¬åœ¨ win10 x86-64ç¯å¢ƒå¼€å‘ï¼Œå…¶ä»–windowsç¯å¢ƒï¼Œå¯èƒ½å­˜åœ¨ä¸å…¼å®¹ï¼ï¼ï¼
+rem windowsÏµÍ³ÏÂ±àÒëjrasp-agent
+rem ±àÒë´ò°ü½Å±¾ÔÚ win10 x86-64»·¾³¿ª·¢£¬ÆäËûwindows»·¾³£¬¿ÉÄÜ´æÔÚ²»¼æÈİ£¡£¡£¡
 setlocal
 
 rem Guess JRASP_HOME
-rem å½“å‰æ‰€æ‰§è¡Œbatæ–‡ä»¶çš„è·¯å¾„
+rem µ±Ç°ËùÖ´ĞĞbatÎÄ¼şµÄÂ·¾¶
 cd /d %~dp0
 set "CURRENT_DIR=%cd%"
 echo [JRASP INFO] CURRENT DIR: %CURRENT_DIR%
@@ -15,7 +15,7 @@ echo [JRASP INFO] PROJECT HOME: %JRASP_HOME%
 cd "%CURRENT_DIR%"
 
 set VERSION=""
-rem åˆ¤æ–­ç‰ˆæœ¬æ–‡ä»¶æ˜¯å¦å­˜åœ¨
+rem ÅĞ¶Ï°æ±¾ÎÄ¼şÊÇ·ñ´æÔÚ
 echo [JRASP INFO] read VERSION.txt
 if not exist "%CURRENT_DIR%\VERSION.txt" (
     echo [JRASP ERROR] VERSION.txt not exist!
@@ -30,17 +30,17 @@ for /f  %%a in (VERSION.txt) do (
 
 echo [JRASP INFO] JRASP VERSION: "%VERSION%"
 
-rem ç¼–è¯‘Java agentå·¥ç¨‹
+rem ±àÒëJava agent¹¤³Ì
 echo [JRASP INFO] mvn clean package jrasp-agent start...
 call mvn clean package -Dmaven.test.skip=false -f ..\pom.xml
 
 if not %errorlevel% == 0 (
-    echo [JRASP ERROR] mvn clean package jrasp-agent errorï¼
+    echo [JRASP ERROR] mvn clean package jrasp-agent error£¡
     goto end
 )
 echo [JRASP INFO] mvn clean package jrasp-agent success.
 
-rem ç¼–è¯‘GoLang-å·¥ç¨‹
+rem ±àÒëGoLang-¹¤³Ì
 echo [JRASP INFO] go build jrasp-attach start...
 call %JRASP_HOME%\jrasp-attach\build\build.bat
 
@@ -49,14 +49,14 @@ if not %errorlevel% == 0 (
     goto end
 )
 
-rem åˆ¤æ–­æ–‡ä»¶æ˜¯å¦ç”Ÿæˆ
+rem ÅĞ¶ÏÎÄ¼şÊÇ·ñÉú³É
 echo [JRASP INFO] go build jrasp-attach end.
 if not exist "%JRASP_HOME%\jrasp-attach\bin\attach.exe" (
     echo [JRASP ERROR] go build jrasp-attach error: attach.exe not exist!
     goto end
 )
 
-rem ç¼–è¯‘GoLangå·¥ç¨‹
+rem ±àÒëGoLang¹¤³Ì
 echo [JRASP INFO] go build jrasp-daemon start...
 call %JRASP_HOME%\jrasp-daemon\build\build.bat
 
@@ -65,14 +65,14 @@ if not %errorlevel% == 0 (
     goto end
 )
 
-rem åˆ¤æ–­æ–‡ä»¶æ˜¯å¦ç”Ÿæˆ
+rem ÅĞ¶ÏÎÄ¼şÊÇ·ñÉú³É
 echo [JRASP INFO] go build jrasp-daemon end.
 if not exist "%JRASP_HOME%\jrasp-daemon\bin\jrasp-daemon.exe" (
     echo [JRASP ERROR] go build jrasp-daemon error: jrasp-daemon.exe not exist!
     goto end
 )
 
-rem åˆ›å»ºæ–‡ä»¶å¤¹
+rem ´´½¨ÎÄ¼ş¼Ğ
 set "JRASP_PACKAGE_HOME=%JRASP_HOME%\target\jrasp"
 md %JRASP_PACKAGE_HOME%
 if not exist %JRASP_PACKAGE_HOME% (
@@ -81,7 +81,7 @@ if not exist %JRASP_PACKAGE_HOME% (
 )
 echo [JRASP INFO] JRASP PACKAGE HOME: %JRASP_PACKAGE_HOME%
 
-rem åˆ›å»ºå­ç›®å½•
+rem ´´½¨×ÓÄ¿Â¼
 cd %JRASP_PACKAGE_HOME%
 set "BIN_DIR=%JRASP_PACKAGE_HOME%\bin"
 set "LIB_DIR=%JRASP_PACKAGE_HOME%\lib"
@@ -92,27 +92,27 @@ set "RUN_DIR=%JRASP_PACKAGE_HOME%\run"
 set "TMP_DIR=%JRASP_PACKAGE_HOME%\tmp"
 md  %BIN_DIR% %LIB_DIR% %MODULE_DIR% %CFG_DIR% %LOGS_DIR% %RUN_DIR% %TMP_DIR%
 
-rem æ–‡ä»¶å¤åˆ¶
-rem agent jarå¤åˆ¶
+rem ÎÄ¼ş¸´ÖÆ
+rem agent jar¸´ÖÆ
 
 echo f | xcopy /s /f "%JRASP_HOME%\jrasp-bridge\target\jrasp-bridge-"%VERSION%".jar" "%LIB_DIR%\jrasp-bridge-"%VERSION%".jar"
 echo f | xcopy /s /f "%JRASP_HOME%\jrasp-core\target\jrasp-core-"%VERSION%".jar" "%LIB_DIR%\jrasp-core-"%VERSION%".jar"
 echo f | xcopy /s /f "%JRASP_HOME%\jrasp-launcher\target\jrasp-launcher-"%VERSION%".jar" "%LIB_DIR%\jrasp-launcher-"%VERSION%".jar"
 
-rem module jarå¤åˆ¶
-rem å½“å‰è·¯å¾„ä»¥åŠå­è·¯å¾„ä¸‹å¤åˆ¶jaråŒ…
+rem module jar¸´ÖÆ
+rem µ±Ç°Â·¾¶ÒÔ¼°×ÓÂ·¾¶ÏÂ¸´ÖÆjar°ü
 for /r %JRASP_HOME%\jrasp-module %%i in (*-encrypted.jar) do copy %%i "%MODULE_DIR%"
 
-rem  jrasp-attachå¤åˆ¶
+rem  jrasp-attach¸´ÖÆ
 copy "%JRASP_HOME%\jrasp-attach\bin\attach.exe" "%BIN_DIR%"
 
-rem  jattachå¤åˆ¶
+rem  jattach¸´ÖÆ
 copy "%JRASP_HOME%\tools\jattach.exe" "%BIN_DIR%"
 
-rem  config.json å¤åˆ¶
+rem  config.json ¸´ÖÆ
 copy "%JRASP_HOME%\jrasp-daemon\config\config.json" "%CFG_DIR%"
 
-rem  jrasp-daemonå¤åˆ¶
+rem  jrasp-daemon¸´ÖÆ
 copy "%JRASP_HOME%\jrasp-daemon\bin\jrasp-daemon.exe" "%BIN_DIR%"
 
 rem VERSION.txt
@@ -120,7 +120,7 @@ copy "%CURRENT_DIR%\VERSION.txt"  "%JRASP_PACKAGE_HOME%"
 
 
 
-rem  windowsç³»ç»Ÿä¸‹ æ‰“åŒ…æ•´ä½“ç¼–è¯‘ç»“æœè‡³zip
+rem  windowsÏµÍ³ÏÂ ´ò°üÕûÌå±àÒë½á¹ûÖÁzip
 if not exist %JRASP_HOME%\tools\7z.exe (
     echo [JRASP ERROR] 7z.exe not exist!
     goto end

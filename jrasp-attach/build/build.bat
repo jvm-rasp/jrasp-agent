@@ -1,6 +1,6 @@
 @echo off
 setlocal
-rem ç¼–è¯‘ jrasp-attach
+rem ±àÒë jrasp-attach
 cd /d %~dp0
 cd ..
 go build -o bin\attach.exe

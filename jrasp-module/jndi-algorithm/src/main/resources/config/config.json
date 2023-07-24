@@ -1,0 +1,20 @@
+{
+  "moduleName": "jndi-algorithm",
+  "parameters": {
+    "jndi_action": 0,
+    "jndi_protocol_list": ["ladp://", "rmi://"],
+    "jndi_danger_stack_list": [
+      "java.beans.XMLDecoder.readObject",
+      "com.caucho.hessian.io.HessianInput.readObject",
+      "org.apache.dubbo.common.serialize.hessian2.Hessian2ObjectInput.readObject",
+      "org.yaml.snakeyaml.Yaml.load",
+      "org.apache.logging.log4j.core.net.JndiManager.lookup",
+      "ysoserial.Pwner",
+      "java.sql.DriverManager.getConnection",
+      "java.io.ObjectInputStream.readObject",
+      "com.alibaba.fastjson.JSON.parse",
+      "com.fasterxml.jackson.databind.ObjectMapper.readValue",
+      "com.thoughtworks.xstream.XStream.unmarshal"
+    ]
+  }
+}

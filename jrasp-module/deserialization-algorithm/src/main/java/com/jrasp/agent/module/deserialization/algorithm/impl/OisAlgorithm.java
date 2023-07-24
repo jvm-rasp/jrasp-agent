@@ -33,6 +33,9 @@ public class OisAlgorithm implements Algorithm {
 
     // jdk反序列化类黑名单
     private Set<String> oisBlackClassSet = new HashSet<String>(Arrays.asList(
+            // 增加 fastjson、fastjson2 反序列化黑名单, 由 @是小易呀 提供
+            "com.alibaba.fastjson.JSONArray",
+            "com.alibaba.fastjson2.JSONArray",
             "org.codehaus.groovy.runtime.ConvertedClosure",
             "org.codehaus.groovy.runtime.ConversionHandler",
             "org.codehaus.groovy.runtime.MethodClosure",
@@ -80,6 +83,10 @@ public class OisAlgorithm implements Algorithm {
 
     // 反序列化包黑名单
     private Set<String> oisBlackPackageSet = new HashSet<String>(Arrays.asList(
+            // 增加 fastjson、fastjson2 反序列化包黑名单, 由 @是小易呀 提供
+            "com.fasterxml.jackson.databind",
+            "com.alibaba.fastjson2",
+            "com.alibaba.fastjson",
             "org.apache.commons.collections.functors",
             "org.apache.commons.collections4.functors",
             "com.sun.org.apache.xalan.internal.xsltc.trax",

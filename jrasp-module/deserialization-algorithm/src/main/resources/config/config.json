@@ -10,6 +10,8 @@
     "json_white_class_list": [
     ],
     "json_black_class_list": [
+      "com.alibaba.fastjson.JSONArray",
+      "com.alibaba.fastjson2.JSONArray",
       "org.apache.commons.collections.Transformer",
       "java.lang.Thread",
       "java.net.Socket",
@@ -28,6 +30,9 @@
       "java.util.PriorityQueue"
     ],
     "json_black_package_list": [
+      "com.fasterxml.jackson.databind",
+      "com.alibaba.fastjson2",
+      "com.alibaba.fastjson",
       "org.apache.commons.collections.functors",
       "org.apache.commons.collections4.functors",
       "org.apache.commons.collections4.comparators",
@@ -67,13 +72,15 @@
       "org.apache.ibatis.executor",
       "com.caucho"
     ],
-<<<<<<< HEAD
+    <<<<<<<
+    HEAD
     "ois_black_list_action": 0,
     "ois_white_class_list": [
     ],
-=======
+    =======
     "ois_black_list_action": 1,
->>>>>>> 1e2e4cae09b5baec00bae001252dc02a4b95dfaf
+    >>>>>>>
+    1e2e4cae09b5baec00bae001252dc02a4b95dfaf
     "ois_black_class_list": [
       "org.codehaus.groovy.runtime.ConvertedClosure",
       "org.codehaus.groovy.runtime.ConversionHandler",

@@ -75,6 +75,9 @@ type Config struct {
 	EnableMdns bool `json:"enableMdns"` // 是否开启mdns功能
 
 	ConnectTime int64 `json:"connectTime"` // 重连server时间
+
+	MaxFileUsedPercent uint64 `json:"maxFileUsedPercent"` //  文件打开的最大限制百分比, 范围0～100，默认 80
+	FileCheckFrequency uint64 `json:"fileCheckFrequency"` // 文件指标检测频率, 单位分钟，默认 10
 }
 
 // ModuleConfig module信息
@@ -191,6 +194,9 @@ func setDefaultValue(vp *viper.Viper) {
 	vp.SetDefault("EnableMdns", true)
 
 	vp.SetDefault("ConnectTime", 60)
+
+	vp.SetDefault("MaxFileUsedPercent", 80)
+	vp.SetDefault("FileCheckFrequency", 10)
 
 	// vp.SetDefault("RaspBridgeJar", "")
 	// vp.SetDefault("RaspCoreJar", "")

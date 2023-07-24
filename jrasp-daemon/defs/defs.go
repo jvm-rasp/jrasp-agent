@@ -58,6 +58,9 @@ const (
 	WATCH_DOCKER         int = START_LOG_ID + 31 // 容器监视id
 	MDNS_SEARCH          int = START_LOG_ID + 32 // mdns搜索服务
 	RESOURCE_NAME_UPDATE int = START_LOG_ID + 33 // 资源名称更新
+
+	DEFAULT_METIRC    int = START_LOG_ID + 40
+	FILE_OPENS_METIRC int = START_LOG_ID + 41
 )
 
 const DAEMON_PID_FILE = "pid"

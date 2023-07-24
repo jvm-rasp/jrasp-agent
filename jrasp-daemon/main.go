@@ -6,6 +6,7 @@ import (
 	"jrasp-daemon/common"
 	"jrasp-daemon/defs"
 	"jrasp-daemon/environ"
+	"jrasp-daemon/monitor"
 	"jrasp-daemon/remote"
 	"jrasp-daemon/update"
 	"jrasp-daemon/userconfig"
@@ -81,6 +82,8 @@ func main() {
 	newWatch := watch.NewWatch(conf, env, ctx)
 
 	go remote.WatchRemoteConfig(conf, env)
+
+	go monitor.MonitorFileDescriptor(ctx, conf.MaxFileUsedPercent, conf.FileCheckFrequency)
 
 	// 定时重启功能
 	go newWatch.Reboot()

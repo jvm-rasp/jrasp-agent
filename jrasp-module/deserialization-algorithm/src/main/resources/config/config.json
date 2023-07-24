@@ -72,15 +72,9 @@
       "org.apache.ibatis.executor",
       "com.caucho"
     ],
-    <<<<<<<
-    HEAD
     "ois_black_list_action": 0,
     "ois_white_class_list": [
     ],
-    =======
-    "ois_black_list_action": 1,
-    >>>>>>>
-    1e2e4cae09b5baec00bae001252dc02a4b95dfaf
     "ois_black_class_list": [
       "org.codehaus.groovy.runtime.ConvertedClosure",
       "org.codehaus.groovy.runtime.ConversionHandler",

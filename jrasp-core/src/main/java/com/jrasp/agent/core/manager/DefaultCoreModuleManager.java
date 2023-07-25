@@ -199,6 +199,15 @@ public class DefaultCoreModuleManager {
                 } else if (AlgorithmManager.class.isAssignableFrom(fieldType)) {
                     // AlgorithmManager 注入
                     writeField(resourceField, module, DefaultAlgorithmManager.instance, true);
+                } else if (Instrumentation.class.isAssignableFrom(fieldType)) {
+                    // Instrumentation 注入
+                    // 在模块中可以使用
+                    // @RaspResource
+                    // private　Instrumentation inst;
+                    writeField(resourceField, module, inst, true);
+                } else if (AlgorithmManager.class.isAssignableFrom(fieldType)) {
+                    // AlgorithmManager 注入
+                    writeField(resourceField, module, DefaultAlgorithmManager.instance, true);
                 } else if (ThreadLocal.class.isAssignableFrom(fieldType)) {
                     // ThreadLocalHostInfo注入
                     writeField(resourceField, module, requestContext, true);

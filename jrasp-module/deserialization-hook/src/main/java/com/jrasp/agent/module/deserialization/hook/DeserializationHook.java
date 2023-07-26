@@ -153,9 +153,15 @@ public class DeserializationHook extends ModuleLifecycleAdapter implements Modul
                                             return;
                                         }
                                         // bugfix：修复类型转换错误
-                                        Object objectStreamClass = advice.getParameterArray()[0];
-                                        String clazzName = objectStreamClass.getClass().getName();
-                                        algorithmManager.doCheck(XML_TYPE, context.get(), clazzName);
+                                        // bugfix：获取index=1的参数
+                                        if (advice.getParameterArray().length > 1) {
+                                            Object type = advice.getParameterArray()[1];
+                                            if (type != null && type instanceof Class) {
+                                                Class clazz = (Class) type;
+                                                String clazzName = clazz.getName();
+                                                algorithmManager.doCheck(XML_TYPE, context.get(), clazzName);
+                                            }
+                                        }
                                     }
 
                                     @Override

@@ -14,7 +14,8 @@
 + [daemon] 修复docker主机名称获取bug
 + [module] 修复sql检测算法cpu耗时高的问题
 + [module] 修复命令token分割失败问题
-
++ [module] 修复xml反序列化类型转换错误问题
++ [module] 修复xml反序列化类参数读取错误
 ### TODO
 + [daemon] 支持容器&进程运行时注入
 + [agent] jrasp agent内置 filebeat

@@ -66,6 +66,15 @@ public class Context {
     // 字段15 jsp上下文
     private boolean isInJspContext = false;
 
+    // 字段16 反序列化上下文
+//    private boolean isInDeserializationContext = false;
+//
+//    // 字段17 xxe 上下文
+//    private boolean isInXxeContext = false;
+//
+//    // 字段18 sql 执行上下文
+//    private boolean isInSQLContext = false;
+
     private final int maxBodySize = 4096;
 
     // 原始 http request 对象
@@ -140,20 +149,6 @@ public class Context {
         return "";
     }
 
-    public String getDecryptParametersString() {
-        if (decryptParameters != null && decryptParameters.size() > 0) {
-            StringBuilder sb = new StringBuilder();
-            for (Map.Entry<String, String[]> entry : decryptParameters.entrySet()) {
-                String key = entry.getKey();
-                for (String v : entry.getValue()) {
-                    sb.append(key).append("=").append(v).append("&");
-                }
-            }
-            //  去掉最后一个&
-            return sb.substring(0, sb.length() - 1);
-        }
-        return "";
-    }
 
     public String getMarks() {
         if (marks.size() == 0) {
@@ -377,10 +372,6 @@ public class Context {
         this.responseContentType = responseContentType;
     }
 
-    public Map<String, String[]> getDecryptParameters() {
-        return decryptParameters;
-    }
-
     public boolean isInJspContext() {
         return isInJspContext;
     }
@@ -392,10 +383,43 @@ public class Context {
     public boolean fromJsp() {
         return this.isInJspContext() && requestURI != null && (requestURI.endsWith(".jsp") || requestURI.endsWith(".jspx"));
     }
-
-    public void setDecryptParameters(Map<String, String[]> decryptParameters) {
-        this.decryptParameters = decryptParameters;
-    }
+//
+//    public boolean isInDeserializationContext() {
+//        return isInDeserializationContext;
+//    }
+//
+//    public void setInDeserializationContext(boolean inDeserializationContext) {
+//        isInDeserializationContext = inDeserializationContext;
+//    }
+//
+//    public boolean fromDeserialization() {
+//        return isInDeserializationContext;
+//    }
+//
+//
+//    public boolean isInXxeContext() {
+//        return isInXxeContext;
+//    }
+//
+//    public void setInXxeContext(boolean inXxeContext) {
+//        isInXxeContext = inXxeContext;
+//    }
+//
+//    public boolean fromXxe() {
+//        return isInXxeContext;
+//    }
+//
+//    public boolean isInSQLContext() {
+//        return isInSQLContext;
+//    }
+//
+//    public void setInSQLContext(boolean inSQLContext) {
+//        isInSQLContext = inSQLContext;
+//    }
+//
+//    public boolean fromSql() {
+//        return isInSQLContext;
+//    }
 
     public String toJSON() {
         final StringBuilder sb = new StringBuilder("{");

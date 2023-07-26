@@ -20,7 +20,7 @@ import java.net.URLDecoder;
 import java.util.Map;
 
 /**
- * 反序列化： jdk反序列化、fastjson反序列化、jackson反序列化、xstream反序列化、yaml反序列化
+ * 反序列化： jdk反序列化、fastjson反序列化、jackson反序列化、xstream反序列化、yaml反序列化、
  *
  * @author jrasp
  */

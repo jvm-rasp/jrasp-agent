@@ -20,6 +20,7 @@
         <module>rce-hook</module>
         <module>rce-algorithm</module>
         <module>jndi-hook</module>
+        <module>jndi-algorithm</module>
         <module>ssrf-hook</module>
         <module>deserialization-hook</module>
         <module>deserialization-algorithm</module>

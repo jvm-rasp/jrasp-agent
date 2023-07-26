@@ -1,6 +1,7 @@
 package com.jrasp.agent.module.rce.algorithm;
 
 import com.jrasp.agent.api.*;
+import com.jrasp.agent.api.Module;
 import com.jrasp.agent.api.algorithm.Algorithm;
 import com.jrasp.agent.api.algorithm.AlgorithmManager;
 import com.jrasp.agent.api.annotation.Information;

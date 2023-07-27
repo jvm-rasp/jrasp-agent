@@ -1,6 +1,6 @@
 package common
 
-const VERSION = "1.1.2"
+const VERSION = "1.1.3"
 
 const AGENT_NAME = "jrasp-launcher"
 

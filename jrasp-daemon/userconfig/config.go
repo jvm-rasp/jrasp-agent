@@ -13,7 +13,7 @@ import (
 type AgentMode string
 
 const (
-	VERSION string    = "1.1.2"
+	VERSION string    = "1.1.3"
 	STATIC  AgentMode = "static"  // static模式：  被动注入
 	DYNAMIC AgentMode = "dynamic" // dynamic模式： 主动注入
 	DISABLE AgentMode = "disable" // disbale模式: (主动/被动)注入的退出、禁止注入

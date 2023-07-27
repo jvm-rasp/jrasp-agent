@@ -189,15 +189,6 @@ public class SsrfAlgorithm extends ModuleLifecycleAdapter implements Module, Alg
         return null;
     }
 
-    private boolean isNumber(String number) {
-        try {
-            Long.parseLong(number);
-            return true;
-        } catch (Exception e) {
-            return false;
-        }
-    }
-
     private boolean isNaN(String val) {
         try {
             Long.parseLong(val, 10);
@@ -231,32 +222,4 @@ public class SsrfAlgorithm extends ModuleLifecycleAdapter implements Module, Alg
         }
     }
 
-    private static boolean isFromUserInputURL(String[] parameters, URL target) {
-        if (parameters == null || parameters.length == 0 || target == null) {
-            return false;
-        }
-        String urlPath = target.getPath();
-        for (String param : parameters) {
-            if (param.contains(urlPath)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private String[] getRequestParams(Context context) {
-        List<String> params = new ArrayList<String>();
-        if (context.getDecryptParameters() != null) {
-            for (Map.Entry<String, String[]> entry : context.getDecryptParameters().entrySet()) {
-                params.addAll(Arrays.asList(entry.getValue()));
-            }
-        }
-        if (context.getHeader() != null) {
-            for (Map.Entry<String, String> entry : context.getHeader().entrySet()) {
-                params.add(entry.getValue());
-            }
-        }
-
-        return params.toArray(new String[0]);
-    }
 }

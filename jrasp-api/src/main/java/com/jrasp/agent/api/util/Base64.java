@@ -1,4 +1,4 @@
-package com.jrasp.agent.module.shiro.hook;
+package com.jrasp.agent.api.util;
 
 /**
  * This class provides encode/decode for RFC 2045 Base64 as

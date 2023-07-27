@@ -108,8 +108,8 @@ public class FileReadAlgorithm implements Algorithm {
             }
 
             List<String> params = new ArrayList<String>();
-            if (context.getDecryptParameters() != null) {
-                for (Map.Entry<String, String[]> entry : context.getDecryptParameters().entrySet()) {
+            if (context.getParameterMap() != null) {
+                for (Map.Entry<String, String[]> entry : context.getParameterMap().entrySet()) {
                     params.addAll(Arrays.asList(entry.getValue()));
                 }
             }
@@ -207,23 +207,4 @@ public class FileReadAlgorithm implements Algorithm {
         return "list file with travel/root path";
     }
 
-    private String include(String httpParameters, List<String> cmdArgs) {
-        if (httpParameters != null) {
-            for (String item : cmdArgs) {
-                if (httpParameters.contains(item)) {
-                    return item;
-                }
-            }
-        }
-        return null;
-    }
-
-    public static List<String> getTokens(String str) {
-        List<String> tokens = new ArrayList<String>();
-        StringTokenizer tokenizer = new StringTokenizer(str);
-        while (tokenizer.hasMoreElements()) {
-            tokens.add(tokenizer.nextToken());
-        }
-        return tokens;
-    }
 }

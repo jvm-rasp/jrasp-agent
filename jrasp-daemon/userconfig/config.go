@@ -3,10 +3,9 @@ package userconfig
 import (
 	"errors"
 	"fmt"
+	"github.com/spf13/viper"
 	"jrasp-daemon/defs"
 	"time"
-
-	"github.com/spf13/viper"
 )
 
 // AgentMode 运行模式
@@ -71,8 +70,6 @@ type Config struct {
 	RemoteHosts []string `json:"remoteHosts"` // 服务端地址
 
 	MinJvmStartTime int64 `json:"minJvmStartTime"` // java进程启动最小时间间隔，单位分钟，默认3分钟
-
-	EnableMdns bool `json:"enableMdns"` // 是否开启mdns功能
 
 	ConnectTime int64 `json:"connectTime"` // 重连server时间
 
@@ -191,19 +188,10 @@ func setDefaultValue(vp *viper.Viper) {
 
 	vp.SetDefault("MinJvmStartTime", 1)
 
-	vp.SetDefault("EnableMdns", true)
-
 	vp.SetDefault("ConnectTime", 60)
 
 	vp.SetDefault("MaxFileUsedPercent", 80)
 	vp.SetDefault("FileCheckFrequency", 10)
-
-	// vp.SetDefault("RaspBridgeJar", "")
-	// vp.SetDefault("RaspCoreJar", "")
-	// vp.SetDefault("RaspLauncherJar", "")
-	// vp.SetDefault("RaspBridgeJarHash", "")
-	// vp.SetDefault("RaspCoreJarHash", "")
-	// vp.SetDefault("RaspLauncherJarHash", "")
 
 }
 

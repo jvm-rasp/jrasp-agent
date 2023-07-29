@@ -28,7 +28,6 @@ type Watch struct {
 	PidExistsTicker              *time.Ticker          // 进程存活检测定时器
 	LogReportTicker              *time.Ticker          // 进程信息定时上报
 	HeartBeatReportTicker        *time.Ticker          // 心跳定时器
-	ContainerTicker              *time.Ticker          // 容器检查定时器
 	ProcessSyncMap               sync.Map              // 保存监听的java进程
 	JavaProcessHandlerChan       chan *process.Process // java 进程处理chan
 	JavaProcessDeleteHandlerChan chan int32            // java 进程退出处理chan
@@ -45,7 +44,6 @@ func NewWatch(cfg *userconfig.Config, env *environ.Environ, ctx context.Context)
 		scanTicker:                   time.NewTicker(time.Second * time.Duration(cfg.ScanTicker)),
 		PidExistsTicker:              time.NewTicker(time.Second * time.Duration(cfg.PidExistsTicker)),
 		HeartBeatReportTicker:        time.NewTicker(time.Minute * time.Duration(cfg.HeartBeatReportTicker)),
-		ContainerTicker:              time.NewTicker(time.Second * time.Duration(cfg.ContainerTicker)),
 		RebootTicker:                 time.NewTicker(time.Minute * time.Duration(cfg.RebootTicker)),
 		JavaProcessHandlerChan:       make(chan *process.Process, 500),
 		JavaProcessDeleteHandlerChan: make(chan int32, 500),

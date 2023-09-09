@@ -1,6 +1,21 @@
 # 版本迭代
 
-## 1.1.3  【2023-07-27】迭代中
+## 1.1.3  【2023-09-09】
+
+> 1.1.3 主要以修复bug为主，新特性暂缓合入
+
+### Enhancement
++ [module] 重构JNDI检测模块
++ [daemon] 新增jrasp-daemon打开文件数量监控
++ [daemon] 新增jdk反序列化黑名单
+
+### Bugfix
++ [module] 修复http-hook类型转换失败的bug
++ [module] 扫描器特征识别优化，防止误报
++ [daemon] 修复json反序列化检测异常
++ [module] 获取http请求参数置后
++ [daemon] PathExists优化解决cpu飙高问题
++ [daemon] 解决进程延迟上报bug
 
 ## 1.1.2  【2023-07-26】
 

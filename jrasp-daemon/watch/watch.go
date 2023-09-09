@@ -197,6 +197,9 @@ func (w *Watch) getJavaProcessInfo(procss *process.Process) {
 	// 获取进程的注入状态
 	javaProcess.GetAndMarkStatus()
 
+	// Java进程上报
+	zlog.Infof(defs.JAVA_PROCESS_STARTUP, "find a java process", utils.ToString(javaProcess))
+
 	if w.cfg.IsDisable() && javaProcess.SuccessInject() {
 		// 关闭注入，并且已经注入状态
 		javaProcess.ExitInjectImmediately()
@@ -234,8 +237,6 @@ func (w *Watch) getJavaProcessInfo(procss *process.Process) {
 		javaProcess.UpdateParameters()
 		zlog.Debugf(defs.AGENT_CONFIG_UPDATE, "update agent config", "update parameters success")
 	}
-
-	zlog.Infof(defs.JAVA_PROCESS_STARTUP, "find a java process", utils.ToString(javaProcess))
 
 	// 进程加入观测集合中
 	w.ProcessSyncMap.Store(javaProcess.JavaPid, javaProcess)

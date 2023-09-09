@@ -75,6 +75,8 @@ public final class ProcessController {
         } catch (Exception e) {
             // todo 异常处理
             // 先 ignore
+            // 仅jsp、@Controller 才能修改返回的页面
+            // Caused by: java.lang.IllegalStateException: getWriter() has already been called for this response
         }
         throw new ProcessControlException(ProcessControlException.State.THROWS_IMMEDIATELY, throwable);
     }

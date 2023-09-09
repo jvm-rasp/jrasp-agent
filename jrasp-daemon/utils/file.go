@@ -7,15 +7,18 @@ import (
 	"os"
 )
 
-func PathExists(path string) (bool, error) {
-	_, err := os.Stat(path)
-	if err == nil {
-		return true, nil
+// PathExists reports whether the named file or directory exists.
+func PathExists(path string) bool {
+	if path == "" {
+		return false
 	}
-	if os.IsNotExist(err) {
-		return false, nil
+
+	if _, err := os.Stat(path); err != nil {
+		if os.IsNotExist(err) {
+			return false
+		}
 	}
-	return false, err
+	return true
 }
 
 // GetFileMd5 linux  md5sum file、macos md5 file

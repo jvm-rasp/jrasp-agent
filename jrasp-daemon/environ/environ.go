@@ -95,7 +95,7 @@ func NewEnviron() (*Environ, error) {
 	cpuCounts, err := cpu.Counts(true)
 
 	// .dockerenv
-	isContainer, err := utils.PathExists("/.dockerenv")
+	isContainer := utils.PathExists("/.dockerenv")
 
 	env := &Environ{
 		HostName:        getHostname(execDir),
@@ -124,9 +124,8 @@ func getHostname(execDir string) string {
 
 	// 从磁盘读取主机名
 	hostFile := filepath.Join(execDir, "config", HOST_NAME)
-	if hostNameFromFile, err := readHostNameFromFile(hostFile); err == nil {
-		hostName = hostNameFromFile
-	}
+
+	hostName = readHostNameFromFile(hostFile)
 
 	// 如果磁盘上没有主机名，则从环境变量或系统获取
 	if hostName == "" {
@@ -141,16 +140,16 @@ func getHostname(execDir string) string {
 	return hostName
 }
 
-func readHostNameFromFile(hostFile string) (string, error) {
-	existed, err := utils.PathExists(hostFile)
+func readHostNameFromFile(hostFile string) string {
+	existed := utils.PathExists(hostFile)
 	if !existed {
-		return "", err
+		return ""
 	}
 	b, err := os.ReadFile(hostFile)
 	if err != nil {
-		return "", err
+		return ""
 	}
-	return strings.TrimSpace(string(b)), nil
+	return strings.TrimSpace(string(b))
 }
 
 func writeHostNameToFile(hostFile string, hostName string) error {
@@ -161,8 +160,7 @@ func writeHostNameToFile(hostFile string, hostName string) error {
 }
 
 func isContainer() bool {
-	isContainer, _ := utils.PathExists("/.dockerenv")
-	return isContainer
+	return utils.PathExists("/.dockerenv")
 }
 
 func getExternalIP() (string, error) {

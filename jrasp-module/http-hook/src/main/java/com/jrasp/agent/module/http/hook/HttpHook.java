@@ -459,13 +459,13 @@ public class HttpHook extends ModuleLifecycleAdapter implements Module {
         context.setRequestURI(requestURI);
 
         // parameters
-        if ("get".equalsIgnoreCase(method) ||
-                (StringUtils.isNotBlank(contentType) && contentType.contains("application/x-www-form-urlencoded"))) {
+        //if ("get".equalsIgnoreCase(method) ||
+        //        (StringUtils.isNotBlank(contentType) && contentType.contains("application/x-www-form-urlencoded"))) {
             // 可以调用 request.getParameterMap()
             // 如果不区分content-type 直接调用会导致严重bug
-            Map<String, String[]> parameterMap = request.getParameterMap();
-            context.setParameterMap(parameterMap);
-        }
+        //    Map<String, String[]> parameterMap = request.getParameterMap();
+        //     context.setParameterMap(parameterMap);
+        //}
 
         // 请求header
         Map<String, String> header = new HashMap<String, String>();
@@ -533,13 +533,16 @@ public class HttpHook extends ModuleLifecycleAdapter implements Module {
         context.setRequestURI(requestURI);
 
         // parameters
-        if ("get".equalsIgnoreCase(method) ||
-                (StringUtils.isNotBlank(contentType) && contentType.contains("application/x-www-form-urlencoded"))) {
-            // 可以调用 request.getParameterMap()
-            // 如果不区分content-type 直接调用会导致严重bug
-            Map<String, String[]> parameterMap = request.getParameterMap();
-            context.setParameterMap(parameterMap);
-        }
+//        if ("get".equalsIgnoreCase(method) ||
+//                (StringUtils.isNotBlank(contentType) && contentType.contains("application/x-www-form-urlencoded"))) {
+//            // 可以调用 request.getParameterMap()
+//            // 如果不区分content-type 直接调用会导致严重bug
+//            Map<String, String[]> parameterMap = request.getParameterMap();
+//            context.setParameterMap(parameterMap);
+//        }
+
+        // 存储request对象
+        context.setRequest(request);
 
         // 请求header
         Map<String, String> header = new HashMap<String, String>();
@@ -647,13 +650,13 @@ public class HttpHook extends ModuleLifecycleAdapter implements Module {
         context.setRequestURI(requestURI);
 
         // parameters
-        if ("get".equalsIgnoreCase(method) ||
-                (StringUtils.isNotBlank(contentType) && contentType.contains("application/x-www-form-urlencoded"))) {
-            // 可以调用 request.getParameterMap()
-            // 如果不区分content-type 直接调用会导致严重bug
-            Map<String, String[]> parameterMap = request.getParameterMap();
-            context.setParameterMap(parameterMap);
-        }
+//        if ("get".equalsIgnoreCase(method) ||
+//                (StringUtils.isNotBlank(contentType) && contentType.contains("application/x-www-form-urlencoded"))) {
+//            // 可以调用 request.getParameterMap()
+//            // 如果不区分content-type 直接调用会导致严重bug
+//            Map<String, String[]> parameterMap = request.getParameterMap();
+//            context.setParameterMap(parameterMap);
+//        }
 
         // 请求header
         Map<String, String> header = new HashMap<String, String>();

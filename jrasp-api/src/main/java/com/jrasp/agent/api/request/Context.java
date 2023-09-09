@@ -1,6 +1,8 @@
 package com.jrasp.agent.api.request;
 
 import com.jrasp.agent.api.util.EscapeUtil;
+import com.jrasp.agent.api.util.Reflection;
+import com.jrasp.agent.api.util.StringUtils;
 
 import java.io.ByteArrayOutputStream;
 import java.io.CharArrayWriter;
@@ -135,18 +137,35 @@ public class Context {
     }
 
     public String getParametersString() {
-        if (parameters != null && parameters.size() > 0) {
-            StringBuilder sb = new StringBuilder();
-            for (Map.Entry<String, String[]> entry : parameters.entrySet()) {
-                String key = entry.getKey();
-                for (String v : entry.getValue()) {
-                    sb.append(key).append("=").append(v).append("&");
+        if (parameters == null || parameters.size() == 0) {
+            if ("get".equalsIgnoreCase(method) || (StringUtils.isNotBlank(contentType) && contentType.contains("application/x-www-form-urlencoded"))) {
+                if (request != null) {
+                    try {
+                        parameters = (Map<String, String[]>)
+                                Reflection.invokeMethod(request, "getParameterMap", null, null);
+                    } catch (Exception e) {
+                        // TODO ignore
+                    }
                 }
             }
-            //  去掉最后一个&
-            return sb.substring(0, sb.length() - 1);
+        }
+        if (parameters != null && parameters.size() > 0) {
+            return transformMap2String(parameters);
         }
         return "";
+    }
+
+    //
+    private String transformMap2String(Map<String, String[]> parameters) {
+        StringBuilder sb = new StringBuilder();
+        for (Map.Entry<String, String[]> entry : parameters.entrySet()) {
+            String key = entry.getKey();
+            for (String v : entry.getValue()) {
+                sb.append(key).append("=").append(v).append("&");
+            }
+        }
+        //  去掉最后一个&
+        return sb.substring(0, sb.length() - 1);
     }
 
 

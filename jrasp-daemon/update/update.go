@@ -53,7 +53,7 @@ func (this *Update) DownLoad(url, filePath string) error {
 // UpdateDaemonFile 更新守护进程
 func (this *Update) UpdateDaemonFile() {
 	// 判断bin目录下是否存在daemon.del文件，如果存在则删除
-	exist, _ := utils.PathExists(this.env.BinFileName + ".del")
+	exist := utils.PathExists(this.env.BinFileName + ".del")
 	if exist {
 		err := os.Remove(this.env.BinFileName + ".del")
 		if err != nil {
@@ -96,7 +96,7 @@ func (this *Update) UpdateDaemonFile() {
 				zlog.Infof(defs.DOWNLOAD, "update jrasp-daemon file success", "write jrasp-daemon file success,daemon process will exit...")
 				this.clean(newFilePath)
 				// 再次check
-				success, _ := utils.PathExists(this.env.BinFileName)
+				success := utils.PathExists(this.env.BinFileName)
 				if success {
 					os.Exit(0) // 进程退出
 				}
@@ -315,12 +315,9 @@ func (this *Update) calAgentHash(files []fs.FileInfo) map[string]string {
 }
 
 func (this *Update) clean(filePath string) {
-	exists, err := utils.PathExists(filePath)
-	if err != nil {
-		zlog.Errorf(defs.DOWNLOAD, "[BUG] check file exists err", "err:%s", err)
-	}
+	exists := utils.PathExists(filePath)
 	if exists {
-		err = os.Remove(filePath)
+		err := os.Remove(filePath)
 		if err != nil {
 			zlog.Errorf(defs.DOWNLOAD, "[BUG] delete file err", "err:%s", err)
 		}

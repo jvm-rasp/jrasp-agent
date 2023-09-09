@@ -151,21 +151,13 @@ func (jp *JavaProcess) transformKey(keyVersion string) string {
 // CheckRunDir run/pid目录
 func (jp *JavaProcess) CheckRunDir() bool {
 	runPidFilePath := filepath.Join(jp.env.InstallDir, "run", fmt.Sprintf("%d", jp.JavaPid))
-	exist, err := utils.PathExists(runPidFilePath)
-	if err != nil || !exist {
-		return false
-	}
-	return true
+	return utils.PathExists(runPidFilePath)
 }
 
 func (jp *JavaProcess) ReadTokenFile() bool {
 	// todo 增加重试次数
 	tokenFilePath := filepath.Join(jp.env.InstallDir, "run", fmt.Sprintf("%d", jp.JavaPid), ".jrasp.token")
-	exist, err := utils.PathExists(tokenFilePath)
-	if err != nil {
-		zlog.Infof(defs.ATTACH_READ_TOKEN, "[token file]", "check token file[%s],error:%v", tokenFilePath, err)
-		return false
-	}
+	exist := utils.PathExists(tokenFilePath)
 
 	// 文件存在
 	if exist {
@@ -328,7 +320,7 @@ func (jp *JavaProcess) SetAppNames() {
 		return
 	}
 	webapps := getWebAppsDir(cwd)
-	pathExists, _ := utils.PathExists(webapps)
+	pathExists := utils.PathExists(webapps)
 	if !pathExists {
 		return
 	}
@@ -417,7 +409,7 @@ func getWebAppsDir(root string) string {
 		return ""
 	}
 	webapps := filepath.Join(findDir, "webapps")
-	pathExists, _ := utils.PathExists(webapps)
+	pathExists := utils.PathExists(webapps)
 	if !pathExists {
 		return getWebAppsDir(findDir)
 	} else {

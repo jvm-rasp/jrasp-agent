@@ -41,7 +41,7 @@ public class RceHook extends ModuleLifecycleAdapter implements Module, LoadCompl
     private AlgorithmManager algorithmManager;
 
     @RaspValue(name = "disable", value = "false")
-    private volatile Boolean disable;
+    private volatile boolean disable;
 
     private final static String TYPE = "rce";
 

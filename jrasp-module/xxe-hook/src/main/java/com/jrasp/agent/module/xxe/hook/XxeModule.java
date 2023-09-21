@@ -11,6 +11,7 @@ import com.jrasp.agent.api.matcher.EventWatchBuilder;
 import com.jrasp.agent.api.matcher.ModuleEventWatcher;
 import com.jrasp.agent.api.request.Context;
 import com.jrasp.agent.api.util.ParamSupported;
+import com.jrasp.agent.api.util.Reflection;
 import org.kohsuke.MetaInfServices;
 
 import java.io.File;
@@ -74,8 +75,18 @@ public class XxeModule implements Module, LoadCompleted {
                                 if (disable) {
                                     return;
                                 }
-                                org.dom4j.io.SAXReader saxReader = (org.dom4j.io.SAXReader) advice.getTarget();
-                                saxReader.setFeature(FEATURE_DEFAULTS_1, true);
+                                Object reader = advice.getTarget();
+                                if (reader instanceof org.dom4j.io.SAXReader) {
+                                    org.dom4j.io.SAXReader saxReader = (org.dom4j.io.SAXReader) advice.getTarget();
+                                    saxReader.setFeature(FEATURE_DEFAULTS_1, true);
+                                } else {
+                                    try {
+                                        Reflection.invokeMethod(reader, "setFeature", new Class[]{String.class, boolean.class},
+                                                FEATURE_DEFAULTS_1, true);
+                                    } catch (Exception e) {
+                                        // ignore
+                                    }
+                                }
                             }
 
                             @Override

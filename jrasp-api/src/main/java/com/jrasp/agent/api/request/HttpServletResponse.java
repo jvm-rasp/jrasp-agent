@@ -152,9 +152,9 @@ public class HttpServletResponse {
                 boolean isCommitted = (Boolean) Reflection.invokeMethod(response, "isCommitted", new Class[]{});
                 String contentType = context.getResponseContentType();
                 String script;
-                if (contentType != null && contentType.contains(CONTENT_TYPE_JSON_VALUE)) {
+                if (contentType != null && contentType.startsWith(CONTENT_TYPE_JSON_VALUE)) {
                     script = raspConfig.getJsonBlockContent();
-                } else if (contentType != null && (contentType.contains(CONTENT_TYPE_XML_VALUE) || contentType.contains(CONTENT_TYPE_TEXT_XML))) {
+                } else if (contentType != null && (contentType.startsWith(CONTENT_TYPE_XML_VALUE) || contentType.startsWith(CONTENT_TYPE_TEXT_XML))) {
                     script = raspConfig.getXmlBlockContent();
                 } else {
                     script = raspConfig.getHtmlBlockContent();
@@ -184,9 +184,9 @@ public class HttpServletResponse {
                 boolean isCommitted = (Boolean) Reflection.invokeMethod(response, "isCommitted", new Class[]{});
                 String contentType = context.getResponseContentType();
                 String script;
-                if (contentType != null && contentType.contains(CONTENT_TYPE_JSON_VALUE)) {
+                if (contentType != null && contentType.startsWith(CONTENT_TYPE_JSON_VALUE)) {
                     script = raspConfig.getJsonBlockContent();
-                } else if (contentType != null && (contentType.contains(CONTENT_TYPE_XML_VALUE) || contentType.contains(CONTENT_TYPE_TEXT_XML))) {
+                } else if (contentType != null && (contentType.startsWith(CONTENT_TYPE_XML_VALUE) || contentType.startsWith(CONTENT_TYPE_TEXT_XML))) {
                     script = raspConfig.getXmlBlockContent();
                 } else {
                     script = raspConfig.getHtmlBlockContent();

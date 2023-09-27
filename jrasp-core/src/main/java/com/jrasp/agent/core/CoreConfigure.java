@@ -172,7 +172,9 @@ public class CoreConfigure {
 
     public String getLogsPath() {
         String logDir = featureMap.get(KEY_LOG_PATH);
-        return "".equals(logDir) ? getJRASPHome() + File.separator + KEY_LOGS_LIB_PATH : logDir;
+        // bugfix：issues 31
+        // 增加 null 判断，如果手动配置 -javaagent 不配置 LOG_PATH 参数取的路径为 null 导致无法启动。
+        return logDir == null || "".equals(logDir) ? getJRASPHome() + File.separator + KEY_LOGS_LIB_PATH : logDir;
     }
 
     // 获取进程运行时pid目录

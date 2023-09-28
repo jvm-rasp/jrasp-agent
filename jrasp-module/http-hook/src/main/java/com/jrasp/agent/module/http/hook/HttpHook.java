@@ -37,6 +37,9 @@ public class HttpHook extends ModuleLifecycleAdapter implements Module {
 
     private final static String TYPE = "http";
 
+    public static final String JRASP_HEADER_KEY = "X-Protected-By";
+    public static final String JRASP_HEADER_VALUE = "JRASP";
+
     /**
      * hook开关，默认开启，可以在管理端统一配置
      */
@@ -87,7 +90,10 @@ public class HttpHook extends ModuleLifecycleAdapter implements Module {
                                 }
                                 io.undertow.server.HttpServerExchange exchange = (io.undertow.server.HttpServerExchange) advice.getParameterArray()[0];
                                 io.undertow.servlet.handlers.ServletRequestContext context = (io.undertow.servlet.handlers.ServletRequestContext) advice.getParameterArray()[1];
-                                requestContext.get().setResponse(context.getOriginalResponse());
+                                io.undertow.servlet.spec.HttpServletResponseImpl originalResponse = context.getOriginalResponse();
+                                // 在处理request时修改
+                                originalResponse.addHeader(JRASP_HEADER_KEY, JRASP_HEADER_VALUE);
+                                requestContext.get().setResponse(originalResponse);
                                 storeRequestInfo(requestContext.get(), exchange);
                                 // 参数检查
                                 algorithmManager.doCheck(TYPE, requestContext.get(), null);
@@ -192,6 +198,7 @@ public class HttpHook extends ModuleLifecycleAdapter implements Module {
                                 org.apache.catalina.connector.Request request = (org.apache.catalina.connector.Request) advice.getParameterArray()[0];
                                 // 存储 response
                                 org.apache.catalina.connector.Response response = (org.apache.catalina.connector.Response) advice.getParameterArray()[1];
+                                response.addHeader(JRASP_HEADER_KEY, JRASP_HEADER_VALUE);
                                 requestContext.get().setResponse(response);
                                 storeTomcatRequestInfo(context, request);
                                 algorithmManager.doCheck(TYPE, requestContext.get(), null);
@@ -276,6 +283,7 @@ public class HttpHook extends ModuleLifecycleAdapter implements Module {
                                     org.eclipse.jetty.server.Request request = httpChannel.getRequest();
                                     org.eclipse.jetty.server.Response response = httpChannel.getResponse();
                                     // 设置 response
+                                    response.addHeader(JRASP_HEADER_KEY, JRASP_HEADER_VALUE);
                                     requestContext.get().setResponse(response);
                                     storeJettyRequestInfo(requestContext.get(), request);
                                     // 参数检查
@@ -336,6 +344,7 @@ public class HttpHook extends ModuleLifecycleAdapter implements Module {
                                 if (connection != null) {
                                     org.eclipse.jetty.server.Request request = connection.getRequest();
                                     org.eclipse.jetty.server.Response response = connection.getResponse();
+                                    response.addHeader(JRASP_HEADER_KEY, JRASP_HEADER_VALUE);
                                     requestContext.get().setResponse(response);
                                     storeJettyRequestInfo(requestContext.get(), request);
                                 }
@@ -368,6 +377,7 @@ public class HttpHook extends ModuleLifecycleAdapter implements Module {
                                     org.sparkproject.jetty.server.Request request = connection.getRequest();
                                     org.sparkproject.jetty.server.Response response = connection.getResponse();
                                     // 设置 response
+                                    response.addHeader(JRASP_HEADER_KEY, JRASP_HEADER_VALUE);
                                     requestContext.get().setResponse(response);
                                     storeSparkJettyRequestInfo(requestContext.get(), request);
                                 }
@@ -461,8 +471,8 @@ public class HttpHook extends ModuleLifecycleAdapter implements Module {
         // parameters
         //if ("get".equalsIgnoreCase(method) ||
         //        (StringUtils.isNotBlank(contentType) && contentType.contains("application/x-www-form-urlencoded"))) {
-            // 可以调用 request.getParameterMap()
-            // 如果不区分content-type 直接调用会导致严重bug
+        // 可以调用 request.getParameterMap()
+        // 如果不区分content-type 直接调用会导致严重bug
         //    Map<String, String[]> parameterMap = request.getParameterMap();
         //     context.setParameterMap(parameterMap);
         //}

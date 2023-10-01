@@ -179,6 +179,8 @@
           "java.io.File"
         ],
         "xml_black_package_list": [
+          "org.apache.commons.collections.functors",
+          "org.apache.commons.collections4.functors",
           "sun.reflect",
           "sun.tracing",
           "com.sun.corba",

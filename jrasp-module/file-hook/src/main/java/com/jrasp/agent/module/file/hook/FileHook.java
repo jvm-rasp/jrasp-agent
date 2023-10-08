@@ -188,6 +188,28 @@ public class FileHook implements Module, LoadCompleted {
                                 requestInfoThreadLocal.remove();
                             }
                         })
+                        /**
+                         * 文件init
+                         * @see java.io.File#createNewFile()
+                         */
+                        .onMethod("createNewFile()Z", new AdviceListener() {
+                            @Override
+                            public void before(Advice advice) throws Throwable {
+                                if (disable) {
+                                    return;
+                                }
+                                File file = (File) advice.getTarget();
+                                if (file != null) {
+                                    String path = file.getPath();
+                                    algorithmManager.doCheck(FILE_INTI, requestInfoThreadLocal.get(), path);
+                                }
+                            }
+
+                            @Override
+                            protected void afterThrowing(Advice advice) throws Throwable {
+                                requestInfoThreadLocal.remove();
+                            }
+                        })
                 )
                 /**
                  * 文件访问

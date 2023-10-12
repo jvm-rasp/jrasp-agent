@@ -356,6 +356,9 @@ public class SocketServer implements CoreServer {
      * @param local
      */
     private void writeAgentInitResult(InetSocketAddress local) {
+        // 容器场景使用 jatatch $pid properties 读取系统参数
+        String info = format("jrasp;%s;%s\n", local.getHostName(), local.getPort());
+        System.setProperty("jrasp.info", info);
         File file = new File(cfg.getRuntimeTokenPath());
         if (file.exists() && (!file.isFile() || !file.canWrite())) {
             throw new RuntimeException("write to result file : " + file + " failed.");
@@ -364,7 +367,7 @@ public class SocketServer implements CoreServer {
             try {
                 // 覆盖
                 fw = new FileWriter(file, false);
-                fw.append(format("jrasp;%s;%s\n", local.getHostName(), local.getPort()));
+                fw.append(info);
                 fw.flush();
             } catch (IOException e) {
                 throw new RuntimeException(e);

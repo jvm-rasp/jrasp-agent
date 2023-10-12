@@ -34,6 +34,8 @@
         <module>jsp-hook</module>
         <module>jsp-algorithm</module>
         <module>shiro-hook</module>
+        <module>response-hook</module>
+        <module>response-algorithm</module>
     </modules>
 
     <dependencies>

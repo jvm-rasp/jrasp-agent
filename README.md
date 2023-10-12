@@ -55,14 +55,8 @@ The currently supported modules are:
 - JNDI injection
 - SSRF
 - shiro
+- response （2023-10-12）
 
-under development:
-
-- danger protocol
-- DNS query 
-- Memory 
-- Class loader 
-- attach
 
 ### Supported jdk versions
 
@@ -70,7 +64,7 @@ under development:
 
 ## 03 Install (centos)
 
-[how to install](https://www.jrasp.com/guide/install/v1.1.2/jrasp-agent.html)
+[how to install](https://www.jrasp.com/guide/install/v1.1.3/jrasp-agent.html)
 
 ## 04 develop & Compilation (can be skipped, use the release package)
 
@@ -103,6 +97,8 @@ https://www.jrasp.com
 ## 09 Users
 
 If you are using it, please contact us and add it here.
+
+case：[JRASP在「新点软件」万级别⼤规模落地实践](https://mp.weixin.qq.com/s/jGurLT6X7QiPXtw3bMTTgQ)
 
 ## 10 Copyright Information
 

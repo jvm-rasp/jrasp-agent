@@ -55,13 +55,8 @@ jrasp-agent 的安全模块
 - JNDI注入
 - SSRF
 - shiro
+- response body（2023-10-12）
 
-开发中的进行中的模块：
-- danger protocol  (进行中)
-- DNS查询  (进行中)
-- Memory  (进行中)
-- 类加载器 (进行中)
-- attach (进行中)
 
 ### 支持的jdk版本
 + jdk6+
@@ -69,7 +64,7 @@ jrasp-agent 的安全模块
 
 ## 03 快速使用
 
-参考官网安装文档：[最新版本安装](https://www.jrasp.com/guide/install/v1.1.2/jrasp-agent.html)
+参考官网安装文档：[最新版本安装](https://www.jrasp.com/guide/install/v1.1.3/jrasp-agent.html)
 
 ## 04 开发/编译  （可以跳过，使用release包）
 
@@ -112,6 +107,8 @@ bash packages_darwin.sh
 如果您在使用该项目，请联系我们，添加在这里。
 
 目前有12家公司使用，agent安装量超过2w，请放心使用。
+
+典型案例：[JRASP在「新点软件」万级别⼤规模落地实践](https://mp.weixin.qq.com/s/jGurLT6X7QiPXtw3bMTTgQ)
 
 ## 10 版权信息
 

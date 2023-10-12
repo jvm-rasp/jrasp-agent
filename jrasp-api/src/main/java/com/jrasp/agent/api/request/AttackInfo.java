@@ -70,10 +70,14 @@ public class AttackInfo {
      */
     private int level = 0;
 
-    public AttackInfo(Context context, String metaInfo, String payload, boolean isBlocked, String attackType, String algorithm, String extend, int level) {
+    public AttackInfo() {
+
+    }
+
+    public AttackInfo(Context context, String metaInfo, String[] stackTrace, String payload, boolean isBlocked, String attackType, String algorithm, String extend, int level) {
         this.context = context;
         this.metaInfo = metaInfo;
-        this.stackTrace = StackTrace.getStackTraceString();
+        this.stackTrace = stackTrace;
         this.payload = payload;
         this.isBlocked = isBlocked;
         this.attackType = attackType;
@@ -81,6 +85,10 @@ public class AttackInfo {
         this.algorithm = algorithm;
         this.extend = extend;
         this.level = level;
+    }
+
+    public AttackInfo(Context context, String metaInfo, String payload, boolean isBlocked, String attackType, String algorithm, String extend, int level) {
+        this(context, metaInfo, StackTrace.getStackTraceString(), payload, isBlocked, attackType, algorithm, extend, level);
     }
 
     public Context getContext() {

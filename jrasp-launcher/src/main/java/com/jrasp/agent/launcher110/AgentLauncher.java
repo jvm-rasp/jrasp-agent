@@ -2,7 +2,6 @@ package com.jrasp.agent.launcher110;
 
 import java.io.File;
 import java.lang.instrument.Instrumentation;
-import java.net.InetSocketAddress;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -38,7 +37,7 @@ public class AgentLauncher {
 
     private static final String CLASS_OF_CORE_CONFIGURE = "com.jrasp.agent.core.CoreConfigure";
 
-    private static final String CLASS_OF_PROXY_CORE_SERVER = "com.jrasp.agent.core.server.ProxyCoreServer";
+    private static final String CLASS_OF_PROXY_CORE_CLIENT = "com.jrasp.agent.core.client.CoreClientImpl";
 
 
     /**
@@ -99,8 +98,8 @@ public class AgentLauncher {
         }
 
         // 关闭服务器
-        final Class<?> classOfProxyServer = sandboxClassLoader.loadClass(CLASS_OF_PROXY_CORE_SERVER);
-        classOfProxyServer.getMethod("destroy")
+        final Class<?> classOfProxyServer = sandboxClassLoader.loadClass(CLASS_OF_PROXY_CORE_CLIENT);
+        classOfProxyServer.getMethod("close")
                 .invoke(classOfProxyServer.getMethod("getInstance").invoke(null));
 
         // 关闭SandboxClassLoader
@@ -113,9 +112,8 @@ public class AgentLauncher {
      *
      * @param featureMap 启动参数配置
      * @param inst       inst
-     * @return 服务器IP:PORT
      */
-    private static synchronized InetSocketAddress install(final Map<String, String> featureMap,
+    private static synchronized void install(final Map<String, String> featureMap,
                                                           final Instrumentation inst) {
 
         final String namespace = getNamespace(featureMap);
@@ -138,35 +136,26 @@ public class AgentLauncher {
                     .invoke(null, coreConfigs);
 
             // CoreServer类定义
-            final Class<?> classOfProxyServer = sandboxClassLoader.loadClass(CLASS_OF_PROXY_CORE_SERVER);
+            final Class<?> classOfProxyServer = sandboxClassLoader.loadClass(CLASS_OF_PROXY_CORE_CLIENT);
 
             // 获取CoreServer单例
             final Object objectOfProxyServer = classOfProxyServer
                     .getMethod("getInstance")
                     .invoke(null);
 
-            // CoreServer.isBind()
-            final boolean isBind = (Boolean) classOfProxyServer.getMethod("isBind").invoke(objectOfProxyServer);
+            final boolean isInit = (Boolean) classOfProxyServer.getMethod("isInit").invoke(objectOfProxyServer);
 
-
-            // 如果未绑定,则需要绑定一个地址
-            if (!isBind) {
+            if (!isInit) {
                 try {
                     classOfProxyServer
-                            .getMethod("bind", classOfConfigure, Instrumentation.class)
+                            .getMethod("init", classOfConfigure, Instrumentation.class)
                             .invoke(objectOfProxyServer, objectOfCoreConfigure, inst);
                 } catch (Throwable t) {
-                    classOfProxyServer.getMethod("destroy").invoke(objectOfProxyServer);
+                    classOfProxyServer.getMethod("close").invoke(objectOfProxyServer);
                     throw t;
                 }
 
             }
-
-            // 返回服务器绑定的地址
-            return (InetSocketAddress) classOfProxyServer
-                    .getMethod("getLocal")
-                    .invoke(objectOfProxyServer);
-
 
         } catch (Throwable cause) {
             throw new RuntimeException("jrasp init failed.", cause);
@@ -181,7 +170,7 @@ public class AgentLauncher {
     private static final String KEY_LAUNCH_MODE = "mode";
 
     private static final String KEY_CORE_VERSION = "coreVersion";
-    private static final String DEFAULT_CORE_VERSION = "1.1.3";
+    private static final String DEFAULT_CORE_VERSION = "1.1.4";
 
     private static final String KEY_NAMESPACE = "namespace";
     private static final String DEFAULT_NAMESPACE = "default";

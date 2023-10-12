@@ -1,4 +1,4 @@
-package com.jrasp.agent.core.server.socket.handler.packet;
+package com.jrasp.agent.core.client.packet;
 
 /**
  * @author jrasp
@@ -48,7 +48,12 @@ public enum PacketType {
     /**
      * 更新参数
      */
-    CONFIG(0x09);
+    CONFIG(0x09),
+
+    /**
+     * 日志
+     */
+    LOG(0x20);
 
     private final int value;
 

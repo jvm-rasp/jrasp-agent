@@ -6,6 +6,7 @@ import java.util.logging.LogRecord;
 /**
  * @author jrasp
  */
+@Deprecated
 public class IgnoreRaspLogFilter implements Filter {
 
     // com.jrasp 不输出

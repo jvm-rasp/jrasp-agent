@@ -18,7 +18,19 @@ public interface RaspLog {
 
     void warning(String message);
 
+    void warning(String message, Throwable t);
+
     void error(String message);
 
     void error(String message, Throwable t);
+
+    void info(int logId, String message);
+
+    void warning(int logId, String message);
+
+    void error(int logId, String message);
+
+    void warning(int logId, String message, Throwable t);
+
+    void error(int logId, String message, Throwable t);
 }

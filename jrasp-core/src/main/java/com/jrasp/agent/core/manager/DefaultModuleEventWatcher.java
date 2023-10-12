@@ -7,22 +7,18 @@ import com.jrasp.agent.api.matcher.MethodMatcher;
 import com.jrasp.agent.api.matcher.ModuleEventWatcher;
 import com.jrasp.agent.core.CoreModule;
 import com.jrasp.agent.core.enhance.weaver.EventListenerHandler;
+import com.jrasp.agent.core.newlog.LogUtil;
 import com.jrasp.agent.core.util.ObjectIDs;
 import com.jrasp.agent.core.util.RaspClassUtils;
-import com.jrasp.agent.core.util.string.RaspStringUtils;
 
 import java.lang.instrument.Instrumentation;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 
 public class DefaultModuleEventWatcher implements ModuleEventWatcher {
-
-    private final static Logger logger = Logger.getLogger(DefaultModuleEventWatcher.class.getName());
 
     private final Instrumentation inst;
 
@@ -104,14 +100,13 @@ public class DefaultModuleEventWatcher implements ModuleEventWatcher {
         }
         // 在rasp 加载前，已经被JVM加载的类，需要进行一次reTransformClasses，加入 rasp hook 逻辑
         // 在rasp 卸载时，对于全部HOOK类，需要进行一次reTransformClasses，还原
-        logger.log(Level.CONFIG, "isAddHook: {0}, transform class: {1}",
-                new Object[]{isAddHook, RaspStringUtils.join(waitingReTransformClasses, ",")});
+        // LogUtil.info("isAddHook: " + isAddHook + ", transform class: " + RaspStringUtils.join(waitingReTransformClasses, ","));
+
         for (final Class<?> waitingReTransformClass : waitingReTransformClasses) {
             try {
                 inst.retransformClasses(waitingReTransformClass);
             } catch (Throwable cause) {
-                logger.log(Level.WARNING, "instruemnt retransform class: {0}, error: {1}, cause: {2}",
-                        new Object[]{waitingReTransformClass.getName(), cause.getMessage(), cause.getCause()});
+                LogUtil.warning("instruemnt retransform class: " + waitingReTransformClass.getName(), cause);
             }
         }
     }

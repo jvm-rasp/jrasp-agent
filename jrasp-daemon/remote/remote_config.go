@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"jrasp-daemon/defs"
 	"jrasp-daemon/environ"
+	"jrasp-daemon/new_socket"
 	"jrasp-daemon/userconfig"
 	"jrasp-daemon/zlog"
 	"math/rand"
@@ -36,12 +37,15 @@ func WatchRemoteConfig(cfg *userconfig.Config, env *environ.Environ) {
 			zlog.Infof(defs.NACOS_LISTEN_CONFIG, "[ListenConfig]", "create conn failed to remote: %s, error: %v", url, err)
 			env.IsConnectServer = false
 		} else {
+			zlog.InitSocketLog(cfg.LogPath, env.HostName, env.Ip, cfg.LogLevel, conn)
 			defer func() { _ = conn.Close() }()
 
-			zlog.Infof(defs.NACOS_LISTEN_CONFIG, "[ListenConfig]", "create conn success to remote: %s", url)
+			zlog.Infof(defs.NACOS_LISTEN_CONFIG, "[ListenConfig]", "create conn success to remote: %s, init socket file success.", url)
 			env.IsConnectServer = true
 
-			go heartbeat(conn)
+			//go heartbeat(conn)
+
+			go reportAgentLogToAdmin(conn)
 
 			for {
 				messageType, message, err := conn.ReadMessage()
@@ -77,4 +81,16 @@ func writeConfigToFile(installDir string, data []byte) {
 	}
 	zlog.Infof(defs.NACOS_LISTEN_CONFIG, "[ListenConfig]", "config update,jrasp-daemon will exit(0)...")
 	os.Exit(0)
+}
+
+// 发往server
+func reportAgentLogToAdmin(conn *websocket.Conn) {
+	for {
+		select {
+		case msg := <-new_socket.AgentMessageChan:
+			conn.WriteMessage(websocket.BinaryMessage, []byte(msg))
+		}
+		//限速，避免将server打挂
+		time.Sleep(time.Millisecond * 100)
+	}
 }

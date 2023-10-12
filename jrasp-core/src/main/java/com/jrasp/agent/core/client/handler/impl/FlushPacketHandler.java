@@ -1,11 +1,11 @@
-package com.jrasp.agent.core.server.socket.handler.impl;
+package com.jrasp.agent.core.client.handler.impl;
 
+import com.jrasp.agent.core.client.handler.PacketHandler;
 import com.jrasp.agent.core.manager.DefaultCoreModuleManager;
-import com.jrasp.agent.core.server.socket.handler.PacketHandler;
-import com.jrasp.agent.core.server.socket.handler.packet.PacketType;
+import com.jrasp.agent.core.client.packet.PacketType;
 import com.jrasp.agent.core.util.string.RaspStringUtils;
 
-import static com.jrasp.agent.core.server.socket.handler.packet.PacketType.FLUSH;
+import static com.jrasp.agent.core.client.packet.PacketType.FLUSH;
 
 /**
  * 刷新命令

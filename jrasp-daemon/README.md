@@ -48,3 +48,13 @@ windows系统下编译：
 ## 资源占用
 
 cpu 占用约1%左右，您无需担心性能问题。
+
+
+## 日志/指令传输
+
+![log-socket.png](image%2Flog-socket.png)
+
++ jrasp-daemon 监听宿主机上的端口9888
++ jrasp-agent  初始化之后连接端口9888，接收jrasp-daemon的指令和回传日志；
++ 连接断开后jrasp-agent日志写入本地 agent.log 文件，重连连接后同步本地文件到jrasp-daemon；
++ jrasp-daemon日志同步机制与 jrasp-agent相同；

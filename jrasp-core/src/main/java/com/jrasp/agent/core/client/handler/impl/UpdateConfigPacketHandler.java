@@ -1,8 +1,8 @@
-package com.jrasp.agent.core.server.socket.handler.impl;
+package com.jrasp.agent.core.client.handler.impl;
 
+import com.jrasp.agent.core.client.handler.PacketHandler;
 import com.jrasp.agent.core.manager.RaspConfigImpl;
-import com.jrasp.agent.core.server.socket.handler.PacketHandler;
-import com.jrasp.agent.core.server.socket.handler.packet.PacketType;
+import com.jrasp.agent.core.client.packet.PacketType;
 import com.jrasp.agent.core.util.string.RaspStringUtils;
 
 import java.lang.reflect.Field;
@@ -10,7 +10,7 @@ import java.net.URLDecoder;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static com.jrasp.agent.core.server.socket.handler.packet.PacketType.CONFIG;
+import static com.jrasp.agent.core.client.packet.PacketType.CONFIG;
 
 /**
  * @author jrasp

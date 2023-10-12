@@ -44,12 +44,42 @@ public class JsonAlgorithmTest {
         }
 
         @Override
+        public void warning(String message, Throwable t) {
+
+        }
+
+        @Override
         public void error(String message) {
 
         }
 
         @Override
         public void error(String message, Throwable t) {
+
+        }
+
+        @Override
+        public void info(int logId, String message) {
+
+        }
+
+        @Override
+        public void warning(int logId, String message) {
+
+        }
+
+        @Override
+        public void error(int logId, String message) {
+
+        }
+
+        @Override
+        public void warning(int logId, String message, Throwable t) {
+
+        }
+
+        @Override
+        public void error(int logId, String message, Throwable t) {
 
         }
     }

@@ -3,6 +3,7 @@ package com.jrasp.agent.core;
 import com.jrasp.agent.api.Module;
 import com.jrasp.agent.api.matcher.ClassMatcher;
 import com.jrasp.agent.core.classloader.ModuleJarClassLoader;
+import com.jrasp.agent.core.newlog.LogUtil;
 
 import java.io.File;
 import java.lang.ref.WeakReference;
@@ -11,8 +12,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * 沙箱模块内核封装对象
@@ -20,8 +19,6 @@ import java.util.logging.Logger;
  * @author luanjia@taobao.com
  */
 public class CoreModule {
-
-    private final static Logger logger = Logger.getLogger(CoreModule.class.getName());
 
     // 全局唯一编号
     private final String uniqueId;
@@ -175,7 +172,7 @@ public class CoreModule {
         synchronized (releaseResources) {
             releaseResources.add(resource);
         }
-        logger.log(Level.FINE, "append resource={0} in module[id={1};]", new Object[]{resource.get(), uniqueId});
+        //LogUtil.info("append resource: " + resource.get() + " in module:" + uniqueId);
         return resource.get();
     }
 
@@ -189,11 +186,11 @@ public class CoreModule {
                 final ReleaseResource<?> resourceRef = resourceRefIt.next();
                 resourceRefIt.remove();
                 if (null != resourceRef) {
-                    logger.log(Level.FINE, "release resource={0} in module={1}", new Object[]{resourceRef.get(), uniqueId});
+                    LogUtil.info("release resource:" + resourceRef.get() + "  in module: " + uniqueId);
                     try {
                         resourceRef.release();
                     } catch (Exception cause) {
-                        logger.log(Level.WARNING, "release resource occur error in module=" + uniqueId + ";", cause);
+                        LogUtil.warning("release resource occur error in module=" + uniqueId, cause);
                     }
                 }
             }

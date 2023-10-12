@@ -1,13 +1,13 @@
-package com.jrasp.agent.core.server.socket.handler.impl;
+package com.jrasp.agent.core.client.handler.impl;
 
 import com.jrasp.agent.api.matcher.ClassMatcher;
+import com.jrasp.agent.core.client.handler.PacketHandler;
 import com.jrasp.agent.core.manager.RaspClassFileTransformer;
-import com.jrasp.agent.core.server.socket.handler.PacketHandler;
-import com.jrasp.agent.core.server.socket.handler.packet.PacketType;
+import com.jrasp.agent.core.client.packet.PacketType;
 
 import java.util.Map;
 
-import static com.jrasp.agent.core.server.socket.handler.packet.PacketType.INFO;
+import static com.jrasp.agent.core.client.packet.PacketType.INFO;
 
 /**
  * 获取当前agent的信息

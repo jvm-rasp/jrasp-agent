@@ -13,6 +13,7 @@ import java.util.logging.*;
  * @author jrasp
  * 由于log4j、logback的严重安全漏洞，使用jdk自带的日志框架
  */
+@Deprecated
 public class Loggging implements RaspLog {
 
     public static Loggging INSTANCE = new Loggging();
@@ -176,6 +177,11 @@ public class Loggging implements RaspLog {
     }
 
     @Override
+    public void warning(String message, Throwable t) {
+
+    }
+
+    @Override
     public void error(String message) {
         MODULE_LOG.severe(message);
     }
@@ -183,5 +189,30 @@ public class Loggging implements RaspLog {
     @Override
     public void error(String message, Throwable thrown) {
         MODULE_LOG.log(Level.SEVERE, message, thrown);
+    }
+
+    @Override
+    public void info(int logId, String message) {
+
+    }
+
+    @Override
+    public void warning(int logId, String message) {
+
+    }
+
+    @Override
+    public void error(int logId, String message) {
+
+    }
+
+    @Override
+    public void warning(int logId, String message, Throwable t) {
+
+    }
+
+    @Override
+    public void error(int logId, String message, Throwable t) {
+
     }
 }

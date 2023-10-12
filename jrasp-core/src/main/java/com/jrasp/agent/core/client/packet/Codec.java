@@ -1,4 +1,4 @@
-package com.jrasp.agent.core.server.socket.handler.packet;
+package com.jrasp.agent.core.client.packet;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;

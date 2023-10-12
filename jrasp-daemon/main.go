@@ -7,6 +7,7 @@ import (
 	"jrasp-daemon/defs"
 	"jrasp-daemon/environ"
 	"jrasp-daemon/monitor"
+	"jrasp-daemon/new_socket"
 	"jrasp-daemon/remote"
 	"jrasp-daemon/update"
 	"jrasp-daemon/userconfig"
@@ -56,7 +57,7 @@ func main() {
 	zlog.Infof(defs.CONFIG_ID, "config id", `{"configId":%d}`, conf.ConfigId)
 
 	// 日志配置值
-	zlog.Debugf(defs.LOG_VALUE, "log config value", "logLevel:%d,logPath:%s", conf.LogLevel, conf.LogPath)
+	zlog.Debugf(defs.LOG_VALUE, "zlog config value", "logLevel:%d,logPath:%s", conf.LogLevel, conf.LogPath)
 
 	// 环境信息打印
 	zlog.Infof(defs.ENV_VALUE, "env config value", utils.ToString(env))
@@ -84,6 +85,10 @@ func main() {
 	go remote.WatchRemoteConfig(conf, env)
 
 	go monitor.MonitorFileDescriptor(ctx, conf.MaxFileUsedPercent, conf.FileCheckFrequency)
+
+	localSocket := new_socket.NewServerSocket(conf.LocalPort)
+
+	go localSocket.Start()
 
 	// 定时重启功能
 	go newWatch.Reboot()

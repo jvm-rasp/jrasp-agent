@@ -2,14 +2,13 @@ package com.jrasp.agent.core.enhance;
 
 import com.jrasp.agent.api.matcher.ClassMatcher;
 import com.jrasp.agent.core.enhance.weaver.asm.EventWeaver;
+import com.jrasp.agent.core.newlog.LogUtil;
 import com.jrasp.agent.core.util.ObjectIDs;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import static org.apache.commons.io.FileUtils.writeByteArrayToFile;
 import static org.objectweb.asm.ClassReader.EXPAND_FRAMES;
@@ -23,9 +22,6 @@ import static org.objectweb.asm.Opcodes.ASM9;
  * @author luanjia@taobao.com
  */
 public class EventEnhancer {
-
-    private static final Logger logger = Logger.getLogger(EventEnhancer.class.getName());
-
     private final boolean isNativeMethodEnhanceSupported;
 
     public EventEnhancer(boolean isNativeMethodEnhanceSupported) {
@@ -101,16 +97,16 @@ public class EventEnhancer {
 
         // 创建类所在的包路径
         if (!classPath.mkdirs() && !classPath.exists()) {
-            logger.log(Level.WARNING, "create dump classpath={0} failed.", classPath);
+            LogUtil.info("create dump classpath=" + classPath + " failed.");
             return data;
         }
 
         // 将类字节码写入文件
         try {
             writeByteArrayToFile(dumpClassFile, data);
-            logger.log(Level.INFO, "dump {0} to {1} success.", new Object[]{className, dumpClassFile});
+            LogUtil.info("dump " + className + " to " + dumpClassFile + " success.");
         } catch (IOException e) {
-            logger.log(Level.WARNING, "dump {0} to {1} failed.", new Object[]{className, dumpClassFile, e});
+            LogUtil.warning("dump " + className + " to " + dumpClassFile + " failed.", e);
         }
 
         return data;

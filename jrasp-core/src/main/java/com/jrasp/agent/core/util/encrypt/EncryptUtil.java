@@ -1,15 +1,12 @@
 package com.jrasp.agent.core.util.encrypt;
 
+import com.jrasp.agent.core.newlog.LogUtil;
 import com.jrasp.agent.core.util.string.RaspStringUtils;
 
 import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class EncryptUtil {
-
-    private final static Logger logger = Logger.getLogger(EncryptUtil.class.getName());
 
     /**
      * 解密
@@ -21,7 +18,7 @@ public class EncryptUtil {
      */
     public static byte[] decrypt(byte[] content, String aesKey) {
         if (RaspStringUtils.isBlank(aesKey) || aesKey.length() != 16) {
-            logger.log(Level.WARNING, "AES decrypt: the aesKey is null or error!");
+            LogUtil.warning("AES decrypt: the aesKey is null or error!");
             return null;
         }
         try {
@@ -31,7 +28,7 @@ public class EncryptUtil {
             cipher.init(Cipher.DECRYPT_MODE, skeySpec);
             return cipher.doFinal(content);
         } catch (Exception e) {
-            logger.log(Level.WARNING, "AES decrypt exception:" + e.getMessage());
+            LogUtil.warning("AES decrypt exception.", e);
             throw new RuntimeException(e);
         }
     }

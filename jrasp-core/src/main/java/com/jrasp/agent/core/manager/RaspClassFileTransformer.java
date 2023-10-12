@@ -2,6 +2,7 @@ package com.jrasp.agent.core.manager;
 
 import com.jrasp.agent.api.matcher.ClassMatcher;
 import com.jrasp.agent.core.enhance.EventEnhancer;
+import com.jrasp.agent.core.newlog.LogUtil;
 import com.jrasp.agent.core.util.RaspClassUtils;
 import com.jrasp.agent.core.util.SandboxProtector;
 
@@ -11,8 +12,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListSet;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * 沙箱类形变器
@@ -21,8 +20,6 @@ import java.util.logging.Logger;
  * @author jrasp
  */
 public class RaspClassFileTransformer implements ClassFileTransformer {
-
-    private final static Logger logger = Logger.getLogger(RaspClassFileTransformer.class.getName());
 
     // 保存全局需要转换的目标类、方法、方法对应的adviceListener
     public Map<String, ClassMatcher> targetClazzMap = new ConcurrentHashMap<String, ClassMatcher>();
@@ -51,7 +48,7 @@ public class RaspClassFileTransformer implements ClassFileTransformer {
             }
             return _transform(loader, internalClassName, srcByteCodeArray);
         } catch (Throwable cause) {
-            logger.log(Level.WARNING, "sandbox transform " + internalClassName + " failed,will ignore this transform.", cause);
+            LogUtil.warning("sandbox transform " + internalClassName + " failed,will ignore this transform.", cause);
             return null;
         } finally {
             SandboxProtector.instance.exitProtecting();
@@ -73,13 +70,13 @@ public class RaspClassFileTransformer implements ClassFileTransformer {
         try {
             final byte[] toByteCodeArray = new EventEnhancer(isNativeMethodEnhanceSupported).toByteCodeArray(loader, srcByteCodeArray, classMatcher);
             if (srcByteCodeArray == toByteCodeArray) {
-                logger.log(Level.FINE, "transform ignore {0}, nothing changed in loader={1}", new Object[]{internalClassName, loader});
+                LogUtil.info("transform ignore " + internalClassName + ", nothing changed in loader=" + loader);
                 return null;
             }
             transformedClass.add(internalClassName);
             return toByteCodeArray;
         } catch (Throwable cause) {
-            logger.log(Level.WARNING, "transform: " + internalClassName + " failed, in loader: " + loader, cause);
+            LogUtil.warning("transform: " + internalClassName + " failed, in loader: " + loader, cause);
             return null;
         }
     }

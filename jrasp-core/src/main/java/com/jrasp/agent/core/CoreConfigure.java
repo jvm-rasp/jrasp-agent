@@ -162,7 +162,7 @@ public class CoreConfigure {
      * @return 服务器端口
      */
     public int getServerPort() {
-        return NumberUtils.toInt(featureMap.get(KEY_SERVER_PORT), 0);
+        return NumberUtils.toInt(featureMap.get(KEY_SERVER_PORT), 9888);
     }
 
     // 获取运行时文件路径

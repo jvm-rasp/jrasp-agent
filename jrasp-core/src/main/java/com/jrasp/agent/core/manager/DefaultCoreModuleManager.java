@@ -16,12 +16,13 @@ import com.jrasp.agent.core.CoreModule;
 import com.jrasp.agent.core.CoreModule.ReleaseResource;
 import com.jrasp.agent.core.classloader.ModuleJarClassLoader;
 import com.jrasp.agent.core.enhance.weaver.EventListenerHandler;
-import com.jrasp.agent.core.logging.Loggging;
+import com.jrasp.agent.core.newlog.LogUtil;
 import com.jrasp.agent.core.util.ObjectIDs;
 import com.jrasp.agent.core.util.RaspReflectUtils;
 import com.jrasp.agent.core.util.SandboxProtector;
 import com.jrasp.agent.core.util.ThreadUtil;
 import org.apache.commons.io.FileUtils;
+import sun.rmi.runtime.Log;
 
 import java.io.File;
 import java.io.IOException;
@@ -30,8 +31,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import static com.jrasp.agent.api.ModuleException.ErrorCode.*;
 import static com.jrasp.agent.core.manager.DefaultCoreModuleManager.ModuleLifeCycleType.*;
@@ -42,9 +41,6 @@ import static com.jrasp.agent.core.util.RaspReflectUtils.writeField;
  * Created by luanjia on 16/10/4.
  */
 public class DefaultCoreModuleManager {
-
-    private final static Logger logger = Logger.getLogger(DefaultCoreModuleManager.class.getName());
-
     private final CoreConfigure cfg;
     private final Instrumentation inst;
     private final DefaultCoreLoadedClassDataSource classDataSource;
@@ -136,7 +132,7 @@ public class DefaultCoreModuleManager {
             try {
                 ((LoadCompleted) coreModule.getModule()).loadCompleted();
             } catch (Throwable cause) {
-                logger.log(Level.WARNING, "loading module occur error when load-completed. module=" + coreModule.getUniqueId(), cause);
+                LogUtil.warning("loading module occur error when load-completed. module=" + coreModule.getUniqueId(), cause);
             }
         }
 
@@ -161,7 +157,7 @@ public class DefaultCoreModuleManager {
                                    final ModuleJarClassLoader moduleClassLoader) throws ModuleException {
 
         if (loadedModuleBOMap.containsKey(uniqueId)) {
-            logger.log(Level.FINE, "module already loaded. module={0};", uniqueId);
+            LogUtil.info("module already loaded. module=" + uniqueId);
             return;
         }
 
@@ -215,7 +211,7 @@ public class DefaultCoreModuleManager {
                     // RaspLog
                     // 这里使用注入的原因是
                     // 为了兼容tomcat的日志格式,tomcat 使用的getlogger与类加载器有关
-                    writeField(resourceField, module, Loggging.INSTANCE, true);
+                    writeField(resourceField, module, LogUtil.getLogger(), true);
                 } else if (RaspConfig.class.isAssignableFrom(fieldType)) {
                     // 全局配置
                     writeField(resourceField, module, RaspConfigImpl.getInstance(), true);
@@ -224,12 +220,7 @@ public class DefaultCoreModuleManager {
                     writeField(resourceField, module, coreModule.getMetaInfo(), true);
                 } else {
                     // 其他情况需要输出日志警告
-                    logger.log(Level.WARNING, "module inject @RaspResource ignored: field not found. module={0};class={1};type={2};field={3};",
-                            new Object[]{coreModule.getUniqueId(),
-                                    coreModule.getModule().getClass().getName(),
-                                    fieldType.getName(),
-                                    resourceField.getName()}
-                    );
+                    LogUtil.warning("module inject @RaspResource ignored: field not found. module=" + coreModule.getUniqueId());
                 }
             }
         } catch (IllegalAccessException cause) {
@@ -244,7 +235,7 @@ public class DefaultCoreModuleManager {
                 ) {
                     @Override
                     public void release() {
-                        logger.log(Level.INFO, "reset all hook class for {0} module", coreModule.getUniqueId());
+                        LogUtil.info("reset all hook class for " + coreModule.getUniqueId() + " module");
                         final ModuleEventWatcher moduleEventWatcher = get();
                         if (null != moduleEventWatcher) {
                             moduleEventWatcher.delete(coreModule.getClassMatchers());
@@ -275,11 +266,11 @@ public class DefaultCoreModuleManager {
                                     final boolean isIgnoreModuleException) throws ModuleException {
 
         if (!coreModule.isLoaded()) {
-            logger.log(Level.FINE, "module already unLoaded. module={0};", coreModule.getUniqueId());
+            LogUtil.info("module already unLoaded. module=" + coreModule.getUniqueId());
             return;
         }
 
-        logger.log(Level.INFO, "unload module {0} start...", coreModule.getUniqueId());
+        LogUtil.info("unload module start: " + coreModule.getUniqueId());
 
         // 尝试冻结模块
         frozen(coreModule, isIgnoreModuleException);
@@ -289,7 +280,7 @@ public class DefaultCoreModuleManager {
             callAndFireModuleLifeCycle(coreModule, MODULE_UNLOAD);
         } catch (ModuleException meCause) {
             if (isIgnoreModuleException) {
-                logger.log(Level.WARNING, "unload module occur error, ignored.", meCause);
+                LogUtil.warning("unload module occur error, ignored.", meCause);
             } else {
                 throw meCause;
             }
@@ -313,7 +304,7 @@ public class DefaultCoreModuleManager {
 
         if (loadedModuleBOMap.size() > 0) {
             // 加载的模块为0时，不打日志
-            logger.info("force unloading all loaded modules");
+            LogUtil.info("force unloading all loaded modules");
         }
 
         // 强制卸载所有模块
@@ -322,7 +313,7 @@ public class DefaultCoreModuleManager {
                 unload(coreModule, true);
             } catch (ModuleException cause) {
                 // 强制卸载不可能出错，这里不对外继续抛出任何异常
-                logger.log(Level.WARNING, "force unloading module occur error! module=" + coreModule.getUniqueId(), cause);
+                LogUtil.warning("force unloading module occur error! module=" + coreModule.getUniqueId(), cause);
             }
         }
 
@@ -349,7 +340,7 @@ public class DefaultCoreModuleManager {
 //        } catch (Exception e) {
 //            logger.log(Level.WARNING, "remove context threadLocals in hooks err.", e);
 //        }
-        logger.fine("remove context threadLocals success.");
+        LogUtil.info("remove context threadLocals success.");
     }
 
     /**
@@ -366,7 +357,7 @@ public class DefaultCoreModuleManager {
             try {
                 RaspReflectUtils.unCaughtInvokeMethod(method, threadLocals, requestContext);
             } catch (Exception e) {
-                logger.log(Level.WARNING, "remove context threadLocals err.", e);
+                LogUtil.warning("remove context threadLocals err.", e);
             }
         }
     }
@@ -375,7 +366,7 @@ public class DefaultCoreModuleManager {
 
         // 如果模块已经被激活，则直接幂等返回
         if (coreModule.isActivated()) {
-            logger.log(Level.FINE, "module already activated. module={};", coreModule.getUniqueId());
+            LogUtil.info("module already activated. module= " + coreModule.getUniqueId());
             return;
         }
 
@@ -401,23 +392,19 @@ public class DefaultCoreModuleManager {
 
         // 如果模块已经被冻结(尚未被激活)，则直接幂等返回
         if (!coreModule.isActivated()) {
-            logger.log(Level.FINE, "module already frozen. module={};", coreModule.getUniqueId());
+            LogUtil.info("module already frozen. module=" + coreModule.getUniqueId());
             return;
         }
 
-        logger.log(Level.INFO, "frozen {0} module", coreModule.getUniqueId());
+        LogUtil.info("frozen module: " + coreModule.getUniqueId());
 
         // 通知生命周期
         try {
             callAndFireModuleLifeCycle(coreModule, MODULE_FROZEN);
         } catch (ModuleException meCause) {
             if (isIgnoreModuleException) {
-                logger.log(Level.WARNING, "frozen module occur error, ignored. module={0};class={1};code={}2;",
-                        new Object[]{meCause.getUniqueId(),
-                                coreModule.getModule().getClass().getName(),
-                                meCause.getErrorCode(),
-                                meCause}
-                );
+                LogUtil.warning("frozen module occur error, ignored. module=" + meCause.getUniqueId() + ";" +
+                        "class=" + coreModule.getModule().getClass().getName() + ";code=" + meCause.getErrorCode(), meCause);
             } else {
                 throw meCause;
             }
@@ -467,13 +454,7 @@ public class DefaultCoreModuleManager {
 
             // 如果之前已经加载过了相同ID的模块，则放弃当前模块的加载
             if (loadedModuleBOMap.containsKey(uniqueId)) {
-                final CoreModule existedCoreModule = get(uniqueId);
-                logger.log(Level.INFO, "IMLCB: module already loaded, ignore load this module. expected:module={0};class={1};loader={2}|existed:class={3};loader={4};",
-                        new Object[]{uniqueId,
-                                moduleClass, moduleClassLoader,
-                                existedCoreModule.getModule().getClass().getName(),
-                                existedCoreModule.getLoader()}
-                );
+                LogUtil.info("IMLCB: module already loaded, ignore load this module. expected:module=" + uniqueId);
                 return;
             }
             // 这里进行真正的模块加载
@@ -497,7 +478,7 @@ public class DefaultCoreModuleManager {
      */
     public synchronized DefaultCoreModuleManager reset() throws ModuleException {
 
-        logger.info("start to reset all loaded modules");
+        LogUtil.info("start to reset all loaded modules");
 
         // 1. 强制卸载所有模块
         unloadAll();
@@ -508,7 +489,7 @@ public class DefaultCoreModuleManager {
         if (moduleLibDir.exists() && moduleLibDir.canRead()) {
             new ModuleLibLoader(moduleLibDir, cfg.getRunModulePath(), cfg.getDecyptKey(), cfg.getLaunchMode()).load(new InnerModuleLoadCallback());
         } else {
-            logger.log(Level.WARNING, "module-lib not access, ignore flush load this lib. path={}", moduleLibDir);
+            LogUtil.warning("module-lib not access, ignore flush load this lib. path=" + moduleLibDir);
         }
         return this;
     }
@@ -535,7 +516,7 @@ public class DefaultCoreModuleManager {
         }
 
         if (!hasRef) {
-            logger.log(Level.INFO, "{0} will be close.", loader);
+            LogUtil.info(loader + " will be close.");
             ((ModuleJarClassLoader) loader).closeIfPossible();
         }
 
@@ -557,7 +538,7 @@ public class DefaultCoreModuleManager {
      */
     private void softFlush() {
 
-        logger.log(Level.CONFIG, "soft-flushing modules:{}", loadedModuleBOMap.keySet());
+        LogUtil.info("soft-flushing modules:" + loadedModuleBOMap.keySet());
 
         try {
             final ArrayList<File> appendJarFiles = new ArrayList<File>();
@@ -570,17 +551,17 @@ public class DefaultCoreModuleManager {
                 try {
                     checksumCRC32 = FileUtils.checksumCRC32(jarFile);
                 } catch (IOException cause) {
-                    logger.log(Level.WARNING, "soft-flushing module: compute module-jar CRC32 occur error. module-jar=" + jarFile, cause);
+                    LogUtil.warning("soft-flushing module: compute module-jar CRC32 occur error. module-jar=" + jarFile, cause);
                     continue;
                 }
                 checksumCRC32s.add(checksumCRC32);
                 // 如果CRC32已经在已加载的模块集合中存在，则说明这个文件没有变动，忽略
                 if (isChecksumCRC32Existed(checksumCRC32)) {
-                    logger.log(Level.CONFIG, "soft-flushing module: module-jar is not changed, ignored. module-jar={0}", new Object[]{jarFile.getName()});
+                    LogUtil.info("soft-flushing module: module-jar is not changed, ignored. module-jar=" + jarFile.getName());
                     continue;
                 }
 
-                logger.log(Level.CONFIG, "soft-flushing module: module-jar is changed, will be flush. module-jar={0}", new Object[]{jarFile.getName()});
+                LogUtil.info("soft-flushing module: module-jar is changed, will be flush. module-jar=" + jarFile.getName());
                 appendJarFiles.add(jarFile);
             }
 
@@ -590,16 +571,10 @@ public class DefaultCoreModuleManager {
 
                 // 如果CRC32已经在这次待加载的集合中，则说明这个文件没有变动，忽略
                 if (checksumCRC32s.contains(moduleJarClassLoader.getChecksumCRC32())) {
-                    logger.log(Level.CONFIG, "soft-flushing module: module-jar already loaded, ignored. module-jar={0};CRC32={1};",
-                            new Object[]{coreModule.getJarFile().getName(),
-                                    moduleJarClassLoader.getChecksumCRC32()}
-                    );
+                    LogUtil.info("soft-flushing module: module-jar already loaded, ignored. module-jar=" + coreModule.getJarFile().getName() + ";CRC32=" + moduleJarClassLoader.getChecksumCRC32());
                     continue;
                 }
-                logger.log(Level.CONFIG, "soft-flushing module: module-jar is changed, module will be reload/remove. module={0};module-jar={1};",
-                        new Object[]{coreModule.getUniqueId(),
-                                coreModule.getJarFile().getName()}
-                );
+                LogUtil.info("soft-flushing module: module-jar is changed, module will be reload/remove. module=" + coreModule.getUniqueId() + ";module-jar=" + coreModule.getJarFile().getName());
                 removeCoreModules.add(coreModule);
             }
 
@@ -614,7 +589,7 @@ public class DefaultCoreModuleManager {
                         .load(new InnerModuleLoadCallback());
             }
         } catch (Throwable cause) {
-            logger.log(Level.WARNING, "soft-flushing modules: occur error.", cause);
+            LogUtil.warning("soft-flushing modules: occur error.", cause);
         }
 
     }
@@ -627,7 +602,7 @@ public class DefaultCoreModuleManager {
      */
     private void forceFlush() throws ModuleException {
 
-        logger.log(Level.INFO, "force-flushing modules:{0}", loadedModuleBOMap.keySet());
+        LogUtil.info("force-flushing modules:" + loadedModuleBOMap.keySet());
 
         // 1. 卸载模块
         // 等待卸载的模块集合
@@ -643,7 +618,7 @@ public class DefaultCoreModuleManager {
         for (final CoreModule coreModule : waitingUnloadCoreModules) {
             uniqueIds.add(coreModule.getUniqueId());
         }
-        logger.log(Level.INFO, "force-flush modules: will be unloading modules : {0}", uniqueIds);
+        LogUtil.info("force-flush modules: will be unloading modules: " + uniqueIds);
 
         // 强制卸载掉所有等待卸载的模块集合中的模块
         for (final CoreModule coreModule : waitingUnloadCoreModules) {
@@ -655,11 +630,11 @@ public class DefaultCoreModuleManager {
         // 对模块访问权限进行校验
         // 用户模块目录
         if (moduleLibDir.exists() && moduleLibDir.canRead()) {
-            logger.log(Level.INFO, "force-flush modules: module-lib={0}", moduleLibDir);
+            LogUtil.info("force-flush modules: module-lib=" + moduleLibDir);
             new ModuleLibLoader(moduleLibDir, cfg.getRunModulePath(), cfg.getDecyptKey(), cfg.getLaunchMode())
                     .load(new InnerModuleLoadCallback());
         } else {
-            logger.log(Level.WARNING, "force-flush modules: module-lib can not access, will be ignored. module-lib={0}", moduleLibDir);
+            LogUtil.warning("force-flush modules: module-lib can not access, will be ignored. module-lib=" + moduleLibDir);
         }
 
     }

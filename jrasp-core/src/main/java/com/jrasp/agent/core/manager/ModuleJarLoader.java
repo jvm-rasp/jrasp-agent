@@ -3,6 +3,7 @@ package com.jrasp.agent.core.manager;
 import com.jrasp.agent.api.Module;
 import com.jrasp.agent.api.annotation.Information;
 import com.jrasp.agent.core.classloader.ModuleJarClassLoader;
+import com.jrasp.agent.core.newlog.LogUtil;
 import com.jrasp.agent.core.util.array.ArrayUtils;
 import com.jrasp.agent.core.util.string.RaspStringUtils;
 
@@ -15,12 +16,8 @@ import java.util.Set;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 class ModuleJarLoader {
-
-    private final static Logger logger = Logger.getLogger(ModuleJarLoader.class.getName());
 
     // 等待加载的模块jar文件
     private final File moduleJarFile;
@@ -53,7 +50,7 @@ class ModuleJarLoader {
             try {
                 module = moduleIt.next();
             } catch (Throwable cause) {
-                logger.log(Level.WARNING, "loading module instance failed: instance occur error, will be ignored. module-jar=" + moduleJarFile, cause);
+                LogUtil.warning("loading module instance failed: instance occur error, will be ignored. module-jar=" + moduleJarFile, cause);
                 continue;
             }
 
@@ -61,9 +58,7 @@ class ModuleJarLoader {
 
             // 判断模块是否实现了@Information标记
             if (!classOfModule.isAnnotationPresent(Information.class)) {
-                logger.log(Level.WARNING, "loading module instance failed: not implements @Information, will be ignored. class={0};module-jar={1};",
-                        new Object[]{classOfModule, moduleJarFile}
-                );
+                LogUtil.warning("loading module instance failed: not implements @Information, will be ignored. class=" + classOfModule + ";module-jar=" + moduleJarFile);
                 continue;
             }
 
@@ -72,22 +67,12 @@ class ModuleJarLoader {
 
             // 判断模块ID是否合法
             if (RaspStringUtils.isBlank(uniqueId)) {
-                logger.log(Level.WARNING, "loading module instance failed: @Information.id is missing, will be ignored. class={0};module-jar={1};",
-                        new Object[]{classOfModule, moduleJarFile}
-                );
+                LogUtil.warning("loading module instance failed: @Information.id is missing, will be ignored. class=" + classOfModule + ";module-jar=" + moduleJarFile);
                 continue;
             }
 
             // 判断模块要求的启动模式和容器的启动模式是否匹配
             if (!ArrayUtils.contains(info.mode(), mode)) {
-                logger.log(Level.WARNING, "loading module instance failed: launch-mode is not match module required, will be ignored. " +
-                                "module={0};launch-mode={1};required-mode={2};class={3};module-jar={4};",
-                        new Object[]{uniqueId,
-                                mode,
-                                RaspStringUtils.join(info.mode(), ","),
-                                classOfModule,
-                                moduleJarFile}
-                );
                 continue;
             }
 
@@ -96,9 +81,7 @@ class ModuleJarLoader {
                     mCb.onLoad(uniqueId, metaInfo, classOfModule, module, moduleJarFile, moduleClassLoader);
                 }
             } catch (Throwable cause) {
-                logger.log(Level.WARNING, "loading module instance failed: MODULE-LOADER-PROVIDER denied, will be ignored.",
-                        cause
-                );
+                LogUtil.warning("loading module instance failed: MODULE-LOADER-PROVIDER denied, will be ignored.", cause);
                 continue;
             }
 
@@ -129,7 +112,7 @@ class ModuleJarLoader {
         } finally {
             if (!hasModuleLoadedSuccessFlag
                     && null != moduleJarClassLoader) {
-                logger.log(Level.WARNING, "[{0}] not found any module , will be close.", moduleJarFile.getName());
+                LogUtil.warning(moduleJarFile.getName() + " not found any module , will be close.");
                 moduleJarClassLoader.closeIfPossible();
             }
         }
@@ -148,14 +131,14 @@ class ModuleJarLoader {
             String buildTime = mainAttributes.getValue("buildTime");
             return moduleName + "-" + moduleVersion + "-" + buildTime;
         } catch (Exception e) {
-            logger.log(Level.WARNING, "read manifest file error,file name" + moduleJarFile.getName(), e);
+            LogUtil.warning("read manifest file error,file name" + moduleJarFile.getName(), e);
             return "UNKNOWN";
         } finally {
             if (jarFile != null) {
                 try {
                     jarFile.close();
                 } catch (Exception e) {
-                    logger.log(Level.WARNING, "close jarfile error" + moduleJarFile.getName(), e);
+                    LogUtil.warning("close jarfile error" + moduleJarFile.getName(), e);
                 }
             }
         }

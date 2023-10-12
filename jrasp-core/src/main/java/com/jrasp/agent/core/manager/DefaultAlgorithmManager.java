@@ -4,11 +4,10 @@ import com.jrasp.agent.api.RaspConfig;
 import com.jrasp.agent.api.algorithm.Algorithm;
 import com.jrasp.agent.api.algorithm.AlgorithmManager;
 import com.jrasp.agent.api.request.Context;
+import com.jrasp.agent.core.newlog.LogUtil;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * 算法插件管理
@@ -16,8 +15,6 @@ import java.util.logging.Logger;
  * @author jrasp
  */
 public class DefaultAlgorithmManager implements AlgorithmManager {
-
-    private final static Logger logger = Logger.getLogger(DefaultAlgorithmManager.class.getName());
 
     public static final DefaultAlgorithmManager instance = new DefaultAlgorithmManager();
 
@@ -27,7 +24,7 @@ public class DefaultAlgorithmManager implements AlgorithmManager {
     public boolean register(Algorithm algorithm) {
         String type = algorithm.getType();
         algorithmMaps.put(type, algorithm);
-        logger.log(Level.CONFIG, "register algorithm module: {0}", type);
+        LogUtil.info("register algorithm module: " + type);
         return true;
     }
 
@@ -43,7 +40,7 @@ public class DefaultAlgorithmManager implements AlgorithmManager {
     public boolean destroy(Algorithm algorithm) {
         String type = algorithm.getType();
         algorithmMaps.remove(type);
-        logger.log(Level.INFO, "destroy algorithm module: {0}", type);
+        LogUtil.info("destroy algorithm module: " + type);
         return true;
     }
 

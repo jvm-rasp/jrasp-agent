@@ -1,11 +1,11 @@
 package com.jrasp.agent.core.util;
 
+import com.jrasp.agent.core.newlog.LogUtil;
+
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Sandbox守护者
@@ -16,8 +16,6 @@ import java.util.logging.Logger;
  * @author oldmanpushcart@gamil.com
  */
 public class SandboxProtector {
-
-    private final static Logger logger = Logger.getLogger(SandboxProtector.class.getName());
 
     public static final SandboxProtector instance = new SandboxProtector();
 
@@ -49,7 +47,7 @@ public class SandboxProtector {
         if (referenceCount == 0) {
             isInProtectingThreadLocal.remove();
         } else if (referenceCount < 0) {
-            logger.log(Level.WARNING, "thread:{0} exit protect:{1} with error!", new Object[]{Thread.currentThread(), referenceCount});
+            LogUtil.warning("thread:" + Thread.currentThread() + " exit protect:" + referenceCount + " with error!");
         }
         return referenceCount;
     }
@@ -90,13 +88,7 @@ public class SandboxProtector {
                     final int exitReferenceCount = exitProtecting();
                     // assert enterReferenceCount == exitReferenceCount;
                     if (enterReferenceCount != exitReferenceCount) {
-                        logger.log(Level.WARNING, "thread:{0} exit protecting with error!, expect:{1} actual:{2}",
-                                new Object[]{
-                                        Thread.currentThread(),
-                                        enterReferenceCount,
-                                        exitReferenceCount
-                                }
-                        );
+                        LogUtil.warning("thread:" + Thread.currentThread() + " exit protecting with error!, expect:" + enterReferenceCount + " actual:" + exitReferenceCount);
                     }
                 }
             }

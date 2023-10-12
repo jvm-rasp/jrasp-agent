@@ -1,10 +1,9 @@
 package com.jrasp.agent.core.manager;
 
 import com.jrasp.agent.api.annotation.Information;
+import com.jrasp.agent.core.newlog.LogUtil;
 
 import java.io.File;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import static org.apache.commons.io.FileUtils.convertFileCollectionToFileArray;
 import static org.apache.commons.io.FileUtils.listFiles;
@@ -15,8 +14,6 @@ import static org.apache.commons.io.FileUtils.listFiles;
  * Created by luanjia@taobao.com on 2016/11/17.
  */
 class ModuleLibLoader {
-
-    private final static Logger logger = Logger.getLogger(ModuleLibLoader.class.getName());
 
     // 模块加载目录
     private final File moduleLibDir;
@@ -40,16 +37,16 @@ class ModuleLibLoader {
         long start = System.currentTimeMillis() / 1000;
         // TODO 优化 并发加载
         File[] allJar = listModuleJarFileInLib();
-        logger.log(Level.INFO, "load all module, total: {0}, list: {1} ", new Object[]{allJar.length, jarList(allJar)});
+        LogUtil.info("load all module, total: " + allJar.length + ", list:  " + jarList(allJar));
         for (final File moduleJarFile : allJar) {
             try {
                 new ModuleJarLoader(moduleJarFile, copyDir, key, mode).load(mCb);
             } catch (Throwable cause) {
-                logger.log(Level.WARNING, "loading module-jar occur error! module-jar=" + moduleJarFile, cause);
+                LogUtil.warning("loading module-jar occur error! module-jar=" + moduleJarFile, cause);
             }
         }
         long end = System.currentTimeMillis() / 1000;
-        logger.log(Level.INFO, "all module load time: " + (end - start) + " ms");
+        LogUtil.info("all module load time: " + (end - start) + " ms");
     }
 
     private File[] listModuleJarFileInLib() {

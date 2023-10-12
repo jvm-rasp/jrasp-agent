@@ -13,6 +13,7 @@ import java.util.logging.LogRecord;
  *
  * @author jrasp
  */
+@Deprecated
 public class LogFormatter extends Formatter {
 
     private static final String LINE_SEP = System.getProperty("line.separator");

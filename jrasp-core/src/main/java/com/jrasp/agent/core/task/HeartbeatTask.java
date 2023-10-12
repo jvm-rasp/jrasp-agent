@@ -1,47 +1,20 @@
 package com.jrasp.agent.core.task;
 
 import com.jrasp.agent.core.monitor.Monitor;
-import com.jrasp.agent.core.util.ProcessHelper;
+import com.jrasp.agent.core.newlog.LogUtil;
 
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * @author jrasp
+ * 2023-0623
  */
-public class HeartbeatTask {
+public class HeartbeatTask extends AbstractRaspTask {
 
-    private static final Logger LOGGER = Logger.getLogger(HeartbeatTask.class.getName());
-
-    private static AtomicBoolean initialize = new AtomicBoolean(false);
-
-    // 5 分钟一次心跳
-    private static final long FREQUENCY = 5 * 60;
-
-    private static final String pid = ProcessHelper.getCurrentPID();
-
-    private static ScheduledExecutorService executorService = new ScheduledThreadPoolExecutor(1);
-
-    public static synchronized void start() {
-        if (initialize.compareAndSet(false, true)) {
-            executorService.scheduleAtFixedRate(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        work();
-                    } catch (Exception e) {
-                        LOGGER.log(Level.WARNING, "error occurred when report heartbeat", e);
-                    }
-                }
-            }, 1, FREQUENCY, TimeUnit.SECONDS); // to avoid dead lock, init time could not be 0
-        }
+    @Override
+    public void run() {
+        work();
     }
 
     /**
@@ -60,14 +33,7 @@ public class HeartbeatTask {
             cnt++;
         }
         sb.append("}");
-        LOGGER.log(Level.INFO, "monitor: {0}", new Object[]{sb.toString()});
-    }
-
-    public static void stop() {
-        if (initialize.compareAndSet(true, false)) {
-            executorService.shutdown();
-            LOGGER.log(Level.INFO, "java agent [{0}] heartheat task stop ", new Object[]{pid});
-        }
+        LogUtil.info(sb.toString());
     }
 
     private static void appendJsonField(StringBuffer sb, String key, String value, boolean hasNext) {
@@ -77,4 +43,5 @@ public class HeartbeatTask {
             sb.append(", ");
         }
     }
+
 }

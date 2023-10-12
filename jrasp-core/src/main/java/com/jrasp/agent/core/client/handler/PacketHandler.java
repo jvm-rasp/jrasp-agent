@@ -1,6 +1,6 @@
-package com.jrasp.agent.core.server.socket.handler;
+package com.jrasp.agent.core.client.handler;
 
-import com.jrasp.agent.core.server.socket.handler.packet.PacketType;
+import com.jrasp.agent.core.client.packet.PacketType;
 
 /**
  * @author jrasp

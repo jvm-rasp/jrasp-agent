@@ -1,10 +1,10 @@
-package com.jrasp.agent.core.server.socket.handler.impl;
+package com.jrasp.agent.core.client.handler.impl;
 
 import com.jrasp.agent.api.Module;
 import com.jrasp.agent.core.CoreModule;
+import com.jrasp.agent.core.client.handler.PacketHandler;
 import com.jrasp.agent.core.manager.DefaultCoreModuleManager;
-import com.jrasp.agent.core.server.socket.handler.PacketHandler;
-import com.jrasp.agent.core.server.socket.handler.packet.PacketType;
+import com.jrasp.agent.core.client.packet.PacketType;
 import com.jrasp.agent.core.util.string.RaspStringUtils;
 
 import java.lang.reflect.Method;
@@ -14,7 +14,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static com.jrasp.agent.core.server.socket.handler.packet.PacketType.UPDATE;
+import static com.jrasp.agent.core.client.packet.PacketType.UPDATE;
 
 /**
  * @author jrasp
@@ -66,7 +66,7 @@ public class UpdatePacketHandler implements PacketHandler {
                 StringBuilder resultStr = new StringBuilder();
                 resultStr.append(moduleName + ":");
                 for (Map.Entry<String, String> entry : parametersMap.entrySet()) {
-                    resultStr.append(entry.getKey() );
+                    resultStr.append(entry.getKey());
                     resultStr.append("=");
                     resultStr.append(entry.getValue());
                     resultStr.append(";");

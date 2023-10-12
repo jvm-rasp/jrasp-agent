@@ -1,5 +1,6 @@
 package com.jrasp.agent.core.classloader;
 
+import com.jrasp.agent.core.newlog.LogUtil;
 import com.jrasp.agent.core.util.string.RaspStringUtils;
 import org.apache.commons.io.FileUtils;
 
@@ -14,8 +15,6 @@ import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.jar.JarFile;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import static com.jrasp.agent.core.util.RaspReflectUtils.*;
 
@@ -26,7 +25,6 @@ import static com.jrasp.agent.core.util.RaspReflectUtils.*;
  */
 public class ModuleJarClassLoader extends RoutingURLClassLoader {
 
-    private final Logger logger = Logger.getLogger(getClass().getName());
     private final File moduleJarFile;
     private final File tempModuleJarFile;
     private final long checksumCRC32;
@@ -58,9 +56,9 @@ public class ModuleJarClassLoader extends RoutingURLClassLoader {
 
         try {
             cleanProtectionDomainWhichCameFromModuleJarClassLoader();
-            logger.log(Level.FINE, "clean ProtectionDomain in {0}'s acc success.", this);
+            // LogUtil.info("clean ProtectionDomain acc success. " + this.toString());
         } catch (Throwable e) {
-            logger.log(Level.WARNING, "clean ProtectionDomain in acc failed.", e);
+            LogUtil.warning("clean ProtectionDomain in acc failed.", e);
         }
     }
 
@@ -101,11 +99,11 @@ public class ModuleJarClassLoader extends RoutingURLClassLoader {
         try {
             // 如果是JDK7+的版本, URLClassLoader实现了Closeable接口，直接调用即可
             if (this instanceof Closeable) {
-                logger.log(Level.FINE, "JDK is 1.7+, use URLClassLoader[file={0}].close()", moduleJarFile);
+                LogUtil.info("JDK is 1.7+, use URLClassLoader close()" + moduleJarFile);
                 try {
                     ((Closeable) this).close();
                 } catch (Throwable cause) {
-                    logger.log(Level.WARNING, "close ModuleJarClassLoader[file=" + moduleJarFile.getName() + "] failed. JDK7+", cause);
+                    LogUtil.warning("close ModuleJarClassLoader[file=" + moduleJarFile.getName() + "] failed. JDK7+", cause);
                 }
                 return;
             }
@@ -114,7 +112,7 @@ public class ModuleJarClassLoader extends RoutingURLClassLoader {
             // 对于JDK6的版本，URLClassLoader要关闭起来就显得有点麻烦，这里弄了一大段代码来稍微处理下
             // 而且还不能保证一定释放干净了，至少释放JAR文件句柄是没有什么问题了
             try {
-                logger.log(Level.FINE, "JDK is less then 1.7+, use File.release()");
+                LogUtil.info("JDK is less then 1.7+, use File.release()");
                 final Object sun_misc_URLClassPath = unCaughtGetClassDeclaredJavaFieldValue(URLClassLoader.class, "ucp", this);
                 final Object java_util_Collection = unCaughtGetClassDeclaredJavaFieldValue(sun_misc_URLClassPath.getClass(), "loaders", sun_misc_URLClassPath);
 
@@ -133,7 +131,7 @@ public class ModuleJarClassLoader extends RoutingURLClassLoader {
                 }
 
             } catch (Throwable cause) {
-                logger.log(Level.WARNING, "close ModuleJarClassLoader[file=" + moduleJarFile.getName() + "] failed. probably not a HOTSPOT VM", cause);
+                LogUtil.warning("close ModuleJarClassLoader[file=" + moduleJarFile.getName() + "] failed. probably not a HOTSPOT VM", cause);
             }
 
         } finally {

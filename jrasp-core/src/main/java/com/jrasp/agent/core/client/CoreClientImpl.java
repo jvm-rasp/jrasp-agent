@@ -90,6 +90,10 @@ public class CoreClientImpl implements CoreClient {
 
             LogUtil.info(String.format("client socket success init, bind to [%s:%s], cost time: %s ms",
                     cfg.getServerIp(), cfg.getServerPort(), System.currentTimeMillis() - start));
+
+            // 容器场景使用 jattach $pid properties 读取jrasp.info系统参数
+            String info = format("jrasp;%s;%s\n", cfg.getServerIp(), cfg.getServerPort());
+            System.setProperty("jrasp.info", info);
             writeAgentInitResult(cfg.getServerIp(), cfg.getServerPort());
             isInit = true;
         } catch (Throwable cause) {
@@ -138,8 +142,8 @@ public class CoreClientImpl implements CoreClient {
 
     /**
      * 结果写入到run/pid/token
-     * TODO 兼容旧版本，后面改为无文件识别方式，同时支持vm、k8s、docker
      */
+    @Deprecated
     private void writeAgentInitResult(String ip, int port) {
         File file = new File(cfg.getRuntimeTokenPath());
         if (file.exists() && (!file.isFile() || !file.canWrite())) {

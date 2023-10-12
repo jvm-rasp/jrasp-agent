@@ -18,19 +18,16 @@ class ModuleLibLoader {
     // 模块加载目录
     private final File moduleLibDir;
 
-    private final String copyDir;
-
     private final String key;
 
     // 沙箱加载模式
     private final Information.Mode mode;
 
-    ModuleLibLoader(final File moduleLibDir, final String copyDir, final String key,
+    ModuleLibLoader(final File moduleLibDir,final String key,
                     final Information.Mode mode) {
         this.moduleLibDir = moduleLibDir;
         this.mode = mode;
         this.key = key;
-        this.copyDir = copyDir;
     }
 
     void load(final ModuleJarLoader.ModuleLoadCallback mCb) {
@@ -40,7 +37,7 @@ class ModuleLibLoader {
         LogUtil.info("load all module, total: " + allJar.length + ", list:  " + jarList(allJar));
         for (final File moduleJarFile : allJar) {
             try {
-                new ModuleJarLoader(moduleJarFile, copyDir, key, mode).load(mCb);
+                new ModuleJarLoader(moduleJarFile, key, mode).load(mCb);
             } catch (Throwable cause) {
                 LogUtil.warning("loading module-jar occur error! module-jar=" + moduleJarFile, cause);
             }

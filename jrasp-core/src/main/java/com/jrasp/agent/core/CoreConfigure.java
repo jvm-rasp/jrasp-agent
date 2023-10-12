@@ -128,15 +128,6 @@ public class CoreConfigure {
     }
 
     /**
-     * 是否启用Unsafe功能
-     *
-     * @return unsafe.enable
-     */
-    public boolean isEnableUnsafe() {
-        return true;
-    }
-
-    /**
      * 获取沙箱安装目录
      *
      * @return 沙箱安装目录
@@ -180,11 +171,6 @@ public class CoreConfigure {
     // 获取进程运行时pid目录
     public String getProcessPidPath() {
         return getProcessRunPath() + File.separator + ProcessHelper.getCurrentPID();
-    }
-
-    // 获取进程运行时pid目录
-    public String getRunModulePath() {
-        return getProcessPidPath() + File.separator + KEY_MODULE_LIB_PATH;
     }
 
     public String getModuleLibPath() {

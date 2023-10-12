@@ -72,7 +72,6 @@ public class JvmSandbox {
     // 创建运行时插件目录
     private void initPidRunDir() {
         mkdirs(this.cfg.getProcessPidPath());
-        mkdirs(this.cfg.getRunModulePath());
         try {
             Runtime.getRuntime().addShutdownHook(clearThread);
         } catch (Exception e) {

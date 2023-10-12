@@ -22,19 +22,16 @@ class ModuleJarLoader {
     // 等待加载的模块jar文件
     private final File moduleJarFile;
 
-    private final String copyDir;
-
     private final String key;
 
     // 沙箱加载模式
     private final Information.Mode mode;
 
-    ModuleJarLoader(final File moduleJarFile, final String copyDir, final String key,
+    ModuleJarLoader(final File moduleJarFile, final String key,
                     final Information.Mode mode) {
         this.moduleJarFile = moduleJarFile;
         this.mode = mode;
         this.key = key;
-        this.copyDir = copyDir;
     }
 
     private boolean loadingModules(final ModuleJarClassLoader moduleClassLoader,
@@ -98,7 +95,7 @@ class ModuleJarLoader {
         boolean hasModuleLoadedSuccessFlag = false;
         ModuleJarClassLoader moduleJarClassLoader = null;
         try {
-            moduleJarClassLoader = new ModuleJarClassLoader(moduleJarFile, copyDir, key);
+            moduleJarClassLoader = new ModuleJarClassLoader(moduleJarFile, key);
 
             final ClassLoader preTCL = Thread.currentThread().getContextClassLoader();
             Thread.currentThread().setContextClassLoader(moduleJarClassLoader);

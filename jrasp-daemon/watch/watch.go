@@ -222,13 +222,10 @@ func (w *Watch) getJavaProcessInfo(procss *process.Process) {
 
 		// 没有注入并且支持动态注入
 		w.DynamicInject(javaProcess)
-		// 读取token
-		success := javaProcess.ReadTokenFile()
-		if success {
-			javaProcess.MarkSuccessInjected() // 已经注入过
-		} else {
-			javaProcess.MarkFailedExitInject() // 退出失败，文件异常
-		}
+
+		// 判断是否注入成功
+		javaProcess.GetAndMarkStatus()
+
 	}
 
 	// 参数更新

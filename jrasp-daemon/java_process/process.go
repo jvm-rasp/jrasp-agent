@@ -41,6 +41,7 @@ const (
 
 const (
 	libDir string = "lib"
+	moduleDir string = "module"
 	launcherPackagePre string = "jrasp-launcher-"
 )
 
@@ -95,16 +96,9 @@ func NewJavaProcess(p *process.Process, cfg *userconfig.Config, env *environ.Env
 // 执行attach
 func (jp *JavaProcess) Attach() error {
 	// copy jar包到目标进程root path
-	targetProcRootPath :=  filepath.Join("/proc", jp.JavaPid, "root")
-	defaulet := filepath.Join(jp.env.InstallDir, libDir, launcherPackagePre+jp.cfg.Version+".jar")
-	launcherJarPath := filepath.Join(targetProcRootPath, jp.env.InstallDir, libDir, launcherPackagePre+jp.cfg.Version+".jar")
-	exist := utils.PathExists(launcherJarPath)
-	if !exist {
-		utils.CreateDir(filepath.Dir(launcherJarPath))
-		err := utils.CopyFile(defaulet, launcherJarPath)
-		if err != nil {
-			return err
-		}
+	err := copyJar()
+	if err != nil {
+		return err
 	}
 	// 执行attach并检查java_pid文件
 	err = jp.execCmd()
@@ -434,5 +428,40 @@ func getWebAppsDir(root string) string {
 		return getWebAppsDir(findDir)
 	} else {
 		return webapps
+	}
+}
+
+func copyJar() error {
+	containerRootPath :=  filepath.Join("/proc", jp.JavaPid, "root")
+	libPath := filepath.Join(jp.env.InstallDir, libDir)
+	containerLibPath := filepath.Join(containerRootPath, libPath)
+	utils.CreateDir(containerLibPath)
+	files, err := ioutil.ReadDir(libPath)
+	if err != nil {
+		return err
+	}
+	for _, fileInfo := range files {
+		if strings.Contains(fileInfo.Name(), jp.cfg.Version) && !utils.PathExists(filepath.Join(libPath, fileInfo.Name())) {
+			err := utils.CopyFile(filepath.Join(libPath, fileInfo.Name()), filepath.Join(containerLibPath, fileInfo.Name()))
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	modulePath := filepath.Join(jp.env.InstallDir, moduleDir)
+	containerModulePath := filepath.Join(containerRootPath, modulePath)
+	utils.CreateDir(containerModulePath)
+	files, err := ioutil.ReadDir(modulePath)
+	if err != nil {
+		return err
+	}
+	for _, fileInfo := range files {
+		if strings.Contains(fileInfo.Name(), jp.cfg.Version) && !utils.PathExists(filepath.Join(modulePath, fileInfo.Name())) {
+			err := utils.CopyFile(filepath.Join(modulePath, fileInfo.Name()), filepath.Join(containerModulePath, fileInfo.Name()))
+			if err != nil {
+				return err
+			}
+		}
 	}
 }

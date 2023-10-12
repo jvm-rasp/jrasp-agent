@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"io"
 	"os"
+	"fmt"
 )
 
 // PathExists reports whether the named file or directory exists.
@@ -42,7 +43,7 @@ func GetFileMd5(pluginPath string) (string, error) {
 	return hex.EncodeToString(h.Sum(nil)), nil
 }
 
-func CopyFile(dstFile, srcFile string, perm os.FileMode) error {
+func CopyFile(srcFile, dstFile string, perm os.FileMode) error {
 	srcStat, err := os.Stat(srcFile)
 	if err != nil {
 		return err

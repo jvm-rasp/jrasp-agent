@@ -96,7 +96,7 @@ func NewJavaProcess(p *process.Process, cfg *userconfig.Config, env *environ.Env
 // 执行attach
 func (jp *JavaProcess) Attach() error {
 	// copy jar包到目标进程root path
-	err := copyJar()
+	err := jp.copyJar()
 	if err != nil {
 		return err
 	}
@@ -431,8 +431,8 @@ func getWebAppsDir(root string) string {
 	}
 }
 
-func copyJar() error {
-	containerRootPath :=  filepath.Join("/proc", jp.JavaPid, "root")
+func (jp *JavaProcess) copyJar() error {
+	containerRootPath :=  filepath.Join("/proc", fmt.Sprintf("%d", jp.JavaPid), "root")
 	libPath := filepath.Join(jp.env.InstallDir, libDir)
 	containerLibPath := filepath.Join(containerRootPath, libPath)
 	utils.CreateDir(containerLibPath)
@@ -441,8 +441,9 @@ func copyJar() error {
 		return err
 	}
 	for _, fileInfo := range files {
-		if strings.Contains(fileInfo.Name(), jp.cfg.Version) && !utils.PathExists(filepath.Join(libPath, fileInfo.Name())) {
-			err := utils.CopyFile(filepath.Join(libPath, fileInfo.Name()), filepath.Join(containerLibPath, fileInfo.Name()))
+		if strings.Contains(fileInfo.Name(), jp.cfg.Version) && !utils.PathExists(filepath.Join(containerLibPath, fileInfo.Name())) {
+            fmt.Println("path:", filepath.Join(containerLibPath, fileInfo.Name()))
+			err = utils.CopyFile(filepath.Join(libPath, fileInfo.Name()), filepath.Join(containerLibPath, fileInfo.Name()), os.ModePerm)
 			if err != nil {
 				return err
 			}
@@ -452,16 +453,17 @@ func copyJar() error {
 	modulePath := filepath.Join(jp.env.InstallDir, moduleDir)
 	containerModulePath := filepath.Join(containerRootPath, modulePath)
 	utils.CreateDir(containerModulePath)
-	files, err := ioutil.ReadDir(modulePath)
+	files, err = ioutil.ReadDir(modulePath)
 	if err != nil {
 		return err
 	}
-	for _, fileInfo := range files {
-		if strings.Contains(fileInfo.Name(), jp.cfg.Version) && !utils.PathExists(filepath.Join(modulePath, fileInfo.Name())) {
-			err := utils.CopyFile(filepath.Join(modulePath, fileInfo.Name()), filepath.Join(containerModulePath, fileInfo.Name()))
+    for _, fileInfo := range files {
+		if strings.Contains(fileInfo.Name(), jp.cfg.Version) && !utils.PathExists(filepath.Join(containerModulePath, fileInfo.Name())) {
+			err = utils.CopyFile(filepath.Join(modulePath, fileInfo.Name()), filepath.Join(containerModulePath, fileInfo.Name()), os.ModePerm)
 			if err != nil {
 				return err
 			}
 		}
 	}
+    return nil
 }

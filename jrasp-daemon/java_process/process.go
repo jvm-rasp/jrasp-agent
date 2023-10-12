@@ -3,6 +3,7 @@ package java_process
 import (
 	"errors"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"jrasp-daemon/defs"
 	"jrasp-daemon/environ"
@@ -70,6 +71,9 @@ type JavaProcess struct {
 
 	// agent 配置参数
 	agentConfigs map[string]interface{}
+
+	// JVM环境和系统参数
+	PropertiesMap map[string]string `json:"-"`
 }
 
 func NewJavaProcess(p *process.Process, cfg *userconfig.Config, env *environ.Environ) *JavaProcess {
@@ -190,6 +194,65 @@ func splitContent(tokenFilePath string) (string, string, error) {
 	}
 	zlog.Errorf(defs.ATTACH_READ_TOKEN, "[Attach]", "[Fix it] token file content bad,tokenFilePath:%s,fileContentStr:%s", tokenFilePath, fileContentStr)
 	return "", "", err
+}
+
+// 读取jvm的系统参数
+func (jp *JavaProcess) AttachReadJVMProperties() {
+
+	cmd := exec.Command(filepath.Join(jp.env.InstallDir, "bin", getJattachExe()), fmt.Sprintf("%d", jp.JavaPid), "properties")
+
+	// 创建管道来获取命令的标准输出
+	stdout, err := cmd.StdoutPipe()
+	if err != nil {
+		zlog.Warnf(defs.ATTACH_DEFAULT, "[Attach]", "cmd.StdoutPipe error:%v", err)
+		return
+	}
+
+	// 启动命令
+	if err := cmd.Start(); err != nil {
+		zlog.Warnf(defs.ATTACH_DEFAULT, "[Attach]", "cmd.Start error:%v", err)
+		return
+	}
+
+	// 读取命令输出
+	cmdOut, err := io.ReadAll(stdout)
+	if err != nil {
+		zlog.Warnf(defs.ATTACH_DEFAULT, "[Attach]", "ioutil.ReadAll error:%v", err)
+		return
+	}
+
+	// 等待命令执行完成
+	if err := cmd.Wait(); err != nil {
+		zlog.Warnf(defs.ATTACH_DEFAULT, "[Attach]", "cmd.Wait error:%v", err)
+		// 释放资源
+		err = cmd.Process.Release()
+		if err != nil {
+			zlog.Warnf(defs.ATTACH_DEFAULT, "[Attach]", "cmd.Process.Release error:%v", err)
+			return
+		}
+	}
+
+	if jp.PropertiesMap == nil {
+		jp.PropertiesMap = make(map[string]string)
+	}
+
+	if cmdOut != nil && len(cmdOut) > 0 {
+		cmdOutString := string(cmdOut)
+		// TODO windows 换行符号
+		resultArray := strings.Split(cmdOutString, "\n")
+		if resultArray != nil && len(resultArray) > 0 {
+			for _, item := range resultArray {
+				if item != "" {
+					itemArray := strings.SplitN(item, "=", 2)
+					if len(itemArray) == 2 {
+						// 对值进行覆盖
+						jp.PropertiesMap[itemArray[0]] = itemArray[1]
+					}
+				}
+			}
+		}
+	}
+
 }
 
 // UpdateParameters 更新模块参数
@@ -357,16 +420,24 @@ func (jp *JavaProcess) SetStartTime() int64 {
 }
 
 func (jp *JavaProcess) GetAndMarkStatus() {
-	if jp.CheckRunDir() {
-		success := jp.ReadTokenFile()
-		if success {
-			jp.MarkSuccessInjected() // 已经注入过
-		} else {
-			jp.MarkFailedExitInject() // 退出失败，文件异常
+	jp.AttachReadJVMProperties()
+	jraspInfo := jp.PropertiesMap["jrasp.info"]
+	if jraspInfo != "" {
+		tokenArray := strings.Split(jraspInfo, ";")
+		zlog.Infof(defs.ATTACH_READ_TOKEN, "attach jvm properties success", "")
+		if len(tokenArray) == 3 {
+			jp.ServerIp = tokenArray[1]
+			jp.ServerPort = tokenArray[2]
+			jp.MarkSuccessInjected()
+			return
 		}
-	} else {
-		jp.MarkNotInjected() // 未注入过
+	} else if jp.CheckRunDir() {
+		if jp.ReadTokenFile() {
+			jp.MarkSuccessInjected() // 已经注入过
+			return
+		}
 	}
+	jp.MarkFailedExitInject() // 退出失败，文件异常
 }
 
 func exist(filename string) bool {

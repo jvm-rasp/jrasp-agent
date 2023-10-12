@@ -26,8 +26,8 @@ mvn clean package -Dmaven.test.skip=false -f ../pom.xml \
     || exit_on_err 1 "[JRASP ERROR] package jrasp-agent failed."
 
 # jrasp-inject
-cd ../jrasp-attach/build && ./build.sh || exit_on_err 1 "[JRASP ERROR] go build jrasp-attach failed." ;
-cd - || exit_on_err 1 "cd jrasp-attach dir failed.";
+#cd ../jrasp-attach/build && ./build.sh || exit_on_err 1 "[JRASP ERROR] go build jrasp-attach failed." ;
+#cd - || exit_on_err 1 "cd jrasp-attach dir failed.";
 
 # jrasp-daemon
 cd ../jrasp-daemon/build && ./build.sh || exit_on_err 1 "[JRASP ERROR] go build jrasp-daemon failed." ;
@@ -57,7 +57,7 @@ cp ../jrasp-daemon/bin/*.sh ${JRASP_TARGET_DIR}/bin/
 cp ../jrasp-daemon/config/config.json ${JRASP_TARGET_DIR}/config/
 
 # for jrasp-attach
-cp ../jrasp-attach/bin/attach ${JRASP_TARGET_DIR}/bin/attach
+#cp ../jrasp-attach/bin/attach ${JRASP_TARGET_DIR}/bin/attach
 
 # for module
 cp ../jrasp-module/**/target/*-encrypted.jar ${JRASP_TARGET_DIR}/module/  || exit_on_err 1 "[JRASP ERROR] copy jrasp module jar failed."

@@ -39,6 +39,11 @@ const (
 	SUCCESS_DEGRADE InjectType = "success degrade" // 降级正常
 )
 
+const (
+	libDir string = "lib"
+	launcherPackagePre string = "jrasp-launcher-"
+)
+
 type ModuleSendConfig struct {
 	ModuleName string `json:"moduleName"`
 	Parameters string `json:"parameters"`
@@ -89,8 +94,20 @@ func NewJavaProcess(p *process.Process, cfg *userconfig.Config, env *environ.Env
 
 // 执行attach
 func (jp *JavaProcess) Attach() error {
+	// copy jar包到目标进程root path
+	targetProcRootPath :=  filepath.Join("/proc", jp.JavaPid, "root")
+	defaulet := filepath.Join(jp.env.InstallDir, libDir, launcherPackagePre+jp.cfg.Version+".jar")
+	launcherJarPath := filepath.Join(targetProcRootPath, jp.env.InstallDir, libDir, launcherPackagePre+jp.cfg.Version+".jar")
+	exist := utils.PathExists(launcherJarPath)
+	if !exist {
+		utils.CreateDir(filepath.Dir(launcherJarPath))
+		err := utils.CopyFile(defaulet, launcherJarPath)
+		if err != nil {
+			return err
+		}
+	}
 	// 执行attach并检查java_pid文件
-	err := jp.execCmd()
+	err = jp.execCmd()
 	if err != nil {
 		return err
 	}
@@ -114,11 +131,14 @@ func (jp *JavaProcess) execCmd() error {
 	// 通过attach 传递给目标jvm的参数
 	agentArgs := fmt.Sprintf("raspHome=%s;coreVersion=%s;key=%s;logPath=%s;",
 		jp.env.InstallDir, jp.cfg.Version, jp.transformKey(jp.env.BuildDecryptKey), logPathAbs)
+
+	launcherJarPath := filepath.Join(jp.env.InstallDir, libDir, launcherPackagePre+jp.cfg.Version+".jar")
+	
 	// jattach pid load instrument false jrasp-launcher.jar
 	cmd := exec.Command(
 		filepath.Join(jp.env.InstallDir, "bin", getJattachExe()),
 		fmt.Sprintf("%d", jp.JavaPid),
-		"load", "instrument", "false", fmt.Sprintf("%s=%s", filepath.Join(jp.env.InstallDir, "lib", "jrasp-launcher-"+jp.cfg.Version+".jar"), agentArgs),
+		"load", "instrument", "false", fmt.Sprintf("%s=%s", launcherJarPath, agentArgs),
 	)
 
 	zlog.Debugf(defs.ATTACH_DEFAULT, "[Attach]", "cmdArgs:%s", cmd.Args)
@@ -156,7 +176,7 @@ func (jp *JavaProcess) CheckRunDir() bool {
 
 func (jp *JavaProcess) ReadTokenFile() bool {
 	// todo 增加重试次数
-	tokenFilePath := filepath.Join(jp.env.InstallDir, "run", fmt.Sprintf("%d", jp.JavaPid), ".jrasp.token")
+	tokenFilePath := filepath.Join("/proc", fmt.Sprintf("%d", jp.JavaPid), "root", jp.env.InstallDir, "run", fmt.Sprintf("%d", jp.JavaPid), ".jrasp.token")
 	exist := utils.PathExists(tokenFilePath)
 
 	// 文件存在

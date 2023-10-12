@@ -41,3 +41,34 @@ func GetFileMd5(pluginPath string) (string, error) {
 	}
 	return hex.EncodeToString(h.Sum(nil)), nil
 }
+
+func CopyFile(dstFile, srcFile string, perm os.FileMode) error {
+	srcStat, err := os.Stat(srcFile)
+	if err != nil {
+		return err
+	}
+
+	if !srcStat.Mode().IsRegular() {
+		return fmt.Errorf("src file is not a regular file")
+	}
+
+	srcf, err := os.Open(srcFile)
+	if err != nil {
+		return err
+	}
+	defer srcf.Close()
+	
+	dstf, err := os.OpenFile(dstFile, os.O_RDWR|os.O_CREATE|os.O_TRUNC, perm)
+	if err != nil {
+		return err
+	}
+	defer dstf.Close()
+	_, err = io.Copy(dstf, srcf)
+	return err
+}
+
+func CreateDir(path string) {
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		os.MkdirAll(path, os.ModePerm)
+	}
+}

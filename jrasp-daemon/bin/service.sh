@@ -2,9 +2,9 @@
 
 while true
 do
-  process=$(ps aux | grep jrasp-daemon | grep -v grep)
   ## issue 41
-  if [ -z "$process" ] || [[ $process == *"jrasp-daemon.log"* ]]; then
+  process=$(ps aux | grep -E "jrasp-daemon$" | grep -v grep)
+  if [ -z "$process" ]; then
     echo "jrasp-daemon is not running"
     ./jrasp-daemon
   else

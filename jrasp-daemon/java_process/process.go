@@ -172,6 +172,18 @@ func (jp *JavaProcess) ReadTokenFile() bool {
 	// todo 增加重试次数
 	tokenFilePath := filepath.Join("/proc", fmt.Sprintf("%d", jp.JavaPid), "root", jp.env.InstallDir, "run", fmt.Sprintf("%d", jp.JavaPid), ".jrasp.token")
 	exist := utils.PathExists(tokenFilePath)
+	if !exist {
+		pidStr, err := getInContainerPidByHostPid(jp.JavaPid)
+		if err != nil {
+			zlog.Errorf(defs.ATTACH_READ_TOKEN, "[token file]", "get in container pid err:%v", err)
+		} else {
+			containerTokenFilePath := filepath.Join("/proc", fmt.Sprintf("%d", jp.JavaPid), "root", jp.env.InstallDir, "run", pidStr, ".jrasp.token")
+			exist = utils.PathExists(containerTokenFilePath)
+			if exist {
+				tokenFilePath = containerTokenFilePath
+			}
+		}
+	}
 
 	// 文件存在
 	if exist {
@@ -442,7 +454,6 @@ func (jp *JavaProcess) copyJar() error {
 	}
 	for _, fileInfo := range files {
 		if strings.Contains(fileInfo.Name(), jp.cfg.Version) && !utils.PathExists(filepath.Join(containerLibPath, fileInfo.Name())) {
-            fmt.Println("path:", filepath.Join(containerLibPath, fileInfo.Name()))
 			err = utils.CopyFile(filepath.Join(libPath, fileInfo.Name()), filepath.Join(containerLibPath, fileInfo.Name()), os.ModePerm)
 			if err != nil {
 				return err
@@ -466,4 +477,34 @@ func (jp *JavaProcess) copyJar() error {
 		}
 	}
     return nil
+}
+
+// The first line of /proc/pid/sched looks like
+// java (1234, #threads: 12)
+// where 1234 is the host PID (before Linux 4.1)
+func getInContainerPidByHostPid(cPid int32) (string, error) {
+	containerRootPath := filepath.Join("/proc", fmt.Sprintf("%d", cPid), "root")
+	containerProc := filepath.Join(containerRootPath, "proc")
+	files, err := ioutil.ReadDir(containerProc)
+	if err != nil {
+		return "", err
+	}
+	for _, fileInfo := range files {
+		schedFilePath := filepath.Join(containerProc, fileInfo.Name(), "sched")
+		lines, err := utils.ReadLines(schedFilePath, 1)
+		if err != nil {
+			zlog.Debugf(defs.ATTACH_READ_TOKEN, "[token file]", "read sched file get pid err:%v", err)
+			continue
+		}
+		if len(lines) > 0 {
+			splitStr1 := strings.Split(lines[0], ",")
+			if len(splitStr1) > 0 {
+				splitStr2 := strings.Split(splitStr1[0], "(")
+				if len(splitStr2) == 2 {
+					return splitStr2[1], err
+				}
+			}
+		} 
+	}
+	return "", err
 }

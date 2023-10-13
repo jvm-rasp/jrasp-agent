@@ -6,6 +6,7 @@ import (
 	"io"
 	"os"
 	"fmt"
+	"bufio"
 )
 
 // PathExists reports whether the named file or directory exists.
@@ -72,4 +73,33 @@ func CreateDir(path string) {
 	if _, err := os.Stat(path); os.IsNotExist(err) {
 		os.MkdirAll(path, os.ModePerm)
 	}
+}
+
+func ReadLines(path string, count int) ([]string, error) {
+	f, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+
+	var lines []string
+	r := bufio.NewReader(f)
+	i := 0
+	for {
+		if count != 0 && i == count {
+			break
+		}
+		// ReadLine is a low-level line-reading primitive.
+		// Most callers should use ReadBytes('\n') or ReadString('\n') instead or use a Scanner.
+		bytes, _, err := r.ReadLine()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			return lines, err
+		}
+		lines = append(lines, string(bytes))
+		i++
+	}
+	return lines, nil
 }

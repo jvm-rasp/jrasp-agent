@@ -29,9 +29,9 @@ func IsLoaderJar(pid int32, jarName string) bool {
 	return false
 }
 
-func Check(pid int32) bool {
+func Check(pid int32, inContainerPid string) bool {
 	// 判断socket文件是否存在
-	sockfile := filepath.Join(os.TempDir(), fmt.Sprintf(".java_pid%d", pid))
+	sockfile := filepath.Join("/proc", fmt.Sprintf("%d", pid), "root", os.TempDir(), fmt.Sprintf(".java_pid%s", inContainerPid))
 	if exist(sockfile) {
 		return true
 	}

@@ -51,13 +51,14 @@ type ModuleSendConfig struct {
 }
 
 type JavaProcess struct {
-	JavaPid    int32                `json:"javaPid"`   // 进程信息
-	StartTime  string               `json:"startTime"` // 启动时间
-	CmdLines   []string             `json:"cmdLines"`  // 命令行信息
-	AppNames   []string             `json:"appNames"`  // tomcat应用名
-	AgentMode  userconfig.AgentMode `json:"agentMode"` // agent 运行模式
-	ServerIp   string               `json:"serverIp"`  // 内置jetty开启的IP:端口
-	ServerPort string               `json:"serverPort"`
+	JavaPid        int32                `json:"javaPid"`   // 进程信息
+	InContainerPid string               `json:"inContainerPid"`   // 容器内的Pid
+	StartTime      string               `json:"startTime"` // 启动时间
+	CmdLines       []string             `json:"cmdLines"`  // 命令行信息
+	AppNames       []string             `json:"appNames"`  // tomcat应用名
+	AgentMode      userconfig.AgentMode `json:"agentMode"` // agent 运行模式
+	ServerIp       string               `json:"serverIp"`  // 内置jetty开启的IP:端口
+	ServerPort     string               `json:"serverPort"`
 
 	env     *environ.Environ   // 环境变量
 	cfg     *userconfig.Config // 配置
@@ -79,9 +80,14 @@ type JavaProcess struct {
 }
 
 func NewJavaProcess(p *process.Process, cfg *userconfig.Config, env *environ.Environ) *JavaProcess {
+	pidStr, err := getInContainerPidByHostPid(p.Pid)
+	if err != nil {
+		zlog.Errorf(defs.ATTACH_READ_TOKEN, "[token file]", "get in container pid err:%v", err)
+	}
 	javaProcess := &JavaProcess{
 		JavaPid:              p.Pid,
 		process:              p,
+		InContainerPid:       pidStr,
 		env:                  env,
 		cfg:                  cfg,
 		AgentMode:            cfg.AgentMode,
@@ -107,7 +113,7 @@ func (jp *JavaProcess) Attach() error {
 	}
 
 	// 判断socket文件是否存在
-	success := Check(jp.JavaPid)
+	success := Check(jp.JavaPid, jp.InContainerPid)
 	if !success {
 		return errors.New("check attach result error!")
 	}
@@ -172,16 +178,11 @@ func (jp *JavaProcess) ReadTokenFile() bool {
 	// todo 增加重试次数
 	tokenFilePath := filepath.Join("/proc", fmt.Sprintf("%d", jp.JavaPid), "root", jp.env.InstallDir, "run", fmt.Sprintf("%d", jp.JavaPid), ".jrasp.token")
 	exist := utils.PathExists(tokenFilePath)
-	if !exist {
-		pidStr, err := getInContainerPidByHostPid(jp.JavaPid)
-		if err != nil {
-			zlog.Errorf(defs.ATTACH_READ_TOKEN, "[token file]", "get in container pid err:%v", err)
-		} else {
-			containerTokenFilePath := filepath.Join("/proc", fmt.Sprintf("%d", jp.JavaPid), "root", jp.env.InstallDir, "run", pidStr, ".jrasp.token")
-			exist = utils.PathExists(containerTokenFilePath)
-			if exist {
-				tokenFilePath = containerTokenFilePath
-			}
+	if !exist && jp.InContainerPid != "" {
+		containerTokenFilePath := filepath.Join("/proc", fmt.Sprintf("%d", jp.JavaPid), "root", jp.env.InstallDir, "run", jp.InContainerPid, ".jrasp.token")
+		exist = utils.PathExists(containerTokenFilePath)
+		if exist {
+			tokenFilePath = containerTokenFilePath
 		}
 	}
 
@@ -500,8 +501,8 @@ func getInContainerPidByHostPid(cPid int32) (string, error) {
 			splitStr1 := strings.Split(lines[0], ",")
 			if len(splitStr1) > 0 {
 				splitStr2 := strings.Split(splitStr1[0], "(")
-				if len(splitStr2) == 2 {
-					return splitStr2[1], err
+				if len(splitStr2) == 2 && splitStr2[1] == fmt.Sprintf("%d", cPid) {
+					return fileInfo.Name(), err
 				}
 			}
 		} 

@@ -4,6 +4,7 @@ import java.io.File;
 import java.lang.instrument.Instrumentation;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -114,12 +115,15 @@ public class AgentLauncher {
      * @param inst       inst
      */
     private static synchronized void install(final Map<String, String> featureMap,
-                                                          final Instrumentation inst) {
+                                             final Instrumentation inst) {
 
         final String namespace = getNamespace(featureMap);
         final Map<String, String> coreConfigs = toCoreConfigMap(featureMap);
 
         try {
+            // 设置 uuid
+            System.setProperty(KEY_AGENT_UUID, DEFAULT_AGENT_UUID);
+
             final String home = getRaspHome(featureMap);
             // 依赖的spy版本在agent加载时确定，解决业务进程不重启，而无法没有升级的问题
 
@@ -174,6 +178,8 @@ public class AgentLauncher {
 
     private static final String KEY_NAMESPACE = "namespace";
     private static final String DEFAULT_NAMESPACE = "default";
+    private static final String KEY_AGENT_UUID = "uuid";
+    private static final String DEFAULT_AGENT_UUID = UUID.randomUUID().toString();
 
     private static boolean isNotBlankString(final String string) {
         return null != string
@@ -265,6 +271,7 @@ public class AgentLauncher {
         featureMap.put(KEY_JRASP_HOME, raspHome);
         featureMap.put(KEY_NAMESPACE, getNamespace(featureMap));
         featureMap.put(KEY_LAUNCH_MODE, LAUNCH_MODE);
+        featureMap.put(KEY_AGENT_UUID, DEFAULT_AGENT_UUID);
         // 其他参数透传给jrasp-core
         return featureMap;
     }

@@ -38,7 +38,7 @@ public class CoreConfigure {
 
     private static final String KEY_SERVER_PORT = "server.port";
 
-    private static final int VAL_SERVER_PORT = 8898;
+    private static final int VAL_SERVER_PORT = 9888;
 
     // 日志路径
     private static final String KEY_LOG_PATH = "logPath";

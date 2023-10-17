@@ -92,9 +92,9 @@ public class CoreClientImpl implements CoreClient {
                     cfg.getServerIp(), cfg.getServerPort(), System.currentTimeMillis() - start));
 
             // 容器场景使用 jattach $pid properties 读取jrasp.info系统参数
-            String info = format("jrasp;%s;%s;%s\n", cfg.getServerIp(), cfg.getServerPort(), cfg.getUuid());
+            String info = format("jrasp;%s;%s;%s", cfg.getServerIp(), cfg.getServerPort(), cfg.getUuid());
             System.setProperty("jrasp.info", info);
-            writeAgentInitResult(cfg.getServerIp(), cfg.getServerPort());
+            writeAgentInitResult(info);
             isInit = true;
         } catch (Throwable cause) {
             LogUtil.error("client init failed.", cause);
@@ -144,7 +144,7 @@ public class CoreClientImpl implements CoreClient {
      * 结果写入到run/pid/token
      */
     @Deprecated
-    private void writeAgentInitResult(String ip, int port) {
+    private void writeAgentInitResult(String info) {
         File file = new File(cfg.getRuntimeTokenPath());
         if (file.exists() && (!file.isFile() || !file.canWrite())) {
             throw new RuntimeException("write to result file : " + file + " failed.");
@@ -153,7 +153,7 @@ public class CoreClientImpl implements CoreClient {
             try {
                 // 覆盖
                 fw = new FileWriter(file, false);
-                fw.append(format("jrasp;%s;%s\n", ip, port));
+                fw.append(info);
                 fw.flush();
             } catch (IOException e) {
                 throw new RuntimeException(e);

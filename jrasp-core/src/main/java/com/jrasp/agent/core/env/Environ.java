@@ -9,9 +9,9 @@ public class Environ {
 
     private static final String CONTAINERENUM_FILE = "/proc/1/cgroup";
 
-    private static final String DOCKER_KEY = "/docker/";
+    private static final String[] DOCKER_KEY = {"/docker/"};
 
-    private static final String K8S_KEY = "/kubepods/";
+    private static final String[] K8S_KEY = {"/kubepods/"};
 
     private static ContainerEnum container = null;
 
@@ -33,9 +33,9 @@ public class Environ {
 
         try {
             String cgroupInfo = readCgroupFile(cgroupFile);
-            if (cgroupInfo.contains(DOCKER_KEY)) {
+            if (containsArray(cgroupInfo, DOCKER_KEY) != null) {
                 container = ContainerEnum.DOCKER;
-            } else if (cgroupInfo.contains(K8S_KEY)) {
+            } else if (containsArray(cgroupInfo, K8S_KEY) != null) {
                 container = ContainerEnum.K8S;
             } else {
                 container = ContainerEnum.UNKNOWN;
@@ -66,6 +66,15 @@ public class Environ {
             }
         }
         return content.toString();
+    }
+
+    private static String containsArray(String content, String[] items) {
+        for (String item : items) {
+            if (content.contains(item)) {
+                return item;
+            }
+        }
+        return null;
     }
 
     private static String OS = System.getProperty("os.name").toLowerCase();

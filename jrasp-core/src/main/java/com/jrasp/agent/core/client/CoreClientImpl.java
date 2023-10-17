@@ -78,7 +78,7 @@ public class CoreClientImpl implements CoreClient {
 
             // 启动资源检测
             Monitor.Factory.init();
-            //　初始化心跳
+            // 初始化心跳
             executorService.scheduleAtFixedRate(new HeartbeatTask(), 30, 5 * 60, TimeUnit.SECONDS);
 
             // 初始化加载所有的模块
@@ -92,7 +92,7 @@ public class CoreClientImpl implements CoreClient {
                     cfg.getServerIp(), cfg.getServerPort(), System.currentTimeMillis() - start));
 
             // 容器场景使用 jattach $pid properties 读取jrasp.info系统参数
-            String info = format("jrasp;%s;%s\n", cfg.getServerIp(), cfg.getServerPort());
+            String info = format("jrasp;%s;%s;%s\n", cfg.getServerIp(), cfg.getServerPort(), cfg.getUuid());
             System.setProperty("jrasp.info", info);
             writeAgentInitResult(cfg.getServerIp(), cfg.getServerPort());
             isInit = true;

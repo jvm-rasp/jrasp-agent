@@ -1,6 +1,7 @@
 package com.jrasp.agent.core;
 
 import com.jrasp.agent.api.annotation.Information;
+import com.jrasp.agent.api.util.StringUtils;
 import com.jrasp.agent.core.util.FeatureCodec;
 import com.jrasp.agent.core.util.ProcessHelper;
 import com.jrasp.agent.core.util.number.NumberUtils;
@@ -9,10 +10,7 @@ import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.lang.instrument.Instrumentation;
-import java.util.Collection;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.Map;
+import java.util.*;
 
 /**
  * 内核启动配置
@@ -22,6 +20,9 @@ public class CoreConfigure {
 
     private static final String KEY_NAMESPACE = "namespace";
     private static final String DEFAULT_VAL_NAMESPACE = "default";
+
+    private static final String KEY_UUID = "uuid";
+    private static String DEFAULT_VALUE_UUID = UUID.randomUUID().toString();
 
     /**
      * 解密密钥
@@ -36,6 +37,8 @@ public class CoreConfigure {
     private static final String KEY_SERVER_IP = "server.ip";
 
     private static final String KEY_SERVER_PORT = "server.port";
+
+    private static final int VAL_SERVER_PORT = 8898;
 
     // 日志路径
     private static final String KEY_LOG_PATH = "logPath";
@@ -57,7 +60,7 @@ public class CoreConfigure {
 
     private final Map<String, String> featureMap = new LinkedHashMap<String, String>();
 
-    private CoreConfigure(final Map<String,String> agentConfig) {
+    private CoreConfigure(final Map<String, String> agentConfig) {
         this.featureMap.putAll(agentConfig);
     }
 
@@ -67,7 +70,7 @@ public class CoreConfigure {
      * @see com.jrasp.agent.launcher110.AgentLauncher#install(Map, Instrumentation) 被反射初始化
      * 即每次执行 attach 生成一个新的对象
      */
-    public static CoreConfigure toConfigure(final Map<String,String> configs) {
+    public static CoreConfigure toConfigure(final Map<String, String> configs) {
         return new CoreConfigure(configs);
     }
 
@@ -153,7 +156,7 @@ public class CoreConfigure {
      * @return 服务器端口
      */
     public int getServerPort() {
-        return NumberUtils.toInt(featureMap.get(KEY_SERVER_PORT), 9888);
+        return NumberUtils.toInt(featureMap.get(KEY_SERVER_PORT), VAL_SERVER_PORT);
     }
 
     // 获取运行时文件路径
@@ -195,6 +198,14 @@ public class CoreConfigure {
     //  获取进程运行时pid/
     public String getRuntimeTokenPath() {
         return getProcessPidPath() + File.separatorChar + TOKEN_FILE_NAME;
+    }
+
+    public String getUuid() {
+        String uuid = featureMap.get(KEY_UUID);
+        if (StringUtils.isNotBlank(uuid)) {
+            DEFAULT_VALUE_UUID = uuid;
+        }
+        return DEFAULT_VALUE_UUID;
     }
 
 }

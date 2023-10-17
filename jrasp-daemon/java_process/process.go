@@ -74,6 +74,8 @@ type JavaProcess struct {
 
 	// JVM环境和系统参数
 	PropertiesMap map[string]string `json:"-"`
+
+	Uuid string `json:"uuid"` //
 }
 
 func NewJavaProcess(p *process.Process, cfg *userconfig.Config, env *environ.Environ) *JavaProcess {
@@ -165,12 +167,13 @@ func (jp *JavaProcess) ReadTokenFile() bool {
 
 	// 文件存在
 	if exist {
-		ip, port, err := splitContent(tokenFilePath)
+		ip, port, uuid, err := splitContent(tokenFilePath)
 		if err != nil {
 			return false
 		}
 		jp.ServerIp = ip
 		jp.ServerPort = port
+		jp.Uuid = uuid
 		zlog.Debugf(defs.ATTACH_READ_TOKEN, "[ip:port]", "ip: %s,port: %s", ip, port)
 		return true
 	}
@@ -178,22 +181,22 @@ func (jp *JavaProcess) ReadTokenFile() bool {
 	return false
 }
 
-func splitContent(tokenFilePath string) (string, string, error) {
+func splitContent(tokenFilePath string) (string, string, string, error) {
 	fileContent, err := ioutil.ReadFile(tokenFilePath)
 	if err != nil {
 		zlog.Errorf(defs.ATTACH_READ_TOKEN, "[token file]", "read attach token file[%s],error:%v", tokenFilePath, err)
-		return "", "", err
+		return "", "", "", err
 	}
 	fileContentStr := string(fileContent)
 	fileContentStr = strings.Replace(fileContentStr, " ", "", -1) // 字符串去掉"\n"和"空格"
 	fileContentStr = strings.Replace(fileContentStr, "\n", "", -1)
 	tokenArray := strings.Split(fileContentStr, ";")
 	zlog.Debugf(defs.ATTACH_READ_TOKEN, "[token file]", "token file content:%s", fileContentStr)
-	if len(tokenArray) == 3 {
-		return tokenArray[1], tokenArray[2], nil
+	if len(tokenArray) >= 4 {
+		return tokenArray[1], tokenArray[2], tokenArray[3], nil
 	}
 	zlog.Errorf(defs.ATTACH_READ_TOKEN, "[Attach]", "[Fix it] token file content bad,tokenFilePath:%s,fileContentStr:%s", tokenFilePath, fileContentStr)
-	return "", "", err
+	return "", "", "", err
 }
 
 // 读取jvm的系统参数
@@ -425,9 +428,10 @@ func (jp *JavaProcess) GetAndMarkStatus() {
 	if jraspInfo != "" {
 		tokenArray := strings.Split(jraspInfo, ";")
 		zlog.Infof(defs.ATTACH_READ_TOKEN, "attach jvm properties success", "")
-		if len(tokenArray) == 3 {
+		if len(tokenArray) >= 4 {
 			jp.ServerIp = tokenArray[1]
 			jp.ServerPort = tokenArray[2]
+			jp.Uuid = tokenArray[3]
 			jp.MarkSuccessInjected()
 			return
 		}

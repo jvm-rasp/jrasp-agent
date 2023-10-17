@@ -33,13 +33,18 @@ var AgentMessageChan = make(chan string, 2000)
 
 type DaemonSocket struct {
 	Port   int
-	Client map[string]net.Conn // agent 注册的连接
+	Client map[string]ConnInfo // agent 注册的连接
+}
+
+type ConnInfo struct {
+	net.Conn
+	isUpdateConfig bool
 }
 
 func NewServerSocket(port int) *DaemonSocket {
 	return &DaemonSocket{
 		Port:   port,
-		Client: make(map[string]net.Conn, 10),
+		Client: make(map[string]ConnInfo, 10), //
 	}
 }
 
@@ -67,10 +72,12 @@ func (d *DaemonSocket) handleAgentConnection(conn net.Conn) {
 	if conn != nil {
 		addr := conn.RemoteAddr()
 		if addr != nil {
-			// 注册agent客户端
-			// TODO 暂时不需要特别大的名称
 			address := addr.String()
-			d.Client[address] = conn
+			conInfo := &ConnInfo{
+				Conn:           conn,
+				isUpdateConfig: false,
+			}
+			d.Client[address] = *conInfo
 		}
 	}
 
@@ -129,12 +136,12 @@ func (d *DaemonSocket) UpdateAgentConfig(message string) {
 // SendGroup 广播消息
 func (d *DaemonSocket) SendGroup(message string, t byte) {
 	for _, v := range d.Client {
-		d.SendMessge2Conn(v, message, t)
+		d.SendClientMessge(v, message, t)
 	}
 }
 
 // SendMessge2Conn 往指定连接发送消息
-func (d *DaemonSocket) SendMessge2Conn(conn net.Conn, message string, t byte) {
+func (d *DaemonSocket) SendClientMessge(conn net.Conn, message string, t byte) {
 	pack := &Package{
 		Magic:     MagicBytes,
 		Version:   PROTOCOL_VERSION,

@@ -164,3 +164,30 @@ func getPidFromPath(filePath string) int {
 func isHsPerfDataDir(name string) bool {
 	return strings.HasPrefix(name, PERF_DATA_FILE_PREFIX)
 }
+
+// 定时扫描全量进程
+func (w *Watch) ProcessScan() {
+	for {
+		select {
+		case _, ok := <-w.JavaProcessScanTicker.C:
+			if !ok {
+				continue
+			}
+			processes, err := process.Processes()
+			if err != nil {
+				continue
+			}
+
+			// 选择Java进程
+			// 容器或者非容器进程特征相同
+			for _, processe := range processes {
+				exe, err := processe.Exe()
+				if err != nil {
+					if exe != "" && strings.HasSuffix(exe, "java") {
+						w.JavaProcessHandlerChan <- processe
+					}
+				}
+			}
+		}
+	}
+}

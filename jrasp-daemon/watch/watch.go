@@ -25,6 +25,7 @@ type Watch struct {
 
 	scanTicker                   *time.Ticker          // 注入定时器
 	RebootTicker                 *time.Ticker          // 定时器重启功能
+	JavaProcessScanTicker        *time.Ticker          // 识别Java进程定时器
 	PidExistsTicker              *time.Ticker          // 进程存活检测定时器
 	LogReportTicker              *time.Ticker          // 进程信息定时上报
 	HeartBeatReportTicker        *time.Ticker          // 心跳定时器
@@ -42,6 +43,7 @@ func NewWatch(cfg *userconfig.Config, env *environ.Environ, ctx context.Context)
 		selfPid:                      int32(os.Getpid()),
 		LogReportTicker:              time.NewTicker(time.Hour * time.Duration(cfg.LogReportTicker)),
 		scanTicker:                   time.NewTicker(time.Second * time.Duration(cfg.ScanTicker)),
+		JavaProcessScanTicker:        time.NewTicker(time.Second * time.Duration(cfg.JavaProcessScanTicker)),
 		PidExistsTicker:              time.NewTicker(time.Second * time.Duration(cfg.PidExistsTicker)),
 		HeartBeatReportTicker:        time.NewTicker(time.Minute * time.Duration(cfg.HeartBeatReportTicker)),
 		RebootTicker:                 time.NewTicker(time.Minute * time.Duration(cfg.RebootTicker)),

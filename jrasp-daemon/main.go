@@ -94,7 +94,7 @@ func main() {
 	go newWatch.Reboot()
 
 	// 加强版的jps工具
-	go newWatch.NotifyJavaProcess()
+	go newWatch.ProcessScan()
 
 	// 进程注入
 	go newWatch.DoAttach()

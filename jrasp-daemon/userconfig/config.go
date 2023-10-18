@@ -43,6 +43,7 @@ type Config struct {
 	LogReportTicker       uint32 `json:"logReportTicker"`
 	ScanTicker            uint32 `json:"scanTicker"`
 	RebootTicker          uint32 `json:"rebootTicker"`
+	JavaProcessScanTicker uint32 `json:"javaProcessScanTicker"`
 	PidExistsTicker       uint32 `json:"pidExistsTicker"`
 	ProcessInjectTicker   uint32 `json:"processInjectTicker"`
 	HeartBeatReportTicker uint   `json:"heartBeatReportTicker"`
@@ -163,6 +164,7 @@ func setDefaultValue(vp *viper.Viper) {
 	vp.SetDefault("ScanTicker", 30)
 	vp.SetDefault("RebootTicker", 7*24*60)
 	vp.SetDefault("PidExistsTicker", 10)
+	vp.SetDefault("JavaProcessScanTicker", 2*60)
 	vp.SetDefault("ProcessInjectTicker", 30)
 	vp.SetDefault("HeartBeatReportTicker", 5)
 	vp.SetDefault("ContainerTicker", 5)

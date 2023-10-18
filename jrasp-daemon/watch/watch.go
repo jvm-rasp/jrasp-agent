@@ -2,6 +2,8 @@ package watch
 
 import (
 	"context"
+	"fmt"
+	"io/ioutil"
 	"jrasp-daemon/defs"
 	"jrasp-daemon/environ"
 	"jrasp-daemon/java_process"
@@ -9,6 +11,7 @@ import (
 	"jrasp-daemon/utils"
 	"jrasp-daemon/zlog"
 	"os"
+	"path/filepath"
 	"strings"
 	"sync"
 	"time"
@@ -23,33 +26,36 @@ type Watch struct {
 	cfg     *userconfig.Config
 	selfPid int32 // jrasp-daemon进程自身pid
 
-	scanTicker                   *time.Ticker          // 注入定时器
-	RebootTicker                 *time.Ticker          // 定时器重启功能
-	JavaProcessScanTicker        *time.Ticker          // 识别Java进程定时器
-	PidExistsTicker              *time.Ticker          // 进程存活检测定时器
-	LogReportTicker              *time.Ticker          // 进程信息定时上报
-	HeartBeatReportTicker        *time.Ticker          // 心跳定时器
-	ProcessSyncMap               sync.Map              // 保存监听的java进程
-	JavaProcessHandlerChan       chan *process.Process // java 进程处理chan
-	JavaProcessDeleteHandlerChan chan int32            // java 进程退出处理chan
+	scanTicker                  *time.Ticker          // 注入定时器
+	RebootTicker                *time.Ticker          // 定时器重启功能
+	JavaProcessScanTicker       *time.Ticker          // 识别Java进程定时器
+	PidExistsTicker             *time.Ticker          // 进程存活检测定时器
+	LogReportTicker             *time.Ticker          // 进程信息定时上报
+	HeartBeatReportTicker       *time.Ticker          // 心跳定时器
+	ProcessSyncMap              sync.Map              // 保存所有的Java进程
+	JavaProcessSyncMap          sync.Map              // 保存监听的java进程
+	JavaProcessHandleChan       chan *process.Process // java 进程处理chan
+	JavaPidHandleChan           chan int32            // java 进程处理chan
+	JavaProcessDeleteHandleChan chan int32            // java 进程退出处理chan
 
 	ctx context.Context
 }
 
 func NewWatch(cfg *userconfig.Config, env *environ.Environ, ctx context.Context) *Watch {
 	w := &Watch{
-		env:                          env,
-		cfg:                          cfg,
-		selfPid:                      int32(os.Getpid()),
-		LogReportTicker:              time.NewTicker(time.Hour * time.Duration(cfg.LogReportTicker)),
-		scanTicker:                   time.NewTicker(time.Second * time.Duration(cfg.ScanTicker)),
-		JavaProcessScanTicker:        time.NewTicker(time.Second * time.Duration(cfg.JavaProcessScanTicker)),
-		PidExistsTicker:              time.NewTicker(time.Second * time.Duration(cfg.PidExistsTicker)),
-		HeartBeatReportTicker:        time.NewTicker(time.Minute * time.Duration(cfg.HeartBeatReportTicker)),
-		RebootTicker:                 time.NewTicker(time.Minute * time.Duration(cfg.RebootTicker)),
-		JavaProcessHandlerChan:       make(chan *process.Process, 500),
-		JavaProcessDeleteHandlerChan: make(chan int32, 500),
-		ctx:                          ctx,
+		env:                         env,
+		cfg:                         cfg,
+		selfPid:                     int32(os.Getpid()),
+		LogReportTicker:             time.NewTicker(time.Hour * time.Duration(cfg.LogReportTicker)),
+		scanTicker:                  time.NewTicker(time.Second * time.Duration(cfg.ScanTicker)),
+		JavaProcessScanTicker:       time.NewTicker(time.Second * time.Duration(cfg.JavaProcessScanTicker)),
+		PidExistsTicker:             time.NewTicker(time.Second * time.Duration(cfg.PidExistsTicker)),
+		HeartBeatReportTicker:       time.NewTicker(time.Minute * time.Duration(cfg.HeartBeatReportTicker)),
+		RebootTicker:                time.NewTicker(time.Minute * time.Duration(cfg.RebootTicker)),
+		JavaProcessHandleChan:       make(chan *process.Process, 500),
+		JavaPidHandleChan:           make(chan int32, 500),
+		JavaProcessDeleteHandleChan: make(chan int32, 500),
+		ctx:                         ctx,
 	}
 	return w
 }
@@ -76,12 +82,12 @@ func (w *Watch) DoAttach() {
 		select {
 		case _ = <-w.ctx.Done():
 			return
-		case p, ok := <-w.JavaProcessHandlerChan:
+		case p, ok := <-w.JavaPidHandleChan:
 			if !ok {
 				zlog.Errorf(defs.WATCH_DEFAULT, "chan shutdown", "java process handler chan closed")
 			}
 			go w.getJavaProcessInfo(p)
-		case p, ok := <-w.JavaProcessDeleteHandlerChan:
+		case p, ok := <-w.JavaProcessDeleteHandleChan:
 			if !ok {
 				zlog.Errorf(defs.WATCH_DEFAULT, "chan shutdown", "java process handler chan closed")
 			}
@@ -110,11 +116,11 @@ func (w *Watch) JavaStatusTimer() {
 }
 
 func (w *Watch) logJavaInfo() {
-	w.ProcessSyncMap.Range(func(pid, p interface{}) bool {
+	w.JavaProcessSyncMap.Range(func(pid, p interface{}) bool {
 		exists, err := process.PidExists(pid.(int32))
 		if err != nil || !exists {
 			// 出错或者不存在时，删除
-			w.ProcessSyncMap.Delete(pid)
+			w.JavaProcessSyncMap.Delete(pid)
 			// todo 对应的run/pid目录确认删除
 			zlog.Infof(defs.JAVA_PROCESS_SHUTDOWN, "java process exit", "%d", pid)
 		} else {
@@ -127,7 +133,7 @@ func (w *Watch) logJavaInfo() {
 
 func (w *Watch) logHeartBeat() {
 	hb := NewHeartBeat()
-	w.ProcessSyncMap.Range(func(pid, p interface{}) bool {
+	w.JavaProcessSyncMap.Range(func(pid, p interface{}) bool {
 		exists, err := process.PidExists(pid.(int32))
 		if err != nil || !exists {
 			// 出错或者不存在时，删除
@@ -144,60 +150,57 @@ func (w *Watch) logHeartBeat() {
 }
 
 // 进程状态、配置等检测
-func (w *Watch) getJavaProcessInfo(procss *process.Process) {
-	// 判断是否已经检查过了
-	_, f := w.ProcessSyncMap.Load(procss.Pid)
+func (w *Watch) getJavaProcessInfo(pid int32) {
+	// 进程是否已经检查过
+	_, f := w.ProcessSyncMap.Load(pid)
 	if f {
-		// todo 判断进程启动时间,防止进程退出后再次启动使用相同pid，10秒内重启的进程
-		zlog.Debugf(defs.WATCH_DEFAULT, "java process has been monitored", "javaPid:%d", procss.Pid)
+		return
+	}
+	w.ProcessSyncMap.Store(pid, pid)
+
+	p, err := process.NewProcess(pid)
+	if err != nil {
 		return
 	}
 
-	javaProcess := java_process.NewJavaProcess(procss, w.cfg, w.env)
+	exe, err := p.Exe()
+	if err != nil || exe == "" {
+		return
+	}
+
+	if !utils.IsJavaExe(exe) {
+		return
+	}
+
+	javaProcess := java_process.NewJavaProcess(p, w.cfg, w.env)
+
+	// 容器检查
+	if isProcessInContainer(pid) {
+		javaProcess.IsContainer = true
+	}
 
 	// cmdline 信息
 	javaProcess.SetCmdLines()
 
 	// AppNames 信息
-	javaProcess.SetAppNames()
+	// javaProcess.SetAppNames()
 
-	// IDEA
+	// 屏蔽指定特征的进程
 	for _, v := range javaProcess.CmdLines {
-		if strings.Contains(v, "IDEA") || strings.Contains(v, "GoLand") || strings.Contains(v, "vscode") {
-			zlog.Debugf(defs.WATCH_DEFAULT, "idea or vscode process, java process ignore.", "javaPid:%d", procss.Pid)
-			return
-		}
-		if strings.Contains(v, "/ECCollect/") {
-			zlog.Debugf(defs.WATCH_DEFAULT, "Epoint ECCollect process, java process ignore.", "javaPid:%d", procss.Pid)
-			return
-		}
-		if strings.Contains(v, "/ECUpdate/") {
-			zlog.Debugf(defs.WATCH_DEFAULT, "Epoint ECUpdate process, java process ignore.", "javaPid:%d", procss.Pid)
-			return
-		}
-		if strings.Contains(v, "/ECReport/") {
-			zlog.Debugf(defs.WATCH_DEFAULT, "Epoint ECReport process, java process ignore.", "javaPid:%d", procss.Pid)
-			return
-		}
-		if strings.Contains(v, "/zookeeper/") {
-			zlog.Debugf(defs.WATCH_DEFAULT, "ZooKeeper process, java process ignore.", "javaPid:%d", procss.Pid)
-			return
+		var items = w.cfg.JavaCmdLineWhiteList
+		for _, item := range items {
+			if strings.Contains(v, item) {
+				return
+			}
 		}
 	}
 
-	// 只有wrapper进程启动的才进行注入
-	//if javaProcess.CmdLines[len(javaProcess.CmdLines)-1] != "stop" {
-	//	zlog.Debugf(defs.WATCH_DEFAULT, "None wrapper start process, java process ignore.", "javaPid:%d", procss.Pid)
-	//	return
-	//}
-
-	// 发下进程到开启注入时间
-	time.Sleep(15 * time.Second)
 	// 设置java进程启动时间
 	startTime := javaProcess.SetStartTime()
 
-	// 获取进程的注入状态
-	javaProcess.GetAndMarkStatus()
+	if w.checkInjectStatus(javaProcess) {
+		javaProcess.MarkSuccessInjected()
+	}
 
 	// Java进程上报
 	zlog.Infof(defs.JAVA_PROCESS_STARTUP, "find a java process", utils.ToString(javaProcess))
@@ -205,19 +208,22 @@ func (w *Watch) getJavaProcessInfo(procss *process.Process) {
 	if w.cfg.IsDisable() && javaProcess.SuccessInject() {
 		// 关闭注入，并且已经注入状态
 		javaProcess.ExitInjectImmediately()
-	} else if w.cfg.IsDynamicMode() && !javaProcess.IsInject() {
+		return
+	}
+
+	if w.cfg.IsDynamicMode() && !javaProcess.IsInject() {
 		// java进程启动完成之后注入，防止死锁和短生命周期进程如jps等
 		currentTime := time.Now().UnixMilli()
 		period := currentTime - startTime
 		if period > 0 && period < w.cfg.MinJvmStartTime*60*1000 {
 			sleepTime := w.cfg.MinJvmStartTime*60*1000 - period
 			zlog.Infof(defs.WATCH_DEFAULT, "attach java goroutine sleep",
-				"java process: %d, sleep time(second): %d", procss.Pid, sleepTime/1000)
+				"java process: %d, sleep time(second): %d", javaProcess.JavaPid, sleepTime/1000)
 			time.Sleep(time.Duration(sleepTime) * time.Millisecond)
 		}
 
 		// 等待结束之后确认进程存在
-		exists, err := process.PidExists(procss.Pid)
+		exists, err := process.PidExists(javaProcess.JavaPid)
 		if err != nil || !exists {
 			return
 		}
@@ -226,8 +232,11 @@ func (w *Watch) getJavaProcessInfo(procss *process.Process) {
 		w.DynamicInject(javaProcess)
 
 		// 判断是否注入成功
-		javaProcess.GetAndMarkStatus()
-
+		if w.checkInjectStatus(javaProcess) {
+			javaProcess.MarkSuccessInjected()
+		} else {
+			javaProcess.MarkFailedExitInject()
+		}
 	}
 
 	// 参数更新
@@ -237,8 +246,29 @@ func (w *Watch) getJavaProcessInfo(procss *process.Process) {
 		zlog.Debugf(defs.AGENT_CONFIG_UPDATE, "update agent config", "update parameters success")
 	}
 
-	// 进程加入观测集合中
-	w.ProcessSyncMap.Store(javaProcess.JavaPid, javaProcess)
+	// Java进程加入观测集合中
+	w.JavaProcessSyncMap.Store(javaProcess.JavaPid, javaProcess)
+}
+
+func (w *Watch) checkInjectStatus(javaProcess *java_process.JavaProcess) bool {
+	// 获取进程的注入状态
+	if javaProcess.ReadTokenFile() {
+		return true
+	}
+	// 对于容器中的进程，无法直接读取文件
+	javaProcess.AttachReadJVMProperties()
+	if javaProcess.PropertiesMap["jrasp.info"] != "" {
+		jraspInfo := javaProcess.PropertiesMap["jrasp.info"]
+		tokens, err := utils.SplitContent(jraspInfo, ";")
+		if err == nil && len(tokens) >= 4 {
+			javaProcess.ServerIp = tokens[1]
+			javaProcess.ServerPort = tokens[2]
+			javaProcess.Uuid = tokens[3]
+			zlog.Infof(defs.ATTACH_READ_TOKEN, "[ip:port:uuid]", "ip: %s, port: %s, uuid: %s", javaProcess.ServerIp, javaProcess.ServerPort, javaProcess.Uuid)
+			return true
+		}
+	}
+	return false
 }
 
 func (w *Watch) removeExitedJavaProcess(pid int32) {
@@ -258,4 +288,19 @@ func (w *Watch) DynamicInject(javaProcess *java_process.JavaProcess) {
 		javaProcess.MarkSuccessInjected()
 		zlog.Infof(defs.AGENT_SUCCESS_INIT, "java agent init success", `{"pid":%d,"status":"%s","startTime":"%s"}`, javaProcess.JavaPid, javaProcess.InjectedStatus, javaProcess.StartTime)
 	}
+}
+
+func isProcessInContainer(pid int32) bool {
+	procPath := fmt.Sprintf("/proc/%d", pid)
+	cgroupPath := filepath.Join(procPath, "cgroup")
+	cgroupData, err := ioutil.ReadFile(cgroupPath)
+	if err != nil {
+		return false
+	}
+
+	if strings.Contains(string(cgroupData), "/docker/") || strings.Contains(string(cgroupData), "/kubepods/") {
+		return true
+	}
+
+	return false
 }

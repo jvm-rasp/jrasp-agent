@@ -78,6 +78,8 @@ type Config struct {
 
 	MaxFileUsedPercent uint64 `json:"maxFileUsedPercent"` //  文件打开的最大限制百分比, 范围0～100，默认 80
 	FileCheckFrequency uint64 `json:"fileCheckFrequency"` // 文件指标检测频率, 单位分钟，默认 10
+
+	JavaCmdLineWhiteList []string `json:"javaCmdLineWhiteList"` // 不注入白名单
 }
 
 // ModuleConfig module信息
@@ -198,6 +200,8 @@ func setDefaultValue(vp *viper.Viper) {
 
 	vp.SetDefault("MaxFileUsedPercent", 80)
 	vp.SetDefault("FileCheckFrequency", 10)
+
+	vp.SetDefault("JavaCmdLineWhiteList", []string{"IDEA", "GoLand", "vscode", "/ECCollect/", "/ECUpdate/", "/ECReport/", "/zookeeper/", "jps", "jcmd", "jmap", "jinfo"})
 
 }
 

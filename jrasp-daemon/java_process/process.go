@@ -76,6 +76,8 @@ type JavaProcess struct {
 	PropertiesMap map[string]string `json:"-"`
 
 	Uuid string `json:"uuid"` //
+
+	IsContainer bool `json:"isContainer"` // 是否在容器中
 }
 
 func NewJavaProcess(p *process.Process, cfg *userconfig.Config, env *environ.Environ) *JavaProcess {
@@ -161,42 +163,27 @@ func (jp *JavaProcess) CheckRunDir() bool {
 }
 
 func (jp *JavaProcess) ReadTokenFile() bool {
-	// todo 增加重试次数
 	tokenFilePath := filepath.Join(jp.env.InstallDir, "run", fmt.Sprintf("%d", jp.JavaPid), ".jrasp.token")
 	exist := utils.PathExists(tokenFilePath)
-
 	// 文件存在
 	if exist {
-		ip, port, uuid, err := splitContent(tokenFilePath)
+		fileContent, err := ioutil.ReadFile(tokenFilePath)
 		if err != nil {
 			return false
 		}
-		jp.ServerIp = ip
-		jp.ServerPort = port
-		jp.Uuid = uuid
-		zlog.Debugf(defs.ATTACH_READ_TOKEN, "[ip:port]", "ip: %s,port: %s", ip, port)
-		return true
+		tokes, err := utils.SplitContent(string(fileContent), ";")
+		if err != nil {
+			return false
+		}
+		if len(tokes) >= 4 {
+			jp.ServerIp = tokes[1]
+			jp.ServerPort = tokes[2]
+			jp.Uuid = tokes[3]
+			zlog.Infof(defs.ATTACH_READ_TOKEN, "[ip:port:uuid]", "ip: %s, port: %s, uuid: %s", jp.ServerIp, jp.ServerPort, jp.Uuid)
+			return true
+		}
 	}
-	zlog.Errorf(defs.ATTACH_READ_TOKEN, "[token file]", "attach token file[%s] not exist", tokenFilePath)
 	return false
-}
-
-func splitContent(tokenFilePath string) (string, string, string, error) {
-	fileContent, err := ioutil.ReadFile(tokenFilePath)
-	if err != nil {
-		zlog.Errorf(defs.ATTACH_READ_TOKEN, "[token file]", "read attach token file[%s],error:%v", tokenFilePath, err)
-		return "", "", "", err
-	}
-	fileContentStr := string(fileContent)
-	fileContentStr = strings.Replace(fileContentStr, " ", "", -1) // 字符串去掉"\n"和"空格"
-	fileContentStr = strings.Replace(fileContentStr, "\n", "", -1)
-	tokenArray := strings.Split(fileContentStr, ";")
-	zlog.Debugf(defs.ATTACH_READ_TOKEN, "[token file]", "token file content:%s", fileContentStr)
-	if len(tokenArray) >= 4 {
-		return tokenArray[1], tokenArray[2], tokenArray[3], nil
-	}
-	zlog.Errorf(defs.ATTACH_READ_TOKEN, "[Attach]", "[Fix it] token file content bad,tokenFilePath:%s,fileContentStr:%s", tokenFilePath, fileContentStr)
-	return "", "", "", err
 }
 
 // 读取jvm的系统参数
@@ -371,7 +358,6 @@ func (jp *JavaProcess) SetPid(pid int32) {
 
 func (jp *JavaProcess) SetCmdLines() {
 	cmdLines, err := jp.process.CmdlineSlice()
-	//cmdLines, err := jp.process.Cmdline()
 	if err != nil {
 		zlog.Warnf(defs.WATCH_DEFAULT, "get process cmdLines error", `{"pid":%d,"err":%v}`, jp.JavaPid, err)
 	}

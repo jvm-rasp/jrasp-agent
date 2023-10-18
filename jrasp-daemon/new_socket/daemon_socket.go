@@ -103,11 +103,11 @@ func (d *DaemonSocket) handleAgentConnection(conn net.Conn) {
 			return
 		}
 		// 处理java agent 产生的日志
-		HandlerAgentMessage(scannedPack)
+		handleAgentMessage(scannedPack)
 	}
 }
 
-func HandlerAgentMessage(p *socket.Package) {
+func handleAgentMessage(p *socket.Package) {
 	// java agent 的日志写入缓存队列，准备发往server
 	fmt.Println("回传日志:" + string(p.Body))
 	AgentMessageChan <- string(p.Body)

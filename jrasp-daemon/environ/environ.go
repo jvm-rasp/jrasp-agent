@@ -119,6 +119,11 @@ func NewEnviron() (*Environ, error) {
 	return env, nil
 }
 
+func (e *Environ) IsLinux() bool {
+	os := strings.ToLower(e.OsType)
+	return strings.Contains(os, "linux")
+}
+
 func getHostname(execDir string) string {
 	hostName := ""
 

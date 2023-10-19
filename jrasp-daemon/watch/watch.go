@@ -12,6 +12,7 @@ import (
 	"jrasp-daemon/zlog"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -60,23 +61,6 @@ func NewWatch(cfg *userconfig.Config, env *environ.Environ, ctx context.Context)
 	return w
 }
 
-// nacos 服务不稳定，长时间运行后容易断开连，这里设置定时重启功能（一般是1个月以上）
-func (w *Watch) Reboot() {
-	zlog.Debugf(defs.DEFAULT_INFO, "restart jrasp-daemon ticker start...", "reboot period:%d(Minute)", w.cfg.RebootTicker)
-	for {
-		select {
-		case _ = <-w.ctx.Done():
-			return
-		case _, ok := <-w.RebootTicker.C:
-			if !ok {
-				return
-			}
-			zlog.Infof(defs.DEFAULT_INFO, "jrasp-daemon will restart...", "jrasp-deamon pid:%d", w.selfPid)
-			os.Exit(0)
-		}
-	}
-}
-
 func (w *Watch) DoAttach() {
 	for {
 		select {
@@ -86,7 +70,7 @@ func (w *Watch) DoAttach() {
 			if !ok {
 				zlog.Errorf(defs.WATCH_DEFAULT, "chan shutdown", "java process handler chan closed")
 			}
-			go w.getJavaProcessInfo(p)
+			go w.InjectJavaProcess(p)
 		case p, ok := <-w.JavaProcessDeleteHandleChan:
 			if !ok {
 				zlog.Errorf(defs.WATCH_DEFAULT, "chan shutdown", "java process handler chan closed")
@@ -96,70 +80,19 @@ func (w *Watch) DoAttach() {
 	}
 }
 
-func (w *Watch) JavaStatusTimer() {
-	for {
-		select {
-		case _ = <-w.ctx.Done():
-			return
-		case _, ok := <-w.LogReportTicker.C:
-			if !ok {
-				return
-			}
-			w.logJavaInfo()
-		case _, ok := <-w.HeartBeatReportTicker.C:
-			if !ok {
-				return
-			}
-			w.logHeartBeat()
-		}
-	}
-}
-
-func (w *Watch) logJavaInfo() {
-	w.JavaProcessSyncMap.Range(func(pid, p interface{}) bool {
-		exists, err := process.PidExists(pid.(int32))
-		if err != nil || !exists {
-			// 出错或者不存在时，删除
-			w.JavaProcessSyncMap.Delete(pid)
-			// todo 对应的run/pid目录确认删除
-			zlog.Infof(defs.JAVA_PROCESS_SHUTDOWN, "java process exit", "%d", pid)
-		} else {
-			processJava := (p).(*java_process.JavaProcess)
-			zlog.Infof(defs.WATCH_DEFAULT, "[LogReport]", utils.ToString(processJava))
-		}
-		return true
-	})
-}
-
-func (w *Watch) logHeartBeat() {
-	hb := NewHeartBeat()
-	w.JavaProcessSyncMap.Range(func(pid, p interface{}) bool {
-		exists, err := process.PidExists(pid.(int32))
-		if err != nil || !exists {
-			// 出错或者不存在时，删除
-			w.ProcessSyncMap.Delete(pid)
-			// todo 对应的run/pid目录确认删除
-			zlog.Infof(defs.JAVA_PROCESS_SHUTDOWN, "java process exit", "%d", pid)
-		} else {
-			processJava := (p).(*java_process.JavaProcess)
-			hb.Append(processJava)
-		}
-		return true
-	})
-	zlog.Infof(defs.HEART_BEAT, "[logHeartBeat]", hb.toJsonString())
-}
-
 // 进程状态、配置等检测
-func (w *Watch) getJavaProcessInfo(pid int32) {
+func (w *Watch) InjectJavaProcess(pid int32) {
 	// 进程是否已经检查过
-	_, f := w.ProcessSyncMap.Load(pid)
-	if f {
+	_, ok := w.ProcessSyncMap.Load(pid)
+	if ok {
 		return
 	}
+
 	w.ProcessSyncMap.Store(pid, pid)
 
 	p, err := process.NewProcess(pid)
 	if err != nil {
+		zlog.Infof(defs.DEFAULT_INFO, "process.NewProcess(pid) run failed", "Java Pid:%d, err: %v", pid, err)
 		return
 	}
 
@@ -168,38 +101,52 @@ func (w *Watch) getJavaProcessInfo(pid int32) {
 		return
 	}
 
+	// 过滤Java进程
 	if !utils.IsJavaExe(exe) {
 		return
 	}
 
 	javaProcess := java_process.NewJavaProcess(p, w.cfg, w.env)
 
-	// 容器检查
-	if isProcessInContainer(pid) {
-		javaProcess.IsContainer = true
-	}
-
-	// cmdline 信息
+	// 屏蔽指定特征的Java进程
 	javaProcess.SetCmdLines()
-
-	// AppNames 信息
-	// javaProcess.SetAppNames()
-
-	// 屏蔽指定特征的进程
 	for _, v := range javaProcess.CmdLines {
 		var items = w.cfg.JavaCmdLineWhiteList
 		for _, item := range items {
 			if strings.Contains(v, item) {
+				zlog.Infof(defs.DEFAULT_INFO, "java process will ignore", "Java Pid:%d, cmdLineWhite: %s", javaProcess.JavaPid, item)
 				return
 			}
 		}
+	}
+
+	// 容器检查
+	// 获取容器内的pid
+	if isProcessInContainer(pid) {
+		javaProcess.IsContainer = true
+		innerPid, err := javaProcess.GetInContainerPidByHostPid()
+		if err != nil || innerPid == "" {
+			zlog.Warnf(defs.DEFAULT_INFO, "get Java process innner pid failed, process will ignore", "Java Pid:%d, err:%v", javaProcess.JavaPid, err)
+			return
+		}
+
+		innerPidInt, err := strconv.ParseInt(innerPid, 10, 32)
+		if err != nil || innerPidInt <= 0 {
+			zlog.Warnf(defs.DEFAULT_INFO, "convert innerPid to int32 failed, process will ignore", "Java Pid:%d, err:%v", javaProcess.JavaPid, err)
+			return
+		}
+		javaProcess.InContainerPid = int32(innerPidInt)
 	}
 
 	// 设置java进程启动时间
 	startTime := javaProcess.SetStartTime()
 
 	if w.checkInjectStatus(javaProcess) {
+		// 能够获取注入文件，注入成功
 		javaProcess.MarkSuccessInjected()
+	} else {
+		// 获取注入文件失败，未注入或者注入失败
+		javaProcess.MarkNotInjected()
 	}
 
 	// Java进程上报
@@ -231,6 +178,9 @@ func (w *Watch) getJavaProcessInfo(pid int32) {
 		// 没有注入并且支持动态注入
 		w.DynamicInject(javaProcess)
 
+		// 设置等待时间10s
+		time.Sleep(time.Second * time.Duration(10))
+
 		// 判断是否注入成功
 		if w.checkInjectStatus(javaProcess) {
 			javaProcess.MarkSuccessInjected()
@@ -241,6 +191,7 @@ func (w *Watch) getJavaProcessInfo(pid int32) {
 
 	// 参数更新
 	if !w.cfg.IsDisable() && javaProcess.SuccessInject() {
+		// TODO 重写
 		javaProcess.SoftFlush()
 		javaProcess.UpdateParameters()
 		zlog.Debugf(defs.AGENT_CONFIG_UPDATE, "update agent config", "update parameters success")
@@ -252,17 +203,7 @@ func (w *Watch) getJavaProcessInfo(pid int32) {
 
 func (w *Watch) checkInjectStatus(javaProcess *java_process.JavaProcess) bool {
 	// 获取进程的注入状态
-	if javaProcess.ReadTokenFile() {
-		return true
-	}
-	// 对于容器中的进程，无法直接读取文件
-	// TODO 是否采用该机制
-	javaProcess.AttachReadJVMProperties()
-	if javaProcess.PropertiesMap["jrasp.info"] != "" {
-		jraspInfo := javaProcess.PropertiesMap["jrasp.info"]
-		javaProcess.InitInjectInfo(jraspInfo)
-	}
-	return false
+	return javaProcess.ReadTokenFile()
 }
 
 func (w *Watch) removeExitedJavaProcess(pid int32) {
@@ -272,6 +213,17 @@ func (w *Watch) removeExitedJavaProcess(pid int32) {
 }
 
 func (w *Watch) DynamicInject(javaProcess *java_process.JavaProcess) {
+
+	// linux系统上的容器进程，复制jar包
+	// macos、windows 基于虚拟机实现docker
+	if w.env.IsLinux() && javaProcess.IsContainer {
+		err := javaProcess.CopyJar2Proc()
+		if err != nil {
+			// TODO
+			return
+		}
+	}
+
 	err := javaProcess.Attach()
 	if err != nil {
 		// java_process 执行失败

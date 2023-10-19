@@ -21,6 +21,7 @@ import (
 const WS_URL_FORMAT = "%s/ws/%s"
 
 func WatchRemoteConfig(cfg *userconfig.Config, env *environ.Environ) {
+	var errCnt = 0
 	for {
 		// 随机选取一个服务端
 		index := rand.Intn(len(cfg.RemoteHosts))
@@ -34,8 +35,11 @@ func WatchRemoteConfig(cfg *userconfig.Config, env *environ.Environ) {
 		}
 		conn, _, err := dialer.Dial(url, nil)
 		if err != nil {
-			zlog.Infof(defs.NACOS_LISTEN_CONFIG, "[ListenConfig]", "create conn failed to remote: %s, error: %v", url, err)
+			if errCnt%30 == 0 {
+				zlog.Infof(defs.NACOS_LISTEN_CONFIG, "[ListenConfig]", "create conn failed to remote: %s, error: %v", url, err)
+			}
 			env.IsConnectServer = false
+			errCnt++
 		} else {
 			zlog.InitSocketLog(cfg.LogPath, env.HostName, env.Ip, cfg.LogLevel, conn)
 			defer func() { _ = conn.Close() }()

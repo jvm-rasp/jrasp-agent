@@ -24,6 +24,8 @@ import (
 	"github.com/shirou/gopsutil/v3/process"
 )
 
+const JRASP_TOKEN_FILE = ".jrasp.token"
+
 // 注入状态
 type InjectType string
 
@@ -38,6 +40,11 @@ const (
 
 	FAILED_DEGRADE  InjectType = "failed degrade"  // 降级失败时后失败
 	SUCCESS_DEGRADE InjectType = "success degrade" // 降级正常
+)
+
+const (
+	libDir    string = "lib"
+	moduleDir string = "module"
 )
 
 type ModuleSendConfig struct {
@@ -78,6 +85,8 @@ type JavaProcess struct {
 	Uuid string `json:"uuid"` //
 
 	IsContainer bool `json:"isContainer"` // 是否在容器中
+
+	InContainerPid int32 `json:"inContainerPid"` // 容器内的Pid
 
 	RaspVersion string `json:"raspVersion"` // 注入的rasp版本
 }
@@ -162,35 +171,6 @@ func (jp *JavaProcess) transformKey(keyVersion string) string {
 func (jp *JavaProcess) CheckRunDir() bool {
 	runPidFilePath := filepath.Join(jp.env.InstallDir, "run", fmt.Sprintf("%d", jp.JavaPid))
 	return utils.PathExists(runPidFilePath)
-}
-
-func (jp *JavaProcess) ReadTokenFile() bool {
-	tokenFilePath := filepath.Join(jp.env.InstallDir, "run", fmt.Sprintf("%d", jp.JavaPid), ".jrasp.token")
-	exist := utils.PathExists(tokenFilePath)
-	// 文件存在
-	if exist {
-		fileContent, err := ioutil.ReadFile(tokenFilePath)
-		if err != nil {
-			return false
-		}
-		if jp.InitInjectInfo(string(fileContent)) {
-			return true
-		}
-	}
-	return false
-}
-
-func (jp *JavaProcess) InitInjectInfo(jraspInfo string) bool {
-	tokens, err := utils.SplitContent(jraspInfo, ";")
-	if err == nil && len(tokens) >= 5 {
-		jp.ServerIp = tokens[1]
-		jp.ServerPort = tokens[2]
-		jp.Uuid = tokens[3]
-		jp.RaspVersion = tokens[4]
-		zlog.Infof(defs.ATTACH_READ_TOKEN, "[ip:port:uuid:raspVersion]", "ip: %s, port: %s, uuid: %s, raspVersion: %s", jp.ServerIp, jp.ServerPort, jp.Uuid, jp.RaspVersion)
-		return true
-	}
-	return false
 }
 
 // 读取jvm的系统参数
@@ -415,27 +395,27 @@ func (jp *JavaProcess) SetStartTime() int64 {
 	return startTime
 }
 
-func (jp *JavaProcess) GetAndMarkStatus() {
-	jp.AttachReadJVMProperties()
-	jraspInfo := jp.PropertiesMap["jrasp.info"]
-	if jraspInfo != "" {
-		tokenArray := strings.Split(jraspInfo, ";")
-		zlog.Infof(defs.ATTACH_READ_TOKEN, "attach jvm properties success", "")
-		if len(tokenArray) >= 4 {
-			jp.ServerIp = tokenArray[1]
-			jp.ServerPort = tokenArray[2]
-			jp.Uuid = tokenArray[3]
-			jp.MarkSuccessInjected()
-			return
-		}
-	} else if jp.CheckRunDir() {
-		if jp.ReadTokenFile() {
-			jp.MarkSuccessInjected() // 已经注入过
-			return
-		}
-	}
-	jp.MarkFailedExitInject() // 退出失败，文件异常
-}
+//func (jp *JavaProcess) GetAndMarkStatus() {
+//	jp.AttachReadJVMProperties()
+//	jraspInfo := jp.PropertiesMap["jrasp.info"]
+//	if jraspInfo != "" {
+//		tokenArray := strings.Split(jraspInfo, ";")
+//		zlog.Infof(defs.ATTACH_READ_TOKEN, "attach jvm properties success", "")
+//		if len(tokenArray) >= 4 {
+//			jp.ServerIp = tokenArray[1]
+//			jp.ServerPort = tokenArray[2]
+//			jp.Uuid = tokenArray[3]
+//			jp.MarkSuccessInjected()
+//			return
+//		}
+//	} else if jp.CheckRunDir() {
+//		if jp.ReadTokenFile() {
+//			jp.MarkSuccessInjected() // 已经注入过
+//			return
+//		}
+//	}
+//	jp.MarkFailedExitInject() // 退出失败，文件异常
+//}
 
 func exist(filename string) bool {
 	_, err := os.Stat(filename)
@@ -483,4 +463,85 @@ func getWebAppsDir(root string) string {
 	} else {
 		return webapps
 	}
+}
+
+// The first line of /proc/pid/sched looks like
+// java (1234, #threads: 12)
+// where 1234 is the host PID (before Linux 4.1)
+func (jp *JavaProcess) GetInContainerPidByHostPid() (string, error) {
+	containerRootPath := filepath.Join("/proc", fmt.Sprintf("%d", jp.JavaPid), "root")
+	containerProc := filepath.Join(containerRootPath, "proc")
+	files, err := ioutil.ReadDir(containerProc)
+	if err != nil {
+		return "", err
+	}
+	for _, fileInfo := range files {
+		schedFilePath := filepath.Join(containerProc, fileInfo.Name(), "sched")
+		lines, err := utils.ReadLines(schedFilePath, 1)
+		if err != nil {
+			zlog.Debugf(defs.ATTACH_READ_TOKEN, "[token file]", "read sched file get pid err:%v", err)
+			continue
+		}
+		if len(lines) > 0 {
+			splitStr1 := strings.Split(lines[0], ",")
+			if len(splitStr1) > 0 {
+				splitStr2 := strings.Split(splitStr1[0], "(")
+				if len(splitStr2) == 2 && splitStr2[1] == fmt.Sprintf("%d", jp.JavaPid) {
+					return fileInfo.Name(), err
+				}
+			}
+		}
+	}
+	return "", err
+}
+
+func (jp *JavaProcess) CopyJar2Proc() error {
+	containerRootPath := filepath.Join("/proc", fmt.Sprintf("%d", jp.JavaPid), "root")
+	libPath := filepath.Join(jp.env.InstallDir, libDir)
+	containerLibPath := filepath.Join(containerRootPath, libPath)
+	err := utils.CreateDir(containerLibPath)
+	if err != nil {
+		return err
+	}
+	files, err := os.ReadDir(libPath)
+	if err != nil {
+		return err
+	}
+
+	// 复制lib下文件到容器中
+	// 容器目录下没有对应版本文件，复制
+	// 不可以覆盖
+	for _, fileInfo := range files {
+		fromFile := filepath.Join(libPath, fileInfo.Name())
+		toFile := filepath.Join(containerLibPath, fileInfo.Name())
+		if strings.Contains(fileInfo.Name(), jp.cfg.Version) && !utils.PathExists(toFile) {
+			err = utils.CopyFile(fromFile, toFile, os.ModePerm)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	// module
+	modulePath := filepath.Join(jp.env.InstallDir, moduleDir)
+	containerModulePath := filepath.Join(containerRootPath, modulePath)
+	err = utils.CreateDir(containerModulePath)
+	if err != nil {
+		return err
+	}
+	files, err = os.ReadDir(modulePath)
+	if err != nil {
+		return err
+	}
+
+	// 复制覆盖即可
+	for _, fileInfo := range files {
+		if strings.Contains(fileInfo.Name(), jp.cfg.Version) && !utils.PathExists(filepath.Join(containerModulePath, fileInfo.Name())) {
+			err = utils.CopyFile(filepath.Join(modulePath, fileInfo.Name()), filepath.Join(containerModulePath, fileInfo.Name()), os.ModePerm)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
 }

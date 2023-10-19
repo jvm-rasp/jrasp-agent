@@ -90,9 +90,6 @@ func main() {
 
 	go localSocket.Start()
 
-	// 定时重启功能
-	go newWatch.Reboot()
-
 	// 加强版的jps工具
 	go newWatch.ProcessScan()
 

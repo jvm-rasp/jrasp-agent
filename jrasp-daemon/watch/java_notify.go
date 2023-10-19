@@ -55,7 +55,7 @@ func (w *Watch) appendPidToChan(dirPth string) (err error) {
 			continue
 		}
 		pid, err := strconv.Atoi(fi.Name())
-		if err == nil {
+		if err == nil && pid > 0 {
 			w.JavaPidHandleChan <- int32(pid)
 		}
 	}
@@ -69,7 +69,9 @@ func (w *Watch) DoOnceProcessScan() {
 	}
 
 	for _, pid := range pids {
-		w.JavaPidHandleChan <- pid
+		if pid > 0 {
+			w.JavaPidHandleChan <- pid
+		}
 	}
 }
 

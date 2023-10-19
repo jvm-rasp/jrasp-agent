@@ -78,6 +78,8 @@ type JavaProcess struct {
 	Uuid string `json:"uuid"` //
 
 	IsContainer bool `json:"isContainer"` // 是否在容器中
+
+	RaspVersion string `json:"raspVersion"` // 注入的rasp版本
 }
 
 func NewJavaProcess(p *process.Process, cfg *userconfig.Config, env *environ.Environ) *JavaProcess {
@@ -171,17 +173,22 @@ func (jp *JavaProcess) ReadTokenFile() bool {
 		if err != nil {
 			return false
 		}
-		tokes, err := utils.SplitContent(string(fileContent), ";")
-		if err != nil {
-			return false
-		}
-		if len(tokes) >= 4 {
-			jp.ServerIp = tokes[1]
-			jp.ServerPort = tokes[2]
-			jp.Uuid = tokes[3]
-			zlog.Infof(defs.ATTACH_READ_TOKEN, "[ip:port:uuid]", "ip: %s, port: %s, uuid: %s", jp.ServerIp, jp.ServerPort, jp.Uuid)
+		if jp.InitInjectInfo(string(fileContent)) {
 			return true
 		}
+	}
+	return false
+}
+
+func (jp *JavaProcess) InitInjectInfo(jraspInfo string) bool {
+	tokens, err := utils.SplitContent(jraspInfo, ";")
+	if err == nil && len(tokens) >= 5 {
+		jp.ServerIp = tokens[1]
+		jp.ServerPort = tokens[2]
+		jp.Uuid = tokens[3]
+		jp.RaspVersion = tokens[4]
+		zlog.Infof(defs.ATTACH_READ_TOKEN, "[ip:port:uuid:raspVersion]", "ip: %s, port: %s, uuid: %s, raspVersion: %s", jp.ServerIp, jp.ServerPort, jp.Uuid, jp.RaspVersion)
+		return true
 	}
 	return false
 }

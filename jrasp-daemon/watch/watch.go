@@ -256,17 +256,11 @@ func (w *Watch) checkInjectStatus(javaProcess *java_process.JavaProcess) bool {
 		return true
 	}
 	// 对于容器中的进程，无法直接读取文件
+	// TODO 是否采用该机制
 	javaProcess.AttachReadJVMProperties()
 	if javaProcess.PropertiesMap["jrasp.info"] != "" {
 		jraspInfo := javaProcess.PropertiesMap["jrasp.info"]
-		tokens, err := utils.SplitContent(jraspInfo, ";")
-		if err == nil && len(tokens) >= 4 {
-			javaProcess.ServerIp = tokens[1]
-			javaProcess.ServerPort = tokens[2]
-			javaProcess.Uuid = tokens[3]
-			zlog.Infof(defs.ATTACH_READ_TOKEN, "[ip:port:uuid]", "ip: %s, port: %s, uuid: %s", javaProcess.ServerIp, javaProcess.ServerPort, javaProcess.Uuid)
-			return true
-		}
+		javaProcess.InitInjectInfo(jraspInfo)
 	}
 	return false
 }

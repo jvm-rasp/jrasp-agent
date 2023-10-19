@@ -262,7 +262,10 @@ public class AgentLauncher {
 
     // 获取core版本
     private static String getCoreVersion(final Map<String, String> featureMap) {
-        return getDefault(featureMap, KEY_CORE_VERSION, DEFAULT_CORE_VERSION);
+        String coreVersion = getDefault(featureMap, KEY_CORE_VERSION, DEFAULT_CORE_VERSION);
+        // 传递coreversion
+        featureMap.put(KEY_CORE_VERSION, coreVersion);
+        return coreVersion;
     }
 
     // 与agent默认参数合并后向maps中增加参数,未被合并的参数透传给core

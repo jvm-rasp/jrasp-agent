@@ -92,7 +92,7 @@ public class CoreClientImpl implements CoreClient {
                     cfg.getServerIp(), cfg.getServerPort(), System.currentTimeMillis() - start));
 
             // 容器场景使用 jattach $pid properties 读取jrasp.info系统参数
-            String info = format("jrasp;%s;%s;%s", cfg.getServerIp(), cfg.getServerPort(), cfg.getUuid());
+            String info = format("jrasp;%s;%s;%s;%s", cfg.getServerIp(), cfg.getServerPort(), cfg.getUuid(), cfg.getCoreVersion());
             System.setProperty("jrasp.info", info);
             writeAgentInitResult(info);
             isInit = true;

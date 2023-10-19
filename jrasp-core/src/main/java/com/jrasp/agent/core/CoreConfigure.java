@@ -24,6 +24,9 @@ public class CoreConfigure {
     private static final String KEY_UUID = "uuid";
     private static String DEFAULT_VALUE_UUID = UUID.randomUUID().toString();
 
+    private static final String KEY_CORE_VERSION = "coreVersion";
+    private static String DEFAULT_CORE_VERSION = "1.1.4";
+
     /**
      * 解密密钥
      */
@@ -206,6 +209,14 @@ public class CoreConfigure {
             DEFAULT_VALUE_UUID = uuid;
         }
         return DEFAULT_VALUE_UUID;
+    }
+
+    public String getCoreVersion() {
+        String version = featureMap.get(KEY_CORE_VERSION);
+        if (StringUtils.isNotBlank(version)) {
+            DEFAULT_CORE_VERSION = version;
+        }
+        return DEFAULT_CORE_VERSION;
     }
 
 }

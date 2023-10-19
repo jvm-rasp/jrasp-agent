@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"jrasp-daemon/defs"
 	"jrasp-daemon/environ"
 	"jrasp-daemon/socket"
@@ -471,15 +470,16 @@ func getWebAppsDir(root string) string {
 func (jp *JavaProcess) GetInContainerPidByHostPid() (string, error) {
 	containerRootPath := filepath.Join("/proc", fmt.Sprintf("%d", jp.JavaPid), "root")
 	containerProc := filepath.Join(containerRootPath, "proc")
-	files, err := ioutil.ReadDir(containerProc)
+	files, err := os.ReadDir(containerProc)
 	if err != nil {
+		zlog.Warnf(defs.ATTACH_READ_TOKEN, "ReadDir containerProc error", "err:%v", err)
 		return "", err
 	}
 	for _, fileInfo := range files {
 		schedFilePath := filepath.Join(containerProc, fileInfo.Name(), "sched")
 		lines, err := utils.ReadLines(schedFilePath, 1)
 		if err != nil {
-			zlog.Debugf(defs.ATTACH_READ_TOKEN, "[token file]", "read sched file get pid err:%v", err)
+			zlog.Warnf(defs.ATTACH_READ_TOKEN, "ReadDir schedFilePath error", "err:%v", err)
 			continue
 		}
 		if len(lines) > 0 {
@@ -487,12 +487,12 @@ func (jp *JavaProcess) GetInContainerPidByHostPid() (string, error) {
 			if len(splitStr1) > 0 {
 				splitStr2 := strings.Split(splitStr1[0], "(")
 				if len(splitStr2) == 2 && splitStr2[1] == fmt.Sprintf("%d", jp.JavaPid) {
-					return fileInfo.Name(), err
+					return fileInfo.Name(), nil
 				}
 			}
 		}
 	}
-	return "", err
+	return "", nil
 }
 
 func (jp *JavaProcess) CopyJar2Proc() error {

@@ -173,7 +173,7 @@ func (this *Update) uninstallAgent() {
 			}
 			javaProcess := java_process.NewJavaProcess(proc, this.cfg, this.env)
 			// 获取进程的注入状态
-			javaProcess.GetAndMarkStatus()
+			// javaProcess.
 			// 如果进程已注入则立即进行卸载
 			if javaProcess.SuccessInject() {
 				javaProcess.ExitInjectImmediately()

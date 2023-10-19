@@ -166,7 +166,7 @@ func setDefaultValue(vp *viper.Viper) {
 	vp.SetDefault("ScanTicker", 30)
 	vp.SetDefault("RebootTicker", 7*24*60)
 	vp.SetDefault("PidExistsTicker", 10)
-	vp.SetDefault("JavaProcessScanTicker", 2*60)
+	vp.SetDefault("JavaProcessScanTicker", 60)
 	vp.SetDefault("ProcessInjectTicker", 30)
 	vp.SetDefault("HeartBeatReportTicker", 5)
 	vp.SetDefault("ContainerTicker", 5)

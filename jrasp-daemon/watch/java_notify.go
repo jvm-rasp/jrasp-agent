@@ -13,7 +13,7 @@ import (
 
 // 定时扫描全量进程
 func (w *Watch) ProcessScan() {
-	// 已经启动的进程
+	// 已经启动的进程并且是非容器进程
 	dir, err := ioutil.ReadDir(os.TempDir())
 	if err != nil {
 		return
@@ -27,6 +27,10 @@ func (w *Watch) ProcessScan() {
 		}
 	}
 
+	// 已经启动的进程，容器进程
+	w.DoOnceProcessScan()
+
+	// 运行时启动进程
 	for {
 		select {
 		case _, ok := <-w.JavaProcessScanTicker.C:

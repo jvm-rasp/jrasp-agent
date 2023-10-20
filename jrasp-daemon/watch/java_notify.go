@@ -1,7 +1,6 @@
 package watch
 
 import (
-	"io/ioutil"
 	"jrasp-daemon/defs"
 	"jrasp-daemon/zlog"
 	"os"
@@ -14,7 +13,7 @@ import (
 // 定时扫描全量进程
 func (w *Watch) ProcessScan() {
 	// 已经启动的进程并且是非容器进程
-	dir, err := ioutil.ReadDir(os.TempDir())
+	dir, err := os.ReadDir(os.TempDir())
 	if err != nil {
 		return
 	}
@@ -46,7 +45,7 @@ func (w *Watch) ProcessScan() {
 
 // 一个用户目录下进程
 func (w *Watch) appendPidToChan(dirPth string) (err error) {
-	dir, err := ioutil.ReadDir(dirPth)
+	dir, err := os.ReadDir(dirPth)
 	if err != nil {
 		return err
 	}

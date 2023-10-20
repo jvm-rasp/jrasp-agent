@@ -16,9 +16,8 @@ import (
 // 与Java进程通过attach方式通信
 
 const (
-	JRASP_TOKEN_FILE = ".jrasp.token"
-	ATTACH_JAVA_PID  = ".java_pid%d"
-	LINUX_PROC_ROOT  = "/proc/%d/root"
+	ATTACH_JAVA_PID = ".java_pid%d"
+	LINUX_PROC_ROOT = "/proc/%d/root"
 )
 
 // 执行attach

@@ -70,3 +70,6 @@ const EXIT_CODE_2 = 2
 const FILE_MODE_ONLY_ROOT = 0600
 
 var Sig = make(chan os.Signal, 1)
+
+// PERF_DATA_FILE_PREFIX The file name prefix for JVM PerfData shared memory files.
+const PERF_DATA_FILE_PREFIX = "hsperfdata_"

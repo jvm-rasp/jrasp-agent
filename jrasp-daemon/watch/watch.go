@@ -125,8 +125,13 @@ func (w *Watch) InjectJavaProcess(pid int32) {
 	if isProcessInContainer(pid) {
 		javaProcess.IsContainer = true
 		innerPid, err := javaProcess.GetInContainerPidByHostPid()
-		if err != nil || innerPid == "" {
+		if err != nil {
 			zlog.Warnf(defs.DEFAULT_INFO, "get Java process innner pid failed, process will ignore", "Java Pid:%d, err:%v", javaProcess.JavaPid, err)
+			return
+		}
+
+		if innerPid == "" {
+			zlog.Warnf(defs.DEFAULT_INFO, "get Java process innner pid failed, process will ignore", "Java Pid:%d", javaProcess.JavaPid)
 			return
 		}
 

@@ -75,9 +75,6 @@ func (w *Watch) DoOnceProcessScan() {
 	}
 }
 
-// PERF_DATA_FILE_PREFIX The file name prefix for JVM PerfData shared memory files.
-const PERF_DATA_FILE_PREFIX = "hsperfdata_"
-
 func isHsPerfDataDir(name string) bool {
-	return strings.HasPrefix(name, PERF_DATA_FILE_PREFIX)
+	return strings.HasPrefix(name, defs.PERF_DATA_FILE_PREFIX)
 }

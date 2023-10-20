@@ -464,35 +464,30 @@ func getWebAppsDir(root string) string {
 	}
 }
 
-// The first line of /proc/pid/sched looks like
-// java (1234, #threads: 12)
-// where 1234 is the host PID (before Linux 4.1)
 func (jp *JavaProcess) GetInContainerPidByHostPid() (string, error) {
-	containerRootPath := filepath.Join("/proc", fmt.Sprintf("%d", jp.JavaPid), "root")
-	containerProc := filepath.Join(containerRootPath, "proc")
-	files, err := os.ReadDir(containerProc)
+	containerTmpPath := filepath.Join("/proc", fmt.Sprintf("%d", jp.JavaPid), "root", "tmp")
+	tmpFiles, err := os.ReadDir(containerTmpPath)
 	if err != nil {
-		zlog.Warnf(defs.ATTACH_READ_TOKEN, "ReadDir containerProc error", "err:%v", err)
+		zlog.Warnf(defs.ATTACH_READ_TOKEN, "ReadDir tmpFiles error", "err:%v", err)
 		return "", err
 	}
-	for _, fileInfo := range files {
-		schedFilePath := filepath.Join(containerProc, fileInfo.Name(), "sched")
-		lines, err := utils.ReadLines(schedFilePath, 1)
-		if err != nil {
-			zlog.Warnf(defs.ATTACH_READ_TOKEN, "ReadDir schedFilePath error", "err:%v", err)
-			continue
-		}
-		if len(lines) > 0 {
-			splitStr1 := strings.Split(lines[0], ",")
-			if len(splitStr1) > 0 {
-				splitStr2 := strings.Split(splitStr1[0], "(")
-				if len(splitStr2) == 2 && splitStr2[1] == fmt.Sprintf("%d", jp.JavaPid) {
-					return fileInfo.Name(), nil
-				}
+
+	for _, tmpFile := range tmpFiles {
+		if tmpFile.IsDir() && strings.HasPrefix(tmpFile.Name(), defs.PERF_DATA_FILE_PREFIX) {
+			// 一个用户下的全部进程pid
+			userPidFiles := filepath.Join(containerTmpPath, tmpFile.Name())
+			pidFiles, err := os.ReadDir(userPidFiles)
+			if err != nil {
+				continue
+			}
+			// TODO 存在多个pid的场景如何解决
+			if len(pidFiles) > 0 {
+				return pidFiles[0].Name(), nil
 			}
 		}
 	}
-	return "", nil
+
+	return "", errors.New("not found pid file int /tmp")
 }
 
 func (jp *JavaProcess) CopyJar2Proc() error {

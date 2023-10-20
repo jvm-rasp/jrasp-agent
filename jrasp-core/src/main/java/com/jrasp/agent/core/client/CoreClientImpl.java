@@ -63,7 +63,7 @@ public class CoreClientImpl implements CoreClient {
             jvmSandbox = new JvmSandbox(cfg, inst);
 
             // init socket
-            raspSocket = new RaspSocketImpl(cfg.getServerIp(), cfg.getServerPort());
+            raspSocket = new RaspSocketImpl(cfg.getDaemonIp(), cfg.getDaemonPort());
             LogUtil.initRemoteConsumer(new RemoteConsumer(raspSocket));
             executorService.scheduleWithFixedDelay(new ReconnectTask(raspSocket), 60, 120, TimeUnit.SECONDS);
             LogUtil.info("RaspSocket init success.");
@@ -89,12 +89,12 @@ public class CoreClientImpl implements CoreClient {
             }
 
             LogUtil.info(String.format("client socket success init, bind to [%s:%s], cost time: %s ms",
-                    cfg.getServerIp(), cfg.getServerPort(), System.currentTimeMillis() - start));
+                    cfg.getDaemonIp(), cfg.getDaemonPort(), System.currentTimeMillis() - start));
 
             // 容器场景使用 jattach $pid properties 读取jrasp.info系统参数
-            String info = format("jrasp;%s;%s;%s;%s", cfg.getServerIp(), cfg.getServerPort(), cfg.getUuid(), cfg.getCoreVersion());
+            String info = format("jrasp;%s;%s;%s;%s", cfg.getDaemonIp(), cfg.getDaemonPort(), cfg.getUuid(), cfg.getCoreVersion());
             System.setProperty("jrasp.info", info);
-            writeAgentInitResult(info);
+            writeAgentInitInfo(info, cfg.getProcessPidFile());
             isInit = true;
         } catch (Throwable cause) {
             LogUtil.error("client init failed.", cause);
@@ -140,30 +140,26 @@ public class CoreClientImpl implements CoreClient {
         handlerMap.put(CONFIG, new UpdateConfigPacketHandler());
     }
 
-    /**
-     * 结果写入到run/pid/token
-     */
-    @Deprecated
-    private void writeAgentInitResult(String info) {
-        File file = new File(cfg.getRuntimeTokenPath());
-        if (file.exists() && (!file.isFile() || !file.canWrite())) {
-            throw new RuntimeException("write to result file : " + file + " failed.");
-        } else {
-            FileWriter fw = null;
-            try {
-                // 覆盖
-                fw = new FileWriter(file, false);
-                fw.append(info);
-                fw.flush();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            } finally {
-                if (null != fw) {
-                    try {
-                        fw.close();
-                    } catch (IOException e) {
-                        // ignore
-                    }
+    public void writeAgentInitInfo(String info, String fileName) {
+        File file = new File(fileName);
+        if (file.isDirectory() || !file.canWrite()) {
+            throw new RuntimeException("can not write info to file, isDirectory: " + file.isDirectory() + ", canWrite: " + file.canWrite());
+        }
+
+        FileWriter fw = null;
+        try {
+            // 覆盖
+            fw = new FileWriter(file, false);
+            fw.append(info);
+            fw.flush();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } finally {
+            if (null != fw) {
+                try {
+                    fw.close();
+                } catch (IOException e) {
+                    // ignore
                 }
             }
         }

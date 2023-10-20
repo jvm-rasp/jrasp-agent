@@ -23,8 +23,8 @@ func (jp *JavaProcess) ReadTokenFile() bool {
 
 func (jp *JavaProcess) getTokenFilePath() string {
 	if jp.IsContainer {
-		return filepath.Join("/proc", fmt.Sprintf("%d", jp.JavaPid),
-			"root", jp.env.InstallDir, "run", fmt.Sprintf("%d", jp.InContainerPid), JRASP_TOKEN_FILE)
+		return filepath.Join(fmt.Sprintf(LINUX_PROC_ROOT, jp.JavaPid),
+			jp.env.InstallDir, "run", fmt.Sprintf("%d", jp.InContainerPid), JRASP_TOKEN_FILE)
 	}
 	return filepath.Join(jp.env.InstallDir, "run", fmt.Sprintf("%d", jp.JavaPid), JRASP_TOKEN_FILE)
 }

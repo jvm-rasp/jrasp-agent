@@ -37,11 +37,11 @@ public class CoreConfigure {
 
     private static final String KEY_LAUNCH_MODE = "mode";
 
-    private static final String KEY_SERVER_IP = "server.ip";
+    private static final String KEY_DAEMON_IP = "daemonIp";
 
-    private static final String KEY_SERVER_PORT = "server.port";
+    private static final String KEY_DAEMON_PORT = "daemonPort";
 
-    private static final int VAL_SERVER_PORT = 9888;
+    private static final int VAL_DAEMON_PORT = 9888;
 
     // 日志路径
     private static final String KEY_LOG_PATH = "logPath";
@@ -52,6 +52,8 @@ public class CoreConfigure {
     private static final String KEY_LOGS_LIB_PATH = "logs";
 
     private static final String KEY_MODULE_LIB_PATH = "module";
+
+    private static final String KEY_TMP_LIB_PATH = "tmp";
 
     // 初始化参数文件
     private static final String TOKEN_FILE_NAME = ".jrasp.token";
@@ -143,28 +145,19 @@ public class CoreConfigure {
     }
 
     /**
-     * 获取服务器绑定IP
-     *
-     * @return 服务器绑定IP
+     * 获取守护进程所在宿主机的ip
      */
-    public String getServerIp() {
-        return RaspStringUtils.isNotBlank(featureMap.get(KEY_SERVER_IP))
-                ? featureMap.get(KEY_SERVER_IP)
+    public String getDaemonIp() {
+        return RaspStringUtils.isNotBlank(featureMap.get(KEY_DAEMON_IP))
+                ? featureMap.get(KEY_DAEMON_IP)
                 : "127.0.0.1";
     }
 
     /**
-     * 获取服务器端口
-     *
-     * @return 服务器端口
+     * 获取守护进程所在宿主机的port
      */
-    public int getServerPort() {
-        return NumberUtils.toInt(featureMap.get(KEY_SERVER_PORT), VAL_SERVER_PORT);
-    }
-
-    // 获取运行时文件路径
-    public String getProcessRunPath() {
-        return getJRASPHome() + File.separatorChar + "run";
+    public int getDaemonPort() {
+        return NumberUtils.toInt(featureMap.get(KEY_DAEMON_PORT), VAL_DAEMON_PORT);
     }
 
     public String getLogsPath() {
@@ -174,13 +167,17 @@ public class CoreConfigure {
         return logDir == null || "".equals(logDir) ? getJRASPHome() + File.separator + KEY_LOGS_LIB_PATH : logDir;
     }
 
-    // 获取进程运行时pid目录
-    public String getProcessPidPath() {
-        return getProcessRunPath() + File.separator + ProcessHelper.getCurrentPID();
-    }
-
     public String getModuleLibPath() {
         return getJRASPHome() + File.separator + KEY_MODULE_LIB_PATH;
+    }
+
+    public String getTmpPath(){
+        return getJRASPHome()+File.separator+KEY_TMP_LIB_PATH;
+    }
+
+    // 获取进程运行时pid文件
+    public String getProcessPidFile() {
+        return getTmpPath() + File.separator + ProcessHelper.getCurrentPID();
     }
 
     /**
@@ -196,11 +193,6 @@ public class CoreConfigure {
             foundModuleJarFiles.addAll(FileUtils.listFiles(new File(path), new String[]{"jar"}, false));
         }
         return foundModuleJarFiles.toArray(new File[]{});
-    }
-
-    //  获取进程运行时pid/
-    public String getRuntimeTokenPath() {
-        return getProcessPidPath() + File.separatorChar + TOKEN_FILE_NAME;
     }
 
     public String getUuid() {

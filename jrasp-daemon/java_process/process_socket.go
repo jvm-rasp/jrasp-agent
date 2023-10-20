@@ -6,6 +6,9 @@ import (
 	"jrasp-daemon/zlog"
 )
 
+// 与Java进程通过自定义的socket方式通信
+
+// Agent 退出
 type Response struct {
 	Code    int    `json:"code"`
 	Data    string `json:"data"`

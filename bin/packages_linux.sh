@@ -39,7 +39,6 @@ mkdir -p ${JRASP_TARGET_DIR}/lib
 mkdir -p ${JRASP_TARGET_DIR}/module
 mkdir -p ${JRASP_TARGET_DIR}/config
 mkdir -p ${JRASP_TARGET_DIR}/logs
-mkdir -p ${JRASP_TARGET_DIR}/run
 mkdir -p ${JRASP_TARGET_DIR}/tmp
 
 # copy jar to TARGET_DIR

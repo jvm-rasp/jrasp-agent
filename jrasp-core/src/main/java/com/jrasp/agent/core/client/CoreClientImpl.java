@@ -94,7 +94,7 @@ public class CoreClientImpl implements CoreClient {
             // 容器场景使用 jattach $pid properties 读取jrasp.info系统参数
             String info = format("jrasp;%s;%s;%s;%s", cfg.getDaemonIp(), cfg.getDaemonPort(), cfg.getUuid(), cfg.getCoreVersion());
             System.setProperty("jrasp.info", info);
-            writeAgentInitInfo(info, cfg.getProcessPidFile());
+            writeAgentInitInfo(info, cfg.getRuntimeTokenPath());
             isInit = true;
         } catch (Throwable cause) {
             LogUtil.error("client init failed.", cause);
@@ -142,27 +142,27 @@ public class CoreClientImpl implements CoreClient {
 
     public void writeAgentInitInfo(String info, String fileName) {
         File file = new File(fileName);
-        if (file.isDirectory() || !file.canWrite()) {
-            throw new RuntimeException("can not write info to file, isDirectory: " + file.isDirectory() + ", canWrite: " + file.canWrite());
-        }
-
-        FileWriter fw = null;
-        try {
-            // 覆盖
-            fw = new FileWriter(file, false);
-            fw.append(info);
-            fw.flush();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } finally {
-            if (null != fw) {
-                try {
-                    fw.close();
-                } catch (IOException e) {
-                    // ignore
+        if (file.exists() && (!file.isFile() || !file.canWrite())) {
+            throw new RuntimeException("write to result file : " + file + " failed.");
+        } else {
+            FileWriter fw = null;
+            try {
+                // 覆盖
+                fw = new FileWriter(file, false);
+                fw.append(info);
+                fw.flush();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            } finally {
+                if (null != fw) {
+                    try {
+                        fw.close();
+                    } catch (IOException e) {
+                        // ignore
+                    }
                 }
             }
         }
-    }
 
+    }
 }

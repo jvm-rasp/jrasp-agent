@@ -175,6 +175,21 @@ public class CoreConfigure {
         return getJRASPHome()+File.separator+KEY_TMP_LIB_PATH;
     }
 
+    // 获取运行时文件路径
+    public String getProcessRunPath() {
+        return getJRASPHome() + File.separatorChar + "run";
+    }
+
+    // 获取进程运行时pid目录
+    public String getProcessPidPath() {
+        return getProcessRunPath() + File.separator + ProcessHelper.getCurrentPID();
+    }
+
+    //  获取进程运行时pid/
+    public String getRuntimeTokenPath() {
+        return getProcessPidPath() + File.separatorChar + TOKEN_FILE_NAME;
+    }
+
     // 获取进程运行时pid文件
     public String getProcessPidFile() {
         return getTmpPath() + File.separator + ProcessHelper.getCurrentPID();

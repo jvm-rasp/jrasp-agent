@@ -31,10 +31,10 @@ public class JvmSandbox {
     private final Instrumentation inst;
     private final DefaultCoreModuleManager coreModuleManager;
 
-    private Thread cleanThread = new Thread(new Runnable() {
+    private Thread clearThread = new Thread(new Runnable() {
         @Override
         public void run() {
-            FileUtils.deleteQuietly(new File(cfg.getProcessPidFile()));
+            FileUtils.deleteQuietly(new File(cfg.getProcessPidPath()));
         }
     }, "rasp-shutdown-hook");
 
@@ -52,7 +52,7 @@ public class JvmSandbox {
         System.out.println(String.format("%s  INFO [jrasp] %s %s",
                 new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.sss").format(new Date()),
                 "开启RASP安全防护，技术支持:", CoreConfigure.JRASP_SUPPORT_URL));
-        createTmpPidFile();
+        initPidRunDir();
         RaspClassUtils.doEarlyLoadSandboxClass(earlyLoadSandboxClassNameArrays);
         SpyUtils.init(cfg.getNamespace());
         inst.addTransformer(RaspClassFileTransformer.INSTANCE, true);
@@ -77,10 +77,29 @@ public class JvmSandbox {
         }
 
         try {
-            Runtime.getRuntime().addShutdownHook(cleanThread);
+            Runtime.getRuntime().addShutdownHook(clearThread);
         } catch (Exception e) {
             throw new RuntimeException("addShutdownHook error", e);
         }
+    }
+
+    // 创建运行时插件目录
+    private void initPidRunDir() {
+        mkdirs(this.cfg.getProcessPidPath());
+        try {
+            Runtime.getRuntime().addShutdownHook(clearThread);
+        } catch (Exception e) {
+            throw new RuntimeException("addShutdownHook error", e);
+        }
+    }
+
+    private boolean mkdirs(String path) {
+        // 预期在初始化时文件路径是不存在的
+        File file = new File(path);
+        if (!file.exists()) {
+            return file.mkdirs();
+        }
+        throw new RuntimeException("mkdir file path : " + path + " exists.");
     }
 
     /**
@@ -100,10 +119,10 @@ public class JvmSandbox {
         deleteProcessPidFile();
 
         // 清理线程
-        if (cleanThread != null) {
+        if (clearThread != null) {
             // bugfix: 必须置为空，否则内存泄漏，嗯嗯
-            Runtime.getRuntime().removeShutdownHook(cleanThread);
-            cleanThread = null;
+            Runtime.getRuntime().removeShutdownHook(clearThread);
+            clearThread = null;
         }
     }
 

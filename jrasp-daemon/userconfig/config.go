@@ -80,6 +80,8 @@ type Config struct {
 	FileCheckFrequency uint64 `json:"fileCheckFrequency"` // 文件指标检测频率, 单位分钟，默认 10
 
 	JavaCmdLineWhiteList []string `json:"javaCmdLineWhiteList"` // 不注入白名单
+
+	UnlockCommercialFeature bool `json:"unlockCommercialFeature"` // 开商业特性
 }
 
 // ModuleConfig module信息

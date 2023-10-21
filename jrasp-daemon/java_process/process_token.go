@@ -10,6 +10,8 @@ import (
 	"path/filepath"
 )
 
+const JRASP_TOKEN_FILE = ".jrasp.token"
+
 // ReadTokenFile token文件读取、解析
 // 兼容容器文件读取
 func (jp *JavaProcess) ReadTokenFile() bool {
@@ -24,9 +26,9 @@ func (jp *JavaProcess) ReadTokenFile() bool {
 func (jp *JavaProcess) getTokenFilePath() string {
 	if jp.IsContainer {
 		return filepath.Join(fmt.Sprintf(LINUX_PROC_ROOT, jp.JavaPid),
-			jp.env.InstallDir, "tmp", fmt.Sprintf("%d", jp.InContainerPid))
+			jp.env.InstallDir, "run", fmt.Sprintf("%d", jp.InContainerPid), JRASP_TOKEN_FILE)
 	}
-	return filepath.Join(jp.env.InstallDir, "tmp", fmt.Sprintf("%d", jp.JavaPid))
+	return filepath.Join(jp.env.InstallDir, "run", fmt.Sprintf("%d", jp.JavaPid), JRASP_TOKEN_FILE)
 }
 
 func (jp *JavaProcess) readFileContent(filePath string) (string, error) {

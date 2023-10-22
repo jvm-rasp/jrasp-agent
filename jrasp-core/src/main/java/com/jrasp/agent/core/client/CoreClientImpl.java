@@ -58,7 +58,7 @@ public class CoreClientImpl implements CoreClient {
         this.cfg = cfg;
         try {
             // init log
-            LogUtil.init(queue, cfg.getLogsPath());
+            LogUtil.init(queue, cfg.getLogsPath(), cfg.getProcessId());
             LogUtil.info("LogUtil init success.");
             jvmSandbox = new JvmSandbox(cfg, inst);
 
@@ -92,7 +92,7 @@ public class CoreClientImpl implements CoreClient {
                     cfg.getDaemonIp(), cfg.getDaemonPort(), System.currentTimeMillis() - start));
 
             // 容器场景使用 jattach $pid properties 读取jrasp.info系统参数
-            String info = format("jrasp;%s;%s;%s;%s", cfg.getDaemonIp(), cfg.getDaemonPort(), cfg.getUuid(), cfg.getCoreVersion());
+            String info = format("jrasp;%s;%s;%s;%s", cfg.getDaemonIp(), cfg.getDaemonPort(), cfg.getProcessId(), cfg.getCoreVersion());
             System.setProperty("jrasp.info", info);
             writeAgentInitInfo(info, cfg.getRuntimeTokenPath());
             isInit = true;
@@ -130,14 +130,15 @@ public class CoreClientImpl implements CoreClient {
     }
 
     private void registerHandler(DefaultCoreModuleManager coreModuleManager) {
-        handlerMap.put(FLUSH, new FlushPacketHandler(coreModuleManager));
-        handlerMap.put(UNINSTALL, new UninstallPacketHandler());
-        handlerMap.put(INFO, new InfoPacketHandler());
-        handlerMap.put(UPDATE, new UpdatePacketHandler(coreModuleManager));
-        handlerMap.put(UNLOAD, new UnloadModuleHandler(coreModuleManager));
-        handlerMap.put(ACTIVE, new ActiveModuleHandler(coreModuleManager));
-        handlerMap.put(FROZEN, new FrozenModuleHandler(coreModuleManager));
-        handlerMap.put(CONFIG, new UpdateConfigPacketHandler());
+        handlerMap.put(AGENT_CONFIG, new UpdateConfigPacketHandler());
+        handlerMap.put(AGENT_INFO, new AgentInfoPacketHandler());
+        handlerMap.put(AGENT_UNINSTALL, new AgentUninstallPacketHandler());
+
+        handlerMap.put(MODULE_FLUSH, new FlushPacketHandler(coreModuleManager));
+        handlerMap.put(MODULE_CONFIG, new UpdatePacketHandler(coreModuleManager));
+        handlerMap.put(MODULE_UNINSTALL, new UnloadModuleHandler(coreModuleManager));
+        handlerMap.put(MODULE_ACTIVE, new ActiveModuleHandler(coreModuleManager));
+        handlerMap.put(MODULE_FROZEN, new FrozenModuleHandler(coreModuleManager));
     }
 
     public void writeAgentInitInfo(String info, String fileName) {

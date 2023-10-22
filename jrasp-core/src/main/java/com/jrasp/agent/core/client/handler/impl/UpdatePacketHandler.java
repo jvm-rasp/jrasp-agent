@@ -14,7 +14,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static com.jrasp.agent.core.client.packet.PacketType.UPDATE;
+import static com.jrasp.agent.core.client.packet.PacketType.MODULE_CONFIG;
 
 /**
  * @author jrasp
@@ -31,7 +31,7 @@ public class UpdatePacketHandler implements PacketHandler {
 
     @Override
     public PacketType getType() {
-        return UPDATE;
+        return MODULE_CONFIG;
     }
 
     @Override

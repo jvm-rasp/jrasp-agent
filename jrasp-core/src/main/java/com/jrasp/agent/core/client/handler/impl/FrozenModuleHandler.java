@@ -21,7 +21,7 @@ public class FrozenModuleHandler implements PacketHandler {
 
     @Override
     public PacketType getType() {
-        return PacketType.FROZEN;
+        return PacketType.MODULE_FROZEN;
     }
 
     @Override

@@ -54,10 +54,12 @@ func (jp *JavaProcess) initInjectInfo(jraspInfo string) bool {
 
 	jp.ServerIp = tokens[1]
 	jp.ServerPort = tokens[2]
-	jp.Uuid = tokens[3]
+	jp.ProcessId = tokens[3]
 	jp.RaspVersion = tokens[4]
 
-	zlog.Infof(defs.ATTACH_READ_TOKEN, "[ip:port:uuid:raspVersion]", "ip: %s, port: %s, uuid: %s, raspVersion: %s", jp.ServerIp, jp.ServerPort, jp.Uuid, jp.RaspVersion)
+	zlog.Infof(defs.ATTACH_READ_TOKEN, "[ip:port:processId:raspVersion]",
+		"ip: %s, port: %s, processId: %s, raspVersion: %s",
+		jp.ServerIp, jp.ServerPort, jp.ProcessId, jp.RaspVersion)
 	return true
 
 }

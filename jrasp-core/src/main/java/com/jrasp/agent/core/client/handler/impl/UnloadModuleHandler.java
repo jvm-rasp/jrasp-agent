@@ -22,7 +22,7 @@ public class UnloadModuleHandler implements PacketHandler {
 
     @Override
     public PacketType getType() {
-        return PacketType.UNLOAD;
+        return PacketType.MODULE_UNINSTALL;
     }
 
     @Override

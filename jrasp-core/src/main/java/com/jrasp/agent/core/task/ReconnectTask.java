@@ -24,7 +24,7 @@ public class ReconnectTask extends AbstractRaspTask {
         if (raspSocket != null && raspSocket.isClosed()) {
             try {
                 raspSocket.connect();
-                LogUtil.info("rasp socket reconnect success. socket is closed: " + raspSocket.isClosed());
+                LogUtil.info("rasp socket reconnect success.");
                 LogUtil.syncFileLog();
             } catch (Exception e) {
                 handleError(e);

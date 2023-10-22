@@ -10,7 +10,7 @@ import java.net.URLDecoder;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static com.jrasp.agent.core.client.packet.PacketType.CONFIG;
+import static com.jrasp.agent.core.client.packet.PacketType.AGENT_CONFIG;
 
 /**
  * @author jrasp
@@ -25,7 +25,7 @@ public class UpdateConfigPacketHandler implements PacketHandler {
 
     @Override
     public PacketType getType() {
-        return CONFIG;
+        return AGENT_CONFIG;
     }
 
     @Override

@@ -1,9 +1,10 @@
 package com.jrasp.agent.core.newlog.consumer;
 
+import com.jrasp.agent.core.client.packet.PacketType;
 import com.jrasp.agent.core.client.socket.RaspSocket;
 
 /**
- *  @author jrasp
+ * @author jrasp
  */
 public class RemoteConsumer extends AbstractConsumer {
 
@@ -21,7 +22,7 @@ public class RemoteConsumer extends AbstractConsumer {
     @Override
     public void consumer(String msg) throws Exception {
         if (raspSocket != null) {
-            raspSocket.write(msg);
+            raspSocket.write(msg, PacketType.AGENT_LOG);
         }
     }
 

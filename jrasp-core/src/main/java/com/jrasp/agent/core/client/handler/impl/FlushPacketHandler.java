@@ -5,7 +5,7 @@ import com.jrasp.agent.core.manager.DefaultCoreModuleManager;
 import com.jrasp.agent.core.client.packet.PacketType;
 import com.jrasp.agent.core.util.string.RaspStringUtils;
 
-import static com.jrasp.agent.core.client.packet.PacketType.FLUSH;
+import static com.jrasp.agent.core.client.packet.PacketType.MODULE_FLUSH;
 
 /**
  * 刷新命令
@@ -22,7 +22,7 @@ public class FlushPacketHandler implements PacketHandler {
 
     @Override
     public PacketType getType() {
-        return FLUSH;
+        return MODULE_FLUSH;
     }
 
     @Override

@@ -2,16 +2,17 @@ package com.jrasp.agent.core.client.handler.impl;
 
 import com.jrasp.agent.core.client.handler.PacketHandler;
 import com.jrasp.agent.core.client.packet.PacketType;
+
 import java.lang.reflect.Method;
 
 /**
  * @author jrasp
  */
-public class UninstallPacketHandler implements PacketHandler {
+public class AgentUninstallPacketHandler implements PacketHandler {
 
     @Override
     public PacketType getType() {
-        return PacketType.UNINSTALL;
+        return PacketType.AGENT_UNINSTALL;
     }
 
     @Override

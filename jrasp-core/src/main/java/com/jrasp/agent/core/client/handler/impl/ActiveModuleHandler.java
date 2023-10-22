@@ -20,7 +20,7 @@ public class ActiveModuleHandler implements PacketHandler {
 
     @Override
     public PacketType getType() {
-        return PacketType.ACTIVE;
+        return PacketType.MODULE_ACTIVE;
     }
 
     @Override

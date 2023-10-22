@@ -121,8 +121,6 @@ public class AgentLauncher {
         final Map<String, String> coreConfigs = toCoreConfigMap(featureMap);
 
         try {
-            // 设置 uuid
-            System.setProperty(KEY_AGENT_UUID, DEFAULT_AGENT_UUID);
 
             final String home = getRaspHome(featureMap);
             // 依赖的spy版本在agent加载时确定，解决业务进程不重启，而无法没有升级的问题
@@ -174,12 +172,10 @@ public class AgentLauncher {
     private static final String KEY_LAUNCH_MODE = "mode";
 
     private static final String KEY_CORE_VERSION = "coreVersion";
-    private static final String DEFAULT_CORE_VERSION = "1.1.4";
+    private static final String DEFAULT_CORE_VERSION = "1.2.0";
 
     private static final String KEY_NAMESPACE = "namespace";
     private static final String DEFAULT_NAMESPACE = "default";
-    private static final String KEY_AGENT_UUID = "uuid";
-    private static final String DEFAULT_AGENT_UUID = UUID.randomUUID().toString();
 
     private static boolean isNotBlankString(final String string) {
         return null != string
@@ -274,7 +270,6 @@ public class AgentLauncher {
         featureMap.put(KEY_JRASP_HOME, raspHome);
         featureMap.put(KEY_NAMESPACE, getNamespace(featureMap));
         featureMap.put(KEY_LAUNCH_MODE, LAUNCH_MODE);
-        featureMap.put(KEY_AGENT_UUID, DEFAULT_AGENT_UUID);
         // 其他参数透传给jrasp-core
         return featureMap;
     }

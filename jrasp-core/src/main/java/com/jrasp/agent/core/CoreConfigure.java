@@ -21,11 +21,11 @@ public class CoreConfigure {
     private static final String KEY_NAMESPACE = "namespace";
     private static final String DEFAULT_VAL_NAMESPACE = "default";
 
-    private static final String KEY_UUID = "uuid";
-    private static String DEFAULT_VALUE_UUID = UUID.randomUUID().toString();
+    private static final String KEY_PROCESS_ID = "processId";
+    private static String DEFAULT_PROCESS_ID = ProcessHelper.getHostName() + "@" + UUID.randomUUID();
 
     private static final String KEY_CORE_VERSION = "coreVersion";
-    private static String DEFAULT_CORE_VERSION = "1.1.4";
+    private static String DEFAULT_CORE_VERSION = "1.2.0";
 
     /**
      * 解密密钥
@@ -54,6 +54,8 @@ public class CoreConfigure {
     private static final String KEY_MODULE_LIB_PATH = "module";
 
     private static final String KEY_TMP_LIB_PATH = "tmp";
+
+    private static final String KEY_RUN_LIB_PATH = "run";
 
     // 初始化参数文件
     private static final String TOKEN_FILE_NAME = ".jrasp.token";
@@ -171,13 +173,13 @@ public class CoreConfigure {
         return getJRASPHome() + File.separator + KEY_MODULE_LIB_PATH;
     }
 
-    public String getTmpPath(){
-        return getJRASPHome()+File.separator+KEY_TMP_LIB_PATH;
+    public String getTmpPath() {
+        return getJRASPHome() + File.separator + KEY_TMP_LIB_PATH;
     }
 
     // 获取运行时文件路径
     public String getProcessRunPath() {
-        return getJRASPHome() + File.separatorChar + "run";
+        return getJRASPHome() + File.separatorChar + KEY_RUN_LIB_PATH;
     }
 
     // 获取进程运行时pid目录
@@ -210,20 +212,21 @@ public class CoreConfigure {
         return foundModuleJarFiles.toArray(new File[]{});
     }
 
-    public String getUuid() {
-        String uuid = featureMap.get(KEY_UUID);
-        if (StringUtils.isNotBlank(uuid)) {
-            DEFAULT_VALUE_UUID = uuid;
+    // 获取进程唯一 id
+    public String getProcessId() {
+        String processId = featureMap.get(KEY_PROCESS_ID);
+        if (StringUtils.isBlank(processId)) {
+            processId = DEFAULT_PROCESS_ID;
         }
-        return DEFAULT_VALUE_UUID;
+        return processId;
     }
 
     public String getCoreVersion() {
         String version = featureMap.get(KEY_CORE_VERSION);
-        if (StringUtils.isNotBlank(version)) {
-            DEFAULT_CORE_VERSION = version;
+        if (StringUtils.isBlank(version)) {
+            version = DEFAULT_CORE_VERSION;
         }
-        return DEFAULT_CORE_VERSION;
+        return version;
     }
 
 }

@@ -12,7 +12,7 @@ import (
 type AgentMode string
 
 const (
-	VERSION string    = "1.1.4"
+	VERSION string    = "1.2.0"
 	STATIC  AgentMode = "static"  // static模式：  被动注入
 	DYNAMIC AgentMode = "dynamic" // dynamic模式： 主动注入
 	DISABLE AgentMode = "disable" // disbale模式: (主动/被动)注入的退出、禁止注入
@@ -74,7 +74,7 @@ type Config struct {
 
 	ConnectTime int64 `json:"connectTime"` // 重连server时间
 
-	LocalPort int `json:"LocalPort"` // 本地端口
+	DaemonPort int `json:"LocalPort"` // 本地端口
 
 	MaxFileUsedPercent uint64 `json:"maxFileUsedPercent"` //  文件打开的最大限制百分比, 范围0～100，默认 80
 	FileCheckFrequency uint64 `json:"fileCheckFrequency"` // 文件指标检测频率, 单位分钟，默认 10
@@ -196,7 +196,7 @@ func setDefaultValue(vp *viper.Viper) {
 
 	vp.SetDefault("MinJvmStartTime", 1)
 
-	vp.SetDefault("LocalPort", 9888)
+	vp.SetDefault("DaemonPort", 9888)
 
 	vp.SetDefault("ConnectTime", 60)
 

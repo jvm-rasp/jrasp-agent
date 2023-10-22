@@ -7,8 +7,8 @@ import (
 	"jrasp-daemon/defs"
 	"jrasp-daemon/environ"
 	"jrasp-daemon/monitor"
-	"jrasp-daemon/new_socket"
 	"jrasp-daemon/remote"
+	"jrasp-daemon/socket"
 	"jrasp-daemon/update"
 	"jrasp-daemon/userconfig"
 	"jrasp-daemon/utils"
@@ -86,12 +86,12 @@ func main() {
 
 	go monitor.MonitorFileDescriptor(ctx, conf.MaxFileUsedPercent, conf.FileCheckFrequency)
 
-	localSocket := new_socket.NewServerSocket(conf.LocalPort)
-
-	go localSocket.Start()
-
 	// 加强版的jps工具
 	go newWatch.ProcessScan()
+
+	daemonSocket := socket.NewDaemonSocket(conf.DaemonPort)
+
+	go daemonSocket.Start()
 
 	// 进程注入
 	go newWatch.DoAttach()

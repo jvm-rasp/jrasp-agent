@@ -7,7 +7,6 @@ import (
 )
 
 var MagicBytes = [3]byte{88, 77, 68}
-
 var EmptySignature = make([]byte, 128)
 
 const PROTOCOL_VERSION byte = 101

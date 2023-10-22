@@ -1,5 +1,6 @@
 package com.jrasp.agent.core.task;
 
+import com.jrasp.agent.core.client.packet.Codec;
 import com.jrasp.agent.core.client.packet.Packet;
 import com.jrasp.agent.core.client.packet.PacketType;
 import com.jrasp.agent.core.client.socket.RaspSocket;
@@ -22,19 +23,19 @@ public class PacketReadTask extends AbstractRaspTask {
     public void run() {
         try {
             if (raspSocket != null && !raspSocket.isClosed()) {
-                Packet packet = raspSocket.read();
-                if (packet == null) {
+                Packet request = raspSocket.read();
+                if (request == null) {
                     return;
                 }
-                PacketType type = packet.getType();
+                PacketType type = request.getType();
                 // 任务处理
                 PacketHandler handler = handlerMap.get(type);
                 if (handler == null) {
                     throw new IllegalArgumentException(String.format("no handle packet. packet type -> [%s]", type));
                 }
                 // 处理结果返回给daemon
-                String result = handler.run(packet.getData());
-                raspSocket.write(result);
+                String responseData = handler.run(request.getData());
+                raspSocket.write(responseData, PacketType.COMMAND_RESPONSE);
             }
         } catch (Throwable t) {
             handleError(t);

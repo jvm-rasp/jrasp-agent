@@ -2,8 +2,6 @@ package watch
 
 import (
 	"context"
-	"fmt"
-	"io/ioutil"
 	"jrasp-daemon/defs"
 	"jrasp-daemon/environ"
 	"jrasp-daemon/java_process"
@@ -11,9 +9,6 @@ import (
 	"jrasp-daemon/utils"
 	"jrasp-daemon/zlog"
 	"os"
-	"path/filepath"
-	"strconv"
-	"strings"
 	"sync"
 	"time"
 
@@ -92,7 +87,7 @@ func (w *Watch) InjectJavaProcess(pid int32) {
 
 	p, err := process.NewProcess(pid)
 	if err != nil {
-		zlog.Infof(defs.DEFAULT_INFO, "process.NewProcess(pid) run failed", "Java Pid:%d, err: %v", pid, err)
+		zlog.Infof(defs.DEFAULT_INFO, "process.NewProcess(pid) run failed", "Java Pid: %d, err: %v", pid, err)
 		return
 	}
 
@@ -107,41 +102,13 @@ func (w *Watch) InjectJavaProcess(pid int32) {
 	}
 
 	javaProcess := java_process.NewJavaProcess(p, w.cfg, w.env)
-
-	// 屏蔽指定特征的Java进程
-	javaProcess.SetCmdLines()
-	for _, v := range javaProcess.CmdLines {
-		var items = w.cfg.JavaCmdLineWhiteList
-		for _, item := range items {
-			if strings.Contains(v, item) {
-				zlog.Infof(defs.DEFAULT_INFO, "java process will ignore", "Java Pid:%d, cmdLineWhite: %s", javaProcess.JavaPid, item)
-				return
-			}
-		}
+	// 过滤Java进程
+	if javaProcess.FilterCmdLine(w.cfg.JavaCmdLineWhiteList) {
+		return
 	}
 
 	// 容器检查
-	// 获取容器内的pid
-	if isProcessInContainer(pid) {
-		javaProcess.IsContainer = true
-		innerPid, err := javaProcess.GetInContainerPidByHostPid()
-		if err != nil {
-			zlog.Warnf(defs.DEFAULT_INFO, "get Java process innner pid failed, process will ignore", "Java Pid:%d, err:%v", javaProcess.JavaPid, err)
-			return
-		}
-
-		if innerPid == "" {
-			zlog.Warnf(defs.DEFAULT_INFO, "get Java process innner pid failed, process will ignore", "Java Pid:%d", javaProcess.JavaPid)
-			return
-		}
-
-		innerPidInt, err := strconv.ParseInt(innerPid, 10, 32)
-		if err != nil || innerPidInt <= 0 {
-			zlog.Warnf(defs.DEFAULT_INFO, "convert innerPid to int32 failed, process will ignore", "Java Pid:%d, err:%v", javaProcess.JavaPid, err)
-			return
-		}
-		javaProcess.InContainerPid = int32(innerPidInt)
-	}
+	javaProcess.CheckContainer()
 
 	// 设置java进程启动时间
 	startTime := javaProcess.SetStartTime()
@@ -157,11 +124,14 @@ func (w *Watch) InjectJavaProcess(pid int32) {
 	// Java进程上报
 	zlog.Infof(defs.JAVA_PROCESS_STARTUP, "find a java process", utils.ToString(javaProcess))
 
-	if w.cfg.IsDisable() && javaProcess.SuccessInject() {
-		// 关闭注入，并且已经注入状态
-		javaProcess.ExitInjectImmediately()
-		return
-	}
+	// Java进程加入观测集合中
+	w.JavaProcessSyncMap.Store(javaProcess.JavaPid, javaProcess)
+
+	//if w.cfg.IsDisable() && javaProcess.SuccessInject() {
+	//	// 关闭注入，并且已经注入状态
+	//	javaProcess.ExitInjectImmediately()
+	//	return
+	//}
 
 	if w.cfg.IsDynamicMode() && !javaProcess.IsInject() {
 		// java进程启动完成之后注入，防止死锁和短生命周期进程如jps等
@@ -183,27 +153,26 @@ func (w *Watch) InjectJavaProcess(pid int32) {
 		// 没有注入并且支持动态注入
 		w.DynamicInject(javaProcess)
 
-		// 设置等待时间10s
-		time.Sleep(time.Second * time.Duration(10))
-
 		// 判断是否注入成功
 		if w.checkInjectStatus(javaProcess) {
 			javaProcess.MarkSuccessInjected()
 		} else {
 			javaProcess.MarkFailedExitInject()
 		}
+
 	}
 
 	// 参数更新
 	if !w.cfg.IsDisable() && javaProcess.SuccessInject() {
-		// TODO 重写
-		javaProcess.SoftFlush()
-		javaProcess.UpdateParameters()
-		zlog.Debugf(defs.AGENT_CONFIG_UPDATE, "update agent config", "update parameters success")
+		// 等待连接就绪
+		if javaProcess.WaiteConn() {
+			javaProcess.Conn.SendFlushCommand("false")
+			//javaProcess.Conn.UpdateAgentConfig(utils.ToString(javaProcess.Cfg.AgentConfigs))
+			//javaProcess.Conn.UpdateModuleConfig(utils.ToString(javaProcess.Cfg.ModuleConfigs))
+			zlog.Infof(defs.AGENT_CONFIG_UPDATE, "update agent/module config", "update config success")
+		}
 	}
 
-	// Java进程加入观测集合中
-	w.JavaProcessSyncMap.Store(javaProcess.JavaPid, javaProcess)
 }
 
 func (w *Watch) checkInjectStatus(javaProcess *java_process.JavaProcess) bool {
@@ -239,19 +208,4 @@ func (w *Watch) DynamicInject(javaProcess *java_process.JavaProcess) {
 		javaProcess.MarkSuccessInjected()
 		zlog.Infof(defs.AGENT_SUCCESS_INIT, "java agent init success", `{"pid":%d,"status":"%s","startTime":"%s"}`, javaProcess.JavaPid, javaProcess.InjectedStatus, javaProcess.StartTime)
 	}
-}
-
-func isProcessInContainer(pid int32) bool {
-	procPath := fmt.Sprintf("/proc/%d", pid)
-	cgroupPath := filepath.Join(procPath, "cgroup")
-	cgroupData, err := ioutil.ReadFile(cgroupPath)
-	if err != nil {
-		return false
-	}
-
-	if strings.Contains(string(cgroupData), "/docker/") || strings.Contains(string(cgroupData), "/kubepods/") {
-		return true
-	}
-
-	return false
 }

@@ -19,9 +19,10 @@ import (
 	"strings"
 )
 
-const MODULE_KEY = "module"
-
-const AGENT_KEY = "lib"
+const (
+	MODULE_KEY = "module"
+	AGENT_KEY  = "lib"
+)
 
 type Update struct {
 	cfg       *userconfig.Config
@@ -176,7 +177,7 @@ func (this *Update) uninstallAgent() {
 			// javaProcess.
 			// 如果进程已注入则立即进行卸载
 			if javaProcess.SuccessInject() {
-				javaProcess.ExitInjectImmediately()
+				//javaProcess.ExitInjectImmediately()
 			}
 		}
 	}

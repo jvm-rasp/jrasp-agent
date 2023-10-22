@@ -158,7 +158,6 @@ func (s *SocketWriter) Close() error {
 
 // 同步文件中的日志
 func SyncFile(raspLogger *RaspDaemonLog) error {
-	fmt.Println(">>>>>>>>>> start sync jrasp-daemon.log")
 	fileName := filepath.Join(raspLogger.LogPath, logFileName)
 	file, err := os.Open(fileName)
 	if err != nil {
@@ -176,7 +175,6 @@ func SyncFile(raspLogger *RaspDaemonLog) error {
 	if err := os.Remove(fileName); err != nil {
 		return err
 	}
-	fmt.Println("<<<<<<<<<< end sync and delete jrasp-daemon.log")
 	return nil
 }
 

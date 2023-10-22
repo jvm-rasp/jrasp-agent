@@ -16,8 +16,10 @@ import (
 // 与Java进程通过attach方式通信
 
 const (
-	ATTACH_JAVA_PID = ".java_pid%d"
-	LINUX_PROC_ROOT = "/proc/%d/root"
+	ATTACH_JAVA_PID        = ".java_pid%d"
+	LINUX_PROC_ROOT        = "/proc/%d/root"
+	libDir          string = "lib"
+	moduleDir       string = "module"
 )
 
 // 执行attach
@@ -40,19 +42,19 @@ func (jp *JavaProcess) Attach() error {
 func (jp *JavaProcess) execCmd() error {
 	zlog.Debugf(defs.ATTACH_DEFAULT, "[Attach]", "attach to jvm[%d] start...", jp.JavaPid)
 	// logPath 转换成绝对路径
-	logPathAbs, err := filepath.Abs(jp.cfg.LogPath)
+	logPathAbs, err := filepath.Abs(jp.Cfg.LogPath)
 	if err != nil {
-		zlog.Warnf(defs.ATTACH_DEFAULT, "[Attach]", "logPath: %s, logPathAbs: %s", jp.cfg.LogPath, logPathAbs)
+		zlog.Warnf(defs.ATTACH_DEFAULT, "[Attach]", "logPath: %s, logPathAbs: %s", jp.Cfg.LogPath, logPathAbs)
 	}
 	// 通过attach 传递给目标jvm的参数
 	// 必需要配置为daemonIp
 	agentArgs := fmt.Sprintf("raspHome=%s;coreVersion=%s;key=%s;logPath=%s;daemonIp=%s;daemonPort=%s;",
-		jp.env.InstallDir, jp.cfg.Version, jp.env.BuildDecryptKey, logPathAbs, jp.env.Ip, jp.cfg.LocalPort)
+		jp.env.InstallDir, jp.Cfg.Version, jp.env.BuildDecryptKey, logPathAbs, jp.env.Ip, jp.Cfg.DaemonPort)
 	// jattach pid load instrument false jrasp-launcher.jar
 	cmd := exec.Command(
 		filepath.Join(jp.env.InstallDir, "bin", getJattachExe()),
 		fmt.Sprintf("%d", jp.JavaPid),
-		"load", "instrument", "false", fmt.Sprintf("%s=%s", filepath.Join(jp.env.InstallDir, "lib", "jrasp-launcher-"+jp.cfg.Version+".jar"), agentArgs),
+		"load", "instrument", "false", fmt.Sprintf("%s=%s", filepath.Join(jp.env.InstallDir, "lib", "jrasp-launcher-"+jp.Cfg.Version+".jar"), agentArgs),
 	)
 
 	zlog.Debugf(defs.ATTACH_DEFAULT, "[Attach]", "cmdArgs:%s", cmd.Args)
@@ -121,7 +123,7 @@ func (jp *JavaProcess) CopyJar2Proc() error {
 	for _, fileInfo := range files {
 		fromFile := filepath.Join(libPath, fileInfo.Name())
 		toFile := filepath.Join(containerLibPath, fileInfo.Name())
-		if strings.Contains(fileInfo.Name(), jp.cfg.Version) && !utils.PathExists(toFile) {
+		if strings.Contains(fileInfo.Name(), jp.Cfg.Version) && !utils.PathExists(toFile) {
 			err = utils.CopyFile(fromFile, toFile, os.ModePerm)
 			if err != nil {
 				return err
@@ -143,7 +145,7 @@ func (jp *JavaProcess) CopyJar2Proc() error {
 
 	// 复制覆盖即可
 	for _, fileInfo := range files {
-		if strings.Contains(fileInfo.Name(), jp.cfg.Version) && !utils.PathExists(filepath.Join(containerModulePath, fileInfo.Name())) {
+		if strings.Contains(fileInfo.Name(), jp.Cfg.Version) && !utils.PathExists(filepath.Join(containerModulePath, fileInfo.Name())) {
 			err = utils.CopyFile(filepath.Join(modulePath, fileInfo.Name()), filepath.Join(containerModulePath, fileInfo.Name()), os.ModePerm)
 			if err != nil {
 				return err

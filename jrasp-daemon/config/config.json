@@ -1,6 +1,6 @@
 {
   "agentMode": "dynamic",
-  "version": "1.1.4",
+  "version": "1.2.0",
   "configId": 1,
   "enableMdns": false,
   "remoteHosts": ["wss://localhost:8088/rasp-admin"],

@@ -1,41 +1,21 @@
 package java_process
 
 import (
+	"fmt"
 	"jrasp-daemon/defs"
 	"jrasp-daemon/environ"
+	"jrasp-daemon/socket"
 	"jrasp-daemon/userconfig"
 	"jrasp-daemon/zlog"
 	"net/http"
+	"os"
+	"path/filepath"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/shirou/gopsutil/v3/process"
 )
-
-// 注入状态
-type InjectType string
-
-const (
-	NOT_INJECT InjectType = "not inject" // 未注入
-
-	SUCCESS_INJECT InjectType = "success inject" // 注入正常
-	FAILED_INJECT  InjectType = "failed inject"  // 注入时失败
-
-	SUCCESS_EXIT InjectType = "success uninstall agent" // agent卸载成功
-	FAILED_EXIT  InjectType = "failed uninstall agent"  // agent卸载失败
-
-	FAILED_DEGRADE  InjectType = "failed degrade"  // 降级失败时后失败
-	SUCCESS_DEGRADE InjectType = "success degrade" // 降级正常
-)
-
-const (
-	libDir    string = "lib"
-	moduleDir string = "module"
-)
-
-type ModuleSendConfig struct {
-	ModuleName string `json:"moduleName"`
-	Parameters string `json:"parameters"`
-}
 
 type JavaProcess struct {
 	JavaPid    int32                `json:"javaPid"`   // 进程信息
@@ -47,7 +27,7 @@ type JavaProcess struct {
 	ServerPort string               `json:"serverPort"`
 
 	env     *environ.Environ   // 环境变量
-	cfg     *userconfig.Config // 配置
+	Cfg     *userconfig.Config `json:"-"` // 配置
 	process *process.Process   // process 对象
 
 	httpClient *http.Client
@@ -67,13 +47,15 @@ type JavaProcess struct {
 	// JVM环境和系统参数
 	PropertiesMap map[string]string `json:"-"`
 
-	Uuid string `json:"uuid"` //
+	ProcessId string `json:"processId"` // 唯一id
 
 	IsContainer bool `json:"isContainer"` // 是否在容器中
 
 	InContainerPid int32 `json:"inContainerPid"` // 容器内的Pid
 
 	RaspVersion string `json:"raspVersion"` // 注入的rasp版本
+
+	Conn socket.AgentConn `json:"-"`
 }
 
 func NewJavaProcess(p *process.Process, cfg *userconfig.Config, env *environ.Environ) *JavaProcess {
@@ -81,7 +63,7 @@ func NewJavaProcess(p *process.Process, cfg *userconfig.Config, env *environ.Env
 		JavaPid:              p.Pid,
 		process:              p,
 		env:                  env,
-		cfg:                  cfg,
+		Cfg:                  cfg,
 		AgentMode:            cfg.AgentMode,
 		moduleConfigs:        cfg.ModuleConfigs,
 		agentConfigs:         cfg.AgentConfigs,
@@ -91,54 +73,82 @@ func NewJavaProcess(p *process.Process, cfg *userconfig.Config, env *environ.Env
 	return javaProcess
 }
 
-// UpdateParameters 更新模块参数
-func (jp *JavaProcess) UpdateParameters() bool {
-	return true
+func (jp *JavaProcess) WaiteConn() bool {
+	// 60s内完成重连
+	for i := 0; i < 24; i++ {
+		v, ok := socket.SocketConns.Load(jp.ProcessId)
+		if ok {
+			jp.Conn = v.(socket.AgentConn)
+			zlog.Infof(defs.AGENT_CONN_REGISTER, "conn match java process",
+				"java process: %d, processId: %s, Conn: %s",
+				jp.JavaPid, jp.ProcessId, jp.Conn.GetConn().RemoteAddr().String())
+			return true
+		}
+		time.Sleep(time.Second * time.Duration(5))
+	}
+	return false
 }
 
-func (jp *JavaProcess) IsInject() bool {
-	return jp.InjectedStatus == SUCCESS_INJECT || jp.InjectedStatus == FAILED_INJECT
-}
-
-func (jp *JavaProcess) SuccessInject() bool {
-	return jp.InjectedStatus == SUCCESS_INJECT
-}
-
-func (jp *JavaProcess) MarkExitInject() {
-	jp.InjectedStatus = SUCCESS_EXIT
-}
-
-func (jp *JavaProcess) MarkFailedExitInject() {
-	jp.InjectedStatus = FAILED_EXIT
-}
-
-func (jp *JavaProcess) MarkSuccessInjected() {
-	jp.InjectedStatus = SUCCESS_INJECT
-}
-
-func (jp *JavaProcess) MarkFailedInjected() {
-	jp.InjectedStatus = FAILED_INJECT
-}
-
-func (jp *JavaProcess) MarkNotInjected() {
-	jp.InjectedStatus = NOT_INJECT
-}
-
-func (jp *JavaProcess) SetCmdLines() {
+// 屏蔽指定特征的Java进程
+func (jp *JavaProcess) FilterCmdLine(javaCmdLineWhiteList []string) bool {
 	cmdLines, err := jp.process.CmdlineSlice()
 	if err != nil {
 		zlog.Warnf(defs.WATCH_DEFAULT, "get process cmdLines error", `{"pid":%d,"err":%v}`, jp.JavaPid, err)
+		return true
 	}
 	jp.CmdLines = cmdLines
+
+	for _, v := range jp.CmdLines {
+		var items = javaCmdLineWhiteList
+		for _, item := range items {
+			if strings.Contains(v, item) {
+				zlog.Infof(defs.DEFAULT_INFO, "java process will ignore", "Java Pid: %d, cmdLineWhite: %s", jp.JavaPid, item)
+				return true
+			}
+		}
+	}
+	return false
 }
 
-func (jp *JavaProcess) SetStartTime() int64 {
-	startTime, err := jp.process.CreateTime()
-	if err != nil {
-		zlog.Warnf(defs.WATCH_DEFAULT, "get process startup time error", `{"pid":%d,"err":%v}`, jp.JavaPid, err)
+func (jp *JavaProcess) CheckContainer() {
+
+	if !isProcessInContainer(jp.JavaPid) {
+		return
 	}
-	timeUnix := time.Unix(startTime/1000, 0)
-	timsStr := timeUnix.Format(defs.DATE_FORMAT)
-	jp.StartTime = timsStr
-	return startTime
+	jp.IsContainer = true
+
+	innerPid, err := jp.GetInContainerPidByHostPid()
+	if err != nil {
+		zlog.Warnf(defs.DEFAULT_INFO, "get Java process innner pid failed, process will ignore", "Java Pid: %d, err:%v", jp.JavaPid, err)
+		return
+	}
+
+	if innerPid == "" {
+		zlog.Warnf(defs.DEFAULT_INFO, "get Java process innner pid failed, process will ignore", "Java Pid: %d", jp.JavaPid)
+		return
+	}
+
+	innerPidInt, err := strconv.ParseInt(innerPid, 10, 32)
+	if err != nil || innerPidInt <= 0 {
+		zlog.Warnf(defs.DEFAULT_INFO, "convert innerPid to int32 failed, process will ignore", "Java Pid: %d, err:%v", jp.JavaPid, err)
+		return
+	}
+	jp.InContainerPid = int32(innerPidInt)
+	return
+}
+
+func isProcessInContainer(pid int32) bool {
+	procPath := fmt.Sprintf("/proc/%d", pid)
+	cgroupPath := filepath.Join(procPath, "cgroup")
+	cgroupData, err := os.ReadFile(cgroupPath)
+	if err != nil {
+		return false
+	}
+
+	if strings.Contains(string(cgroupData), "/docker/") ||
+		strings.Contains(string(cgroupData), "/kubepods/") {
+		return true
+	}
+
+	return false
 }

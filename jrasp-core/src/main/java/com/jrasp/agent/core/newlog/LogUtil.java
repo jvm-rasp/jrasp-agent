@@ -2,6 +2,7 @@ package com.jrasp.agent.core.newlog;
 
 import com.jrasp.agent.api.log.RaspLog;
 import com.jrasp.agent.api.request.AttackInfo;
+import com.jrasp.agent.core.CoreConfigure;
 import com.jrasp.agent.core.newlog.consumer.ConsoleConsumer;
 import com.jrasp.agent.core.newlog.consumer.FileConsumer;
 import com.jrasp.agent.core.newlog.consumer.LogConsumer;
@@ -13,6 +14,7 @@ import java.util.concurrent.BlockingQueue;
 
 /**
  * 日志的操作入口
+ *
  * @author jrasp
  */
 public class LogUtil {
@@ -28,8 +30,8 @@ public class LogUtil {
     // 多个消费者
     private static volatile LinkedList<LogConsumer> logConsumers = new LinkedList<LogConsumer>();
 
-    public static synchronized void init(BlockingQueue<String> queue, String logPath) {
-        raspLog = new RaspLogImpl(queue);
+    public static synchronized void init(BlockingQueue<String> queue, String logPath, String processId) {
+        raspLog = new RaspLogImpl(queue, processId);
         fileConsumer = new FileConsumer(logPath);
         consoleConsumer = new ConsoleConsumer();
         // file优先级高于console

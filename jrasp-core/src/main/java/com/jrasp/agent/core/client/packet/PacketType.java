@@ -5,55 +5,58 @@ package com.jrasp.agent.core.client.packet;
  */
 public enum PacketType {
 
+    // --------------------- agent ---------------------
     /**
-     * 获取信息
+     * 更新agent参数
      */
-    INFO(0x01),
+    AGENT_CONFIG(0x01),
 
     /**
-     * 卸载rasp
+     * 卸载agent
      */
-    UNINSTALL(0x02),
+    AGENT_UNINSTALL(0x02),
 
     /**
-     * 刷新模块
+     * 获取agent信息
      */
-    FLUSH(0x03),
+    AGENT_INFO(0x03),
 
     /**
-     * 错误
+     * agent日志
      */
-    ERROR(0x04),
+    AGENT_LOG(0x04),
+
+    // --------------------- module ---------------------
+    /**
+     * 卸载module
+     */
+    MODULE_UNINSTALL(0x20),
 
     /**
-     * 更新参数
+     * 更新module参数
      */
-    UPDATE(0x05),
+    MODULE_CONFIG(0x21),
 
     /**
-     * 卸载模块
+     * 刷新module
      */
-    UNLOAD(0x06),
+    MODULE_FLUSH(0x22),
 
     /**
      * 激活模块
      */
-    ACTIVE(0x07),
+    MODULE_ACTIVE(0x23),
 
     /**
      * 冻结模块
      */
-    FROZEN(0x08),
+    MODULE_FROZEN(0x24),
 
+    // --------------------- other ---------------------
     /**
-     * 更新参数
+     * 命令的返回
      */
-    CONFIG(0x09),
-
-    /**
-     * 日志
-     */
-    LOG(0x20);
+    COMMAND_RESPONSE(0x30);
 
     private final int value;
 

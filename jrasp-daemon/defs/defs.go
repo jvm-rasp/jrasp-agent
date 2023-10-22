@@ -2,7 +2,7 @@ package defs
 
 import "os"
 
-const JRASP_DAEMON_VERSION = "1.1.4"
+const JRASP_DAEMON_VERSION = "1.2.0"
 
 const SUPPORT_URL = "https://www.jrasp.com"
 
@@ -19,6 +19,8 @@ const LOGO = "       _   _____                _____   _____  \n" +
 	":: JVM RASP ::        (v" + JRASP_DAEMON_VERSION + ".RELEASE) " + SUPPORT_URL + "\n"
 
 const START_LOG_ID = 1000
+
+const AGENT_START_LOG_ID = 2000
 
 const (
 	START_UP                 int = START_LOG_ID + 0
@@ -61,6 +63,8 @@ const (
 
 	DEFAULT_METIRC    int = START_LOG_ID + 40
 	FILE_OPENS_METIRC int = START_LOG_ID + 41
+
+	AGENT_CONN_REGISTER int = START_LOG_ID + 42
 )
 
 const DAEMON_PID_FILE = "pid"

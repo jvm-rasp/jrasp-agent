@@ -1,6 +1,7 @@
 package com.jrasp.agent.core.client.socket;
 
 import com.jrasp.agent.core.client.packet.Packet;
+import com.jrasp.agent.core.client.packet.PacketType;
 
 /**
  * @author jrasp
@@ -13,10 +14,7 @@ public interface RaspSocket {
      */
     void connect() throws Exception;
 
-    /**
-     * 写日志
-     */
-    void write(String msg) throws Exception;
+    void write(String msg, PacketType t)throws Exception;
 
     /**
      * 接受指令/参数

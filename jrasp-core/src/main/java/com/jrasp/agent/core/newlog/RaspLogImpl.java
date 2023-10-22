@@ -2,6 +2,7 @@ package com.jrasp.agent.core.newlog;
 
 import com.jrasp.agent.api.log.RaspLog;
 import com.jrasp.agent.api.request.AttackInfo;
+import com.jrasp.agent.core.CoreConfigure;
 
 import java.util.concurrent.BlockingQueue;
 
@@ -17,8 +18,11 @@ public class RaspLogImpl implements RaspLog {
 
     private BlockingQueue<String> queue = null;
 
-    public RaspLogImpl(BlockingQueue<String> queue) {
+    private String processId;
+
+    public RaspLogImpl(BlockingQueue<String> queue, String processId) {
         this.queue = queue;
+        this.processId = processId;
     }
 
     /**
@@ -88,7 +92,7 @@ public class RaspLogImpl implements RaspLog {
     }
 
     private boolean publish(Level level, int logId, String message, Throwable t) {
-        String msg = LogFormatter.format(level, logId, message, t);
+        String msg = LogFormatter.format(level, logId, message, processId, t);
         /*
          * put()方法是如果队列如果满，阻塞当前线程挂起
          * offer()方法是队列满的话就会返回false

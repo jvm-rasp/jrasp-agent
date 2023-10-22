@@ -46,15 +46,14 @@ public class RaspSocketImpl implements RaspSocket {
         closed = false;
     }
 
-    @Override
-    public void write(String msg) throws IOException {
+    public void write(String msg, PacketType t) throws IOException {
         if (isClosed()) {
             return;
         }
         if (msg == null || "".equals(msg)) {
             return;
         }
-        Packet p = new Packet(PacketType.LOG, msg);
+        Packet p = new Packet(t, msg);
         try {
             Codec.INSTANCE.encode(output, p);
         } catch (Exception e) {
@@ -62,6 +61,7 @@ public class RaspSocketImpl implements RaspSocket {
             closed = true;
         }
     }
+
 
     @Override
     public Packet read() throws Exception {

@@ -7,21 +7,21 @@ import com.jrasp.agent.core.client.packet.PacketType;
 
 import java.util.Map;
 
-import static com.jrasp.agent.core.client.packet.PacketType.INFO;
+import static com.jrasp.agent.core.client.packet.PacketType.*;
 
 /**
  * 获取当前agent的信息
  *
  * @author jrasp
  */
-public class InfoPacketHandler implements PacketHandler {
+public class AgentInfoPacketHandler implements PacketHandler {
 
-    public InfoPacketHandler() {
+    public AgentInfoPacketHandler() {
     }
 
     @Override
     public PacketType getType() {
-        return INFO;
+        return AGENT_INFO;
     }
 
     @Override

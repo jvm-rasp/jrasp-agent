@@ -2,7 +2,6 @@ package com.jrasp.agent.core.newlog;
 
 import com.jrasp.agent.api.log.RaspLog;
 import com.jrasp.agent.api.request.AttackInfo;
-import com.jrasp.agent.core.CoreConfigure;
 
 import java.util.concurrent.BlockingQueue;
 

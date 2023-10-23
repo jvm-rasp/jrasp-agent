@@ -5,29 +5,12 @@ import (
 	"bytes"
 	"encoding/binary"
 	"encoding/json"
+	"fmt"
 	"jrasp-daemon/defs"
 	"jrasp-daemon/zlog"
 	"net"
 	"sync"
 	"time"
-)
-
-const (
-	// --------------------- agent ---------------------
-	AGENT_CONFIG    byte = 0x01 // 更新agent参数
-	AGENT_UNINSTALL byte = 0x02 // 卸载agent
-	AGENT_INFO      byte = 0x03 // 获取agent信息
-	AGENT_LOG       byte = 0x04 // agent日志
-
-	// --------------------- module ---------------------
-	MODULE_UNINSTALL byte = 0x20 // 卸载module
-	MODULE_CONFIG    byte = 0x21 //  更新module参数
-	MODULE_FLUSH     byte = 0x22 // 刷新module
-	MODULE_ACTIVE    byte = 0x23 // 激活模块
-	MODULE_FROZEN    byte = 0x24 // 冻结模块
-
-	// --------------------- other ---------------------
-	COMMAND_RESPONSE byte = 0x30 // 命令的返回
 )
 
 // 接收所有的 agent 的消息
@@ -37,9 +20,11 @@ var AgentMessageChan = make(chan string, 2000)
 var SocketConns sync.Map
 
 type AgentConn struct {
-	processId  string
-	conn       net.Conn
-	IsRegister bool // 与Java进程匹配成功
+	processId         string
+	conn              net.Conn
+	IsRegister        bool              // 与Java进程匹配成功
+	AgentCommandChan  chan Package      // 发给agent的命令
+	AgentResponseChan chan AgentMessage // 接受agent的返回
 }
 
 type AgentMessage struct {
@@ -56,27 +41,69 @@ type AgentMessage struct {
 }
 
 // 接收消息
-func (a *AgentConn) Write() {
+func (a *AgentConn) WriteConn() {
 	for {
-		select {}
+		select {
+		case p := <-a.AgentCommandChan:
+			p.Pack(a.conn)
+			ticker := time.NewTicker(time.Second * time.Duration(60))
+			// 阻塞等待
+			for {
+				select {
+				case response := <-a.AgentResponseChan:
+					zlog.Infof(defs.COMMAND_RESPONSE, "command exec success", "command: %d, response: %s", p.Type, response.Msg)
+					goto END
+				case <-ticker.C:
+					// 超时退出
+					zlog.Errorf(defs.COMMAND_RESPONSE, "command exec error", "command: %d", p.Type)
+					goto END
+				}
+			}
+		END:
+		}
 	}
 }
 
 // 接收消息
-func (a *AgentConn) Read() {
+func (a *AgentConn) ReadConn() {
 	scanner := initScanner(a.conn)
 	// 读取消息
 	for scanner.Scan() {
+		// 消息体
 		p := new(Package)
 		err := p.Unpack(bytes.NewReader(scanner.Bytes()))
 		if err != nil {
 			_ = a.conn.Close()
 			return
 		}
+
+		// 日志
+		var agentMessage AgentMessage
+		err = json.Unmarshal(p.Body, &agentMessage)
+		if err != nil {
+			fmt.Printf("json: %s\n", string(p.Body))
+			return
+		}
+
+		// 命令返回的消息，写入单独的高优先通道
+		if p.Type == COMMAND_RESPONSE {
+			a.AgentResponseChan <- agentMessage
+		}
+
 		// 处理java agent 产生的日志
 		if !a.IsRegister {
-			a.registerConn(p)
+			processId := agentMessage.ProcessId
+			if processId != "" {
+				a.processId = processId
+				SocketConns.Store(processId, *a)
+				a.IsRegister = true
+				zlog.Infof(defs.AGENT_CONN_REGISTER, "store socket conn",
+					"processId: %s, remote addr: %s", processId, a.GetConn().RemoteAddr().String())
+			}
 		}
+
+		fmt.Println("agent log:" + string(p.Body))
+		// 写入日志传输通道
 		AgentMessageChan <- string(p.Body)
 	}
 }
@@ -132,7 +159,7 @@ func (a *AgentConn) SendAgentMessge(t byte, message string) {
 		Signature: EmptySignature,
 		Body:      []byte((message)),
 	}
-	pkg.Pack(a.conn)
+	a.AgentCommandChan <- *pkg
 }
 
 func initScanner(conn net.Conn) *bufio.Scanner {

@@ -11,6 +11,24 @@ var EmptySignature = make([]byte, 128)
 
 const PROTOCOL_VERSION byte = 101
 
+const (
+	// --------------------- agent ---------------------
+	AGENT_CONFIG    byte = 0x01 // 更新agent参数
+	AGENT_UNINSTALL byte = 0x02 // 卸载agent
+	AGENT_INFO      byte = 0x03 // 获取agent信息
+	AGENT_LOG       byte = 0x04 // agent日志
+
+	// --------------------- module ---------------------
+	MODULE_UNINSTALL byte = 0x20 // 卸载module
+	MODULE_CONFIG    byte = 0x21 //  更新module参数
+	MODULE_FLUSH     byte = 0x22 // 刷新module
+	MODULE_ACTIVE    byte = 0x23 // 激活模块
+	MODULE_FROZEN    byte = 0x24 // 冻结模块
+
+	// --------------------- other ---------------------
+	COMMAND_RESPONSE byte = 0x30 // 命令的返回
+)
+
 // Package 145
 type Package struct {
 	Magic     [3]byte // 3 byte 魔数

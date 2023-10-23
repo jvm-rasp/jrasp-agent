@@ -1,6 +1,7 @@
 package com.jrasp.agent.core.client.handler.impl;
 
 import com.jrasp.agent.api.matcher.ClassMatcher;
+import com.jrasp.agent.core.client.handler.CommandResponse;
 import com.jrasp.agent.core.client.handler.PacketHandler;
 import com.jrasp.agent.core.manager.RaspClassFileTransformer;
 import com.jrasp.agent.core.client.packet.PacketType;
@@ -25,7 +26,7 @@ public class AgentInfoPacketHandler implements PacketHandler {
     }
 
     @Override
-    public String run(String data) throws Throwable {
+    public CommandResponse run(String data) throws Throwable {
         StringBuilder stringBuilder = new StringBuilder();
         Map<String, ClassMatcher> maps = RaspClassFileTransformer.INSTANCE.targetClazzMap;
         if (maps != null) {
@@ -33,6 +34,6 @@ public class AgentInfoPacketHandler implements PacketHandler {
                 stringBuilder.append(entry.getValue().toString());
             }
         }
-        return stringBuilder.toString();
+        return CommandResponse.ok(stringBuilder.toString(), getType());
     }
 }

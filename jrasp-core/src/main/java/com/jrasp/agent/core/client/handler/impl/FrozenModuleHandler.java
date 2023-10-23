@@ -3,12 +3,14 @@ package com.jrasp.agent.core.client.handler.impl;
 import com.jrasp.agent.api.Module;
 import com.jrasp.agent.api.annotation.Information;
 import com.jrasp.agent.core.CoreModule;
+import com.jrasp.agent.core.client.handler.CommandResponse;
 import com.jrasp.agent.core.client.handler.PacketHandler;
 import com.jrasp.agent.core.manager.DefaultCoreModuleManager;
 import com.jrasp.agent.core.client.packet.PacketType;
 
 /**
  * 冻结指定模块
+ *
  * @author jrasp
  */
 public class FrozenModuleHandler implements PacketHandler {
@@ -25,7 +27,7 @@ public class FrozenModuleHandler implements PacketHandler {
     }
 
     @Override
-    public String run(String data) throws Throwable {
+    public CommandResponse run(String data) throws Throwable {
         for (CoreModule coreModule : coreModuleManager.list()) {
             Module module = coreModule.getModule();
             final Information moduleInfo = module.getClass().getAnnotation(Information.class);
@@ -33,7 +35,6 @@ public class FrozenModuleHandler implements PacketHandler {
                 coreModuleManager.frozen(coreModule, true);
             }
         }
-        return "success";
+        return CommandResponse.ok("success", getType());
     }
-
 }

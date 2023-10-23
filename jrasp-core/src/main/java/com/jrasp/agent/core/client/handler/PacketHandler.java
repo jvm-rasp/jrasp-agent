@@ -9,6 +9,6 @@ public interface PacketHandler {
 
     PacketType getType();
 
-    String run(String data) throws Throwable;
+    CommandResponse run(String data) throws Throwable;
 
 }

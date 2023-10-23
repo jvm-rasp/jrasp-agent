@@ -14,13 +14,14 @@ public class HeartbeatTask extends AbstractRaspTask {
 
     @Override
     public void run() {
-        work();
+        String result = work();
+        LogUtil.info(result.toString());
     }
 
     /**
      * 心跳消息
      */
-    private static void work() {
+    private static String work() {
         Map<String, Object> collector = Monitor.Factory.collector();
 
         StringBuffer sb = new StringBuffer();
@@ -33,7 +34,7 @@ public class HeartbeatTask extends AbstractRaspTask {
             cnt++;
         }
         sb.append("}");
-        LogUtil.info(sb.toString());
+        return sb.toString();
     }
 
     private static void appendJsonField(StringBuffer sb, String key, String value, boolean hasNext) {
@@ -42,6 +43,10 @@ public class HeartbeatTask extends AbstractRaspTask {
         if (hasNext) {
             sb.append(", ");
         }
+    }
+
+    public static void main(String[] args) {
+        work();
     }
 
 }

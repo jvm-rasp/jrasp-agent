@@ -1,5 +1,6 @@
 package com.jrasp.agent.core.client.handler.impl;
 
+import com.jrasp.agent.core.client.handler.CommandResponse;
 import com.jrasp.agent.core.client.handler.PacketHandler;
 import com.jrasp.agent.core.manager.RaspConfigImpl;
 import com.jrasp.agent.core.client.packet.PacketType;
@@ -29,7 +30,7 @@ public class UpdateConfigPacketHandler implements PacketHandler {
     }
 
     @Override
-    public String run(String config) throws Throwable {
+    public CommandResponse run(String config) throws Throwable {
         // k1=v1;k2=v2;k2=v21,v22,v23;
         LOGGER.log(Level.INFO, "config:{0}", config);
         if (RaspStringUtils.isNotBlank(config)) {
@@ -52,10 +53,9 @@ public class UpdateConfigPacketHandler implements PacketHandler {
                     }
                 }
             }
-            return "success";
-        } else {
-            return "parameters is blank";
+            return CommandResponse.ok("success", getType());
         }
+        return CommandResponse.clientError("parameters is blank",getType());
     }
 
     // TODO 目前仅支持boolean、int、String

@@ -1,5 +1,6 @@
 package com.jrasp.agent.core.client.handler.impl;
 
+import com.jrasp.agent.core.client.handler.CommandResponse;
 import com.jrasp.agent.core.client.handler.PacketHandler;
 import com.jrasp.agent.core.client.packet.PacketType;
 
@@ -16,7 +17,7 @@ public class AgentUninstallPacketHandler implements PacketHandler {
     }
 
     @Override
-    public String run(String data) throws Throwable {
+    public CommandResponse run(String data) throws Throwable {
         /**
          * @see com.jrasp.agent.launcher110.AgentLauncher#uninstall(String)
          * TODO 这里存在不安全设计：反射卸载的接口在agent中，可以被非法调用
@@ -25,6 +26,6 @@ public class AgentUninstallPacketHandler implements PacketHandler {
         Method uninstallMethod = clazz.getDeclaredMethod("uninstall", String.class);
         uninstallMethod.setAccessible(true);
         uninstallMethod.invoke(null, "default");
-        return "success";
+        return CommandResponse.ok("success", getType());
     }
 }

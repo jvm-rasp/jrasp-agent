@@ -3,8 +3,6 @@ package com.jrasp.agent.core.task;
 import com.jrasp.agent.core.client.socket.RaspSocket;
 import com.jrasp.agent.core.newlog.LogUtil;
 
-import java.util.List;
-
 /**
  * client socket 定时重连任务
  *
@@ -21,14 +19,16 @@ public class ReconnectTask extends AbstractRaspTask {
 
     @Override
     public void run() {
-        if (raspSocket != null && raspSocket.isClosed()) {
-            try {
-                raspSocket.connect();
-                LogUtil.info("rasp socket reconnect success.");
-                LogUtil.syncFileLog();
-            } catch (Exception e) {
-                handleError(e);
-            }
+        if (raspSocket == null || raspSocket.isClosed()) {
+            return;
+        }
+
+        try {
+            raspSocket.connect();
+            LogUtil.info("rasp socket reconnect success.");
+            LogUtil.syncFileLog();
+        } catch (Exception e) {
+            handleError(e);
         }
     }
 }

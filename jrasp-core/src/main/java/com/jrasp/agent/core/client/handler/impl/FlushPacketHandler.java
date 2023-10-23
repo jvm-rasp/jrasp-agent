@@ -1,5 +1,6 @@
 package com.jrasp.agent.core.client.handler.impl;
 
+import com.jrasp.agent.core.client.handler.CommandResponse;
 import com.jrasp.agent.core.client.handler.PacketHandler;
 import com.jrasp.agent.core.manager.DefaultCoreModuleManager;
 import com.jrasp.agent.core.client.packet.PacketType;
@@ -26,7 +27,7 @@ public class FlushPacketHandler implements PacketHandler {
     }
 
     @Override
-    public String run(String data) throws Throwable {
+    public CommandResponse run(String data) throws Throwable {
         // true: 强制刷新
         // false: 软刷新
         boolean isForceFlush = false;
@@ -34,6 +35,6 @@ public class FlushPacketHandler implements PacketHandler {
             isForceFlush = true;
         }
         coreModuleManager.flush(isForceFlush);
-        return "success";
+        return CommandResponse.ok("success", getType());
     }
 }

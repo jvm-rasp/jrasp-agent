@@ -2,7 +2,6 @@ package com.jrasp.agent.core.client.socket;
 
 import java.io.*;
 import java.net.Socket;
-import java.util.logging.Level;
 
 import com.jrasp.agent.core.client.packet.*;
 import com.jrasp.agent.core.newlog.LogUtil;
@@ -61,7 +60,6 @@ public class RaspSocketImpl implements RaspSocket {
             closed = true;
         }
     }
-
 
     @Override
     public Packet read() throws Exception {

@@ -2,6 +2,7 @@ package com.jrasp.agent.core.client.handler.impl;
 
 import com.jrasp.agent.api.Module;
 import com.jrasp.agent.core.CoreModule;
+import com.jrasp.agent.core.client.handler.CommandResponse;
 import com.jrasp.agent.core.client.handler.PacketHandler;
 import com.jrasp.agent.core.manager.DefaultCoreModuleManager;
 import com.jrasp.agent.core.client.packet.PacketType;
@@ -35,7 +36,7 @@ public class UpdatePacketHandler implements PacketHandler {
     }
 
     @Override
-    public String run(String data) throws Throwable {
+    public CommandResponse run(String data) throws Throwable {
         // 模块名称:k1=v1;k2=v2;k2=v21,v22,v23;
         LOGGER.log(Level.CONFIG, "data:{0}", data);
         if (RaspStringUtils.isNotBlank(data)) {
@@ -45,11 +46,11 @@ public class UpdatePacketHandler implements PacketHandler {
                 String parameters = moduleAndValue[1].trim();
                 CoreModule coreModule = coreModuleManager.get(moduleName);
                 if (coreModule == null) {
-                    return "coreModule is null," + moduleName;
+                    return CommandResponse.clientError("coreModule is null," + moduleName, getType());
                 }
                 Module module = coreModule.getModule();
                 if (module == null) {
-                    return "module is null," + moduleName;
+                    return CommandResponse.clientError("module is null," + moduleName, getType());
                 }
                 String[] kvArray = parameters.split(";");
                 Map<String, String> parametersMap = new HashMap<String, String>();
@@ -75,12 +76,11 @@ public class UpdatePacketHandler implements PacketHandler {
 
                 Method update = module.getClass().getDeclaredMethod("update", Map.class);
                 Boolean result = (Boolean) update.invoke(module, parametersMap);
-                return result.toString();
-            } else {
-                return "split parameters error. keyAndValue length: " + moduleAndValue.length + "; data: " + data;
+                return CommandResponse.ok(result.toString(), getType());
             }
+            return CommandResponse.serverError("split parameters error. keyAndValue length: " + moduleAndValue.length + "; data: " + data, getType());
         } else {
-            return "parameters is blank";
+            return CommandResponse.clientError("parameters is blank", getType());
         }
     }
 }

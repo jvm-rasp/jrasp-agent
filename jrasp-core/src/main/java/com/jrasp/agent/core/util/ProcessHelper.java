@@ -29,7 +29,7 @@ public class ProcessHelper {
         return host;
     }
 
-    public static int getProcessId() {
+    public static int getCurrentPid() {
         if (pid == 0) {
             String jvmName = ManagementFactory.getRuntimeMXBean().getName();
             int atIndex = jvmName.indexOf('@');

@@ -130,12 +130,12 @@ public class CoreClientImpl implements CoreClient {
     }
 
     private void registerHandler(DefaultCoreModuleManager coreModuleManager) {
-        handlerMap.put(AGENT_CONFIG, new UpdateConfigPacketHandler());
+        handlerMap.put(AGENT_CONFIG, new UpdateAgentConfigHandler());
         handlerMap.put(AGENT_INFO, new AgentInfoPacketHandler());
         handlerMap.put(AGENT_UNINSTALL, new AgentUninstallPacketHandler());
 
         handlerMap.put(MODULE_FLUSH, new FlushPacketHandler(coreModuleManager));
-        handlerMap.put(MODULE_CONFIG, new UpdatePacketHandler(coreModuleManager));
+        handlerMap.put(MODULE_CONFIG, new UpdateModuleConfigHandler(coreModuleManager));
         handlerMap.put(MODULE_UNINSTALL, new UnloadModuleHandler(coreModuleManager));
         handlerMap.put(MODULE_ACTIVE, new ActiveModuleHandler(coreModuleManager));
         handlerMap.put(MODULE_FROZEN, new FrozenModuleHandler(coreModuleManager));

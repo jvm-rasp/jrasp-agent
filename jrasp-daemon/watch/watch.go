@@ -133,6 +133,7 @@ func (w *Watch) InjectJavaProcess(pid int32) {
 	//	return
 	//}
 
+	// 注入阶段
 	if w.cfg.IsDynamicMode() && !javaProcess.IsInject() {
 		// java进程启动完成之后注入，防止死锁和短生命周期进程如jps等
 		currentTime := time.Now().UnixMilli()
@@ -159,7 +160,6 @@ func (w *Watch) InjectJavaProcess(pid int32) {
 		} else {
 			javaProcess.MarkFailedExitInject()
 		}
-
 	}
 
 	// 参数更新
@@ -167,8 +167,8 @@ func (w *Watch) InjectJavaProcess(pid int32) {
 		// 等待连接就绪
 		if javaProcess.WaiteConn() {
 			javaProcess.Conn.SendFlushCommand("false")
-			//javaProcess.Conn.UpdateAgentConfig(utils.ToString(javaProcess.Cfg.AgentConfigs))
-			//javaProcess.Conn.UpdateModuleConfig(utils.ToString(javaProcess.Cfg.ModuleConfigs))
+			javaProcess.Conn.UpdateAgentConfig(utils.ToString(javaProcess.Cfg.AgentConfigs))
+			javaProcess.Conn.UpdateModuleConfig(utils.ToString(javaProcess.Cfg.ModuleConfigs))
 			zlog.Infof(defs.AGENT_CONFIG_UPDATE, "update agent/module config", "update config success")
 		}
 	}

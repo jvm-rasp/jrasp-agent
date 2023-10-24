@@ -17,11 +17,11 @@ import static com.jrasp.agent.core.client.packet.PacketType.AGENT_CONFIG;
  * @author jrasp
  * 更新全局参数
  */
-public class UpdateConfigPacketHandler implements PacketHandler {
+public class UpdateAgentConfigHandler implements PacketHandler {
 
-    private static final Logger LOGGER = Logger.getLogger(UpdateConfigPacketHandler.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(UpdateAgentConfigHandler.class.getName());
 
-    public UpdateConfigPacketHandler() {
+    public UpdateAgentConfigHandler() {
     }
 
     @Override
@@ -32,7 +32,7 @@ public class UpdateConfigPacketHandler implements PacketHandler {
     @Override
     public CommandResponse run(String config) throws Throwable {
         // k1=v1;k2=v2;k2=v21,v22,v23;
-        LOGGER.log(Level.INFO, "config:{0}", config);
+        LOGGER.log(Level.INFO, "agent config:{0}", config);
         if (RaspStringUtils.isNotBlank(config)) {
             String[] kAndvArrays = config.split(";");
             Class<?> clazz = RaspConfigImpl.getInstance().getClass();

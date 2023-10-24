@@ -20,13 +20,13 @@ import static com.jrasp.agent.core.client.packet.PacketType.MODULE_CONFIG;
 /**
  * @author jrasp
  */
-public class UpdatePacketHandler implements PacketHandler {
+public class UpdateModuleConfigHandler implements PacketHandler {
 
-    private static final Logger LOGGER = Logger.getLogger(UpdatePacketHandler.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(UpdateModuleConfigHandler.class.getName());
 
     private final DefaultCoreModuleManager coreModuleManager;
 
-    public UpdatePacketHandler(DefaultCoreModuleManager coreModuleManager) {
+    public UpdateModuleConfigHandler(DefaultCoreModuleManager coreModuleManager) {
         this.coreModuleManager = coreModuleManager;
     }
 

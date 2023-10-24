@@ -4,6 +4,7 @@ import com.jrasp.agent.core.client.packet.PacketType;
 
 public class CommandResponse {
 
+    private static final String FOTMAT = "code=%s;message=%s;type=%s";
 
     private int code; // 200 success、400 client error、500 server error
 
@@ -58,10 +59,6 @@ public class CommandResponse {
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder("{");
-        sb.append("\"message\":\"").append(message).append('\"');
-        sb.append(",\"code\":").append(code);
-        sb.append('}');
-        return sb.toString();
+        return String.format(FOTMAT, code, message, type);
     }
 }

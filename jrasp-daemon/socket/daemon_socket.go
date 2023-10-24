@@ -1,6 +1,7 @@
 package socket
 
 import (
+	"context"
 	"fmt"
 	"jrasp-daemon/defs"
 	"jrasp-daemon/zlog"
@@ -19,7 +20,7 @@ func NewDaemonSocket(port int) *DaemonSocket {
 	}
 }
 
-func (d *DaemonSocket) Start() {
+func (d *DaemonSocket) Start(ctx context.Context) {
 	listener, err := net.Listen("tcp", fmt.Sprintf(":%d", d.Port))
 	if err != nil {
 		fmt.Println("Error listening:", err.Error())
@@ -38,6 +39,7 @@ func (d *DaemonSocket) Start() {
 			IsRegister:        false,
 			AgentCommandChan:  make(chan Package, 10),
 			AgentResponseChan: make(chan AgentMessage, 10),
+			ctx:               ctx,
 		}
 
 		zlog.Infof(defs.AGENT_CONN_REGISTER, "a new conn register to daemon socket",

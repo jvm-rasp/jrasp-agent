@@ -1,5 +1,6 @@
 package com.jrasp.agent.core.task;
 
+import com.jrasp.agent.core.client.handler.CommandResponse;
 import com.jrasp.agent.core.client.packet.Packet;
 import com.jrasp.agent.core.client.packet.PacketType;
 import com.jrasp.agent.core.client.socket.RaspSocket;
@@ -37,8 +38,8 @@ public class PacketReadTask extends AbstractRaspTask {
                 throw new IllegalArgumentException(String.format("no handle packet. packet type -> [%s]", type));
             }
             // 处理结果返回给daemon
-            String responseData = handler.run(request.getData());
-            LogRecord logRecord = new LogRecord(responseData);
+            CommandResponse responseData = handler.run(request.getData());
+            LogRecord logRecord = new LogRecord(responseData.toString());
             raspSocket.write(logRecord.toString(), PacketType.COMMAND_RESPONSE);
         } catch (Throwable t) {
             handleError(t);

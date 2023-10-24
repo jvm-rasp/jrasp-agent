@@ -91,7 +91,7 @@ func main() {
 
 	daemonSocket := socket.NewDaemonSocket(conf.DaemonPort)
 
-	go daemonSocket.Start()
+	go daemonSocket.Start(ctx)
 
 	// 进程注入
 	go newWatch.DoAttach()

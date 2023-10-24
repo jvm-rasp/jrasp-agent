@@ -3,12 +3,14 @@ package socket
 import (
 	"bufio"
 	"bytes"
+	"context"
 	"encoding/binary"
 	"encoding/json"
 	"fmt"
 	"jrasp-daemon/defs"
 	"jrasp-daemon/zlog"
 	"net"
+	"strings"
 	"sync"
 	"time"
 )
@@ -25,6 +27,7 @@ type AgentConn struct {
 	IsRegister        bool              // 与Java进程匹配成功
 	AgentCommandChan  chan Package      // 发给agent的命令
 	AgentResponseChan chan AgentMessage // 接受agent的返回
+	ctx               context.Context
 }
 
 type AgentMessage struct {
@@ -40,22 +43,50 @@ type AgentMessage struct {
 	Ts         string `json:"ts"`
 }
 
+type AgentCommandRespose struct {
+	Code    int    `json:"code"`
+	Message string `json:"message"`
+	Type    string `json:"type"`
+}
+
 // 接收消息
 func (a *AgentConn) WriteConn() {
 	for {
 		select {
+		case _ = <-a.ctx.Done():
+			return
 		case p := <-a.AgentCommandChan:
-			p.Pack(a.conn)
+			err := p.Pack(a.conn)
+			if err != nil {
+				continue
+			}
 			ticker := time.NewTicker(time.Second * time.Duration(60))
 			// 阻塞等待
 			for {
 				select {
 				case response := <-a.AgentResponseChan:
-					zlog.Infof(defs.COMMAND_RESPONSE, "command exec success", "command: %d, response: %s", p.Type, response.Msg)
+					kvArray := strings.Split(response.Msg, ";")
+					var kvMap = make(map[string]string, 8)
+					for i := 0; i < len(kvArray); i++ {
+						kv := strings.Split(kvArray[i], "=")
+						if len(kv) == 2 {
+							kvMap[kv[0]] = kv[1]
+						}
+					}
+					code := kvMap["code"]
+					message := kvMap["message"]
+					commandType := kvMap["type"]
+					if code == "200" {
+						zlog.Infof(defs.COMMAND_RESPONSE, "command exec success", "code: %d, command: %d, response: %s",
+							code, commandType, message)
+					} else {
+						zlog.Errorf(defs.COMMAND_RESPONSE, "command exec error", "code: %d, command: %d, response: %s",
+							code, commandType, message)
+					}
 					goto END
 				case <-ticker.C:
 					// 超时退出
-					zlog.Errorf(defs.COMMAND_RESPONSE, "command exec error", "command: %d", p.Type)
+					zlog.Errorf(defs.COMMAND_RESPONSE, "wait command response timeout", "command: %d", p.Type)
 					goto END
 				}
 			}
@@ -73,7 +104,7 @@ func (a *AgentConn) ReadConn() {
 		p := new(Package)
 		err := p.Unpack(bytes.NewReader(scanner.Bytes()))
 		if err != nil {
-			_ = a.conn.Close()
+			// _ = a.conn.Close()
 			return
 		}
 
@@ -102,7 +133,6 @@ func (a *AgentConn) ReadConn() {
 			}
 		}
 
-		fmt.Println("agent log:" + string(p.Body))
 		// 写入日志传输通道
 		AgentMessageChan <- string(p.Body)
 	}

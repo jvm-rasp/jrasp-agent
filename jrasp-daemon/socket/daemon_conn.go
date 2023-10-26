@@ -8,8 +8,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"jrasp-daemon/defs"
+	"jrasp-daemon/userconfig"
 	"jrasp-daemon/zlog"
 	"net"
+	"net/url"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -77,12 +80,14 @@ func (a *AgentConn) WriteConn() {
 					message := kvMap["message"]
 					commandType := kvMap["type"]
 					if code == "200" {
-						zlog.Infof(defs.COMMAND_RESPONSE, "command exec success", "code: %d, command: %d, response: %s",
+						zlog.Infof(defs.COMMAND_RESPONSE, "command exec success", "code: %s, command: %s, response: %s",
 							code, commandType, message)
 					} else {
-						zlog.Errorf(defs.COMMAND_RESPONSE, "command exec error", "code: %d, command: %d, response: %s",
+						zlog.Errorf(defs.COMMAND_RESPONSE, "command exec error", "code: %s, command: %s, response: %s",
 							code, commandType, message)
 					}
+					// 超时计数器关闭
+					ticker.Stop()
 					goto END
 				case <-ticker.C:
 					// 超时退出
@@ -164,8 +169,11 @@ func (a *AgentConn) SendUnInstallCommand() {
 }
 
 // 更新模块参数
-func (a *AgentConn) UpdateModuleConfig(message string) {
-	a.SendAgentMessge(MODULE_CONFIG, message)
+func (a *AgentConn) UpdateModuleConfig(m []userconfig.ModuleConfig) {
+	configs := ConvertModule2String(m)
+	for _, v := range configs {
+		a.SendAgentMessge(MODULE_CONFIG, v)
+	}
 }
 
 // SendFlushCommand 刷新模块jar包
@@ -174,7 +182,8 @@ func (a *AgentConn) SendFlushCommand(isForceFlush string) {
 }
 
 // UpdateAgentConfig 更新agent全局配置
-func (d *AgentConn) UpdateAgentConfig(message string) {
+func (d *AgentConn) UpdateAgentConfig(m map[string]interface{}) {
+	message := ConvertMap2String(m)
 	d.SendAgentMessge(AGENT_CONFIG, message)
 }
 
@@ -208,4 +217,63 @@ func initScanner(conn net.Conn) *bufio.Scanner {
 		return
 	})
 	return scanner
+}
+
+// 更改字符串形式，便于java agent 解析
+// map[string]interface{} 转换成 k1=v1;k2=v1,v2,v3;
+func ConvertMap2String(m map[string]interface{}) string {
+	var s = ""
+	for k, v := range m {
+		if k != "" {
+			s += k + "=" + ConvertValue2String(v) + ";"
+		}
+	}
+	return s
+}
+
+func ConvertModule2String(m []userconfig.ModuleConfig) []string {
+	var messages = []string{}
+	for _, v := range m {
+		if v.Parameters != nil && len(v.Parameters) > 0 {
+			var param = v.ModuleName + ":"
+			for key, value := range v.Parameters {
+				param += key + "=" + ConvertValueArray2String(value) + ";"
+			}
+			messages = append(messages, param)
+			zlog.Debugf(defs.UPDATE_MODULE_PARAMETERS, "[update module config]", "param: %s", param)
+		}
+	}
+	return messages
+}
+
+func ConvertValueArray2String(values []interface{}) string {
+	var paramSlice []string
+	for _, value := range values {
+		s := ConvertValue2String(value)
+		paramSlice = append(paramSlice, s)
+	}
+	return strings.Join(paramSlice, ",")
+}
+
+func ConvertValue2String(value interface{}) string {
+	switch value.(type) {
+	case string:
+		return url.PathEscape(value.(string))
+	case bool:
+		return strconv.FormatBool(value.(bool))
+	case []string:
+		return strings.Join(value.([]string), ",")
+	case int8, int16, int32, int, int64, uint8, uint16, uint32, uint, uint64:
+		return strconv.Itoa(value.(int))
+	case float64:
+		strV := strconv.FormatFloat(value.(float64), 'f', -1, 64)
+		return strV
+	case float32:
+		ft := value.(float32)
+		strV := strconv.FormatFloat(float64(ft), 'f', -1, 64)
+		return strV
+	default:
+		zlog.Errorf(defs.UPDATE_MODULE_PARAMETERS, "Unsupported data type", "type: %T, param: %s", value, value)
+	}
+	return ""
 }

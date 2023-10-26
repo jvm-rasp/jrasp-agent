@@ -128,9 +128,9 @@ func (w *Watch) InjectJavaProcess(pid int32) {
 	w.JavaProcessSyncMap.Store(javaProcess.JavaPid, javaProcess)
 
 	//if w.cfg.IsDisable() && javaProcess.SuccessInject() {
-	//	// 关闭注入，并且已经注入状态
-	//	javaProcess.ExitInjectImmediately()
-	//	return
+	// // 关闭注入，并且已经注入状态
+	// javaProcess.ExitInjectImmediately()
+	// return
 	//}
 
 	// 注入阶段
@@ -167,8 +167,8 @@ func (w *Watch) InjectJavaProcess(pid int32) {
 		// 等待连接就绪
 		if javaProcess.WaiteConn() {
 			javaProcess.Conn.SendFlushCommand("false")
-			javaProcess.Conn.UpdateAgentConfig(utils.ToString(javaProcess.Cfg.AgentConfigs))
-			javaProcess.Conn.UpdateModuleConfig(utils.ToString(javaProcess.Cfg.ModuleConfigs))
+			javaProcess.Conn.UpdateAgentConfig(javaProcess.Cfg.AgentConfigs)
+			javaProcess.Conn.UpdateModuleConfig(javaProcess.Cfg.ModuleConfigs)
 			zlog.Infof(defs.AGENT_CONFIG_UPDATE, "update agent/module config", "update config success")
 		}
 	}

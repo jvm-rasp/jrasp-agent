@@ -45,6 +45,7 @@ public class RaspSocketImpl implements RaspSocket {
         closed = false;
     }
 
+    @Override
     public void write(String msg, PacketType t) throws IOException {
         if (isClosed()) {
             return;

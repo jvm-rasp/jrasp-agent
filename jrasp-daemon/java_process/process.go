@@ -80,7 +80,7 @@ func (jp *JavaProcess) WaiteConn() bool {
 		if ok {
 			jp.Conn = v.(socket.AgentConn)
 			zlog.Infof(defs.AGENT_CONN_REGISTER, "conn match java process",
-				"java process: %d, processId: %s, Conn: %s",
+				"java process: %d, processId: %s, conn: %s",
 				jp.JavaPid, jp.ProcessId, jp.Conn.GetConn().RemoteAddr().String())
 			return true
 		}

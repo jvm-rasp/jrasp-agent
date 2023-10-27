@@ -1,9 +1,8 @@
 package com.jrasp.agent.core.newlog;
 
+import com.jrasp.agent.api.util.StringUtils;
 import com.jrasp.agent.core.util.ProcessHelper;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.text.SimpleDateFormat;
 
 /**
@@ -33,10 +32,19 @@ public class LogFormatter {
     }
 
     private static String getStackTrace(Throwable t) {
-        StringWriter sw = new StringWriter();
-        PrintWriter pw = new PrintWriter(sw, true);
-        t.printStackTrace(pw);
-        pw.close();
-        return sw.getBuffer().toString();
+        if (t == null) {
+            return "";
+        }
+        StringBuilder sb = new StringBuilder();
+        if (StringUtils.isNotBlank(t.getMessage())) {
+            sb.append(t.getMessage());
+            sb.append(" ");
+        }
+        StackTraceElement[] stackTraceElements = t.getStackTrace();
+        for (StackTraceElement s : stackTraceElements) {
+            sb.append(s.toString());
+            sb.append(" ");
+        }
+        return sb.toString();
     }
 }

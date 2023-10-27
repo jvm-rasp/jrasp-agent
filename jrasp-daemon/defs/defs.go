@@ -2,7 +2,7 @@ package defs
 
 import "os"
 
-const JRASP_DAEMON_VERSION = "1.1.3"
+const JRASP_DAEMON_VERSION = "1.1.4"
 
 const SUPPORT_URL = "https://www.jrasp.com"
 

@@ -1,6 +1,6 @@
 {
   "agentMode": "dynamic",
-  "version": "1.1.3",
+  "version": "1.1.4",
   "configId": 1,
   "enableMdns": false,
   "moduleAutoUpdate": false,
@@ -179,6 +179,8 @@
           "java.io.File"
         ],
         "xml_black_package_list": [
+          "org.apache.commons.collections.functors",
+          "org.apache.commons.collections4.functors",
           "sun.reflect",
           "sun.tracing",
           "com.sun.corba",

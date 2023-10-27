@@ -1,5 +1,18 @@
 # 版本迭代
 
+## 1.1.4  【2023-10-26】
+### Enhancement
++ [module] 增加自定义的响应头X-Protected-By：JRASP
++ [module] 增加java.io.file#createNewFile的hook
++ [module] 增加http response的hook和检测模块
+### Bugfix
++ [module] 修复xxe模块运行类转换失败问题
++ [agent] 修复日志路径初始化为空的bug
++ [module] 修复请求中contentType判断bug
++ [module] 修复xml反序列化漏报问题
++ [daemon] 修复启动脚本service.sh进程错误识别问题
++ [daemon] 解决进程延迟上报bug
+
 ## 1.1.3  【2023-09-09】
 
 > 1.1.3 主要以修复bug为主，新特性暂缓合入

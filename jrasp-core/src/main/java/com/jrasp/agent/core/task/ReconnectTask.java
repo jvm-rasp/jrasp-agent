@@ -19,7 +19,7 @@ public class ReconnectTask extends AbstractRaspTask {
 
     @Override
     public void run() {
-        if (raspSocket == null || raspSocket.isClosed()) {
+        if (raspSocket != null && !raspSocket.isClosed()) {
             return;
         }
 

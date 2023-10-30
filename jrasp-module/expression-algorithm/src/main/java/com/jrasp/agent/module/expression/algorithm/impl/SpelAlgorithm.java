@@ -95,7 +95,7 @@ public class SpelAlgorithm implements Algorithm {
             // 检测算法2: 最大长度限制
             if (this.spelMaxLimitLengthAction > -1) {
                 if (expression.length() >= spelMaxLimitLength) {
-                    doAction(context, expression, spelBlackListAction, "the length of the expression exceeds the max length, length: " + expression.length(), 80);
+                        doAction(context, expression, spelMaxLimitLengthAction, "the length of the expression over max length, length: " + expression.length(), 80);
                 }
             }
         }

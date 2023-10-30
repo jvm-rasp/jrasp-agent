@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"jrasp-daemon/common"
 	"jrasp-daemon/defs"
 	"jrasp-daemon/environ"
 	"jrasp-daemon/monitor"
@@ -15,6 +14,7 @@ import (
 	"jrasp-daemon/watch"
 	"jrasp-daemon/zlog"
 	"net/http"
+	"os"
 	"os/signal"
 	"syscall"
 )

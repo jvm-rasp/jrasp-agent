@@ -40,10 +40,12 @@ public class LogFormatter {
             sb.append(t.getMessage());
             sb.append(" ");
         }
-        StackTraceElement[] stackTraceElements = t.getStackTrace();
-        for (StackTraceElement s : stackTraceElements) {
-            sb.append(s.toString());
-            sb.append(" ");
+        StackTraceElement[] stackTrace = t.getStackTrace();
+        for (int i = 0; i < stackTrace.length; i++) {
+            sb.append(stackTrace[i].toString());
+            if (i < stackTrace.length - 1) {
+                sb.append(" ");
+            }
         }
         return sb.toString();
     }

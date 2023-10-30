@@ -47,7 +47,7 @@ func main() {
 	zlog.InitLog(conf.LogLevel, conf.LogPath, env.HostName, env.Ip)
 
 	// 创建pid文件
-	pidFile := common.New(env.PidFile)
+	pidFile := NewPidFile(env.PidFile)
 	pidFile.Lock()
 	defer pidFile.Unlock()
 
@@ -115,3 +115,51 @@ func debug(conf *userconfig.Config) {
 		}
 	}
 }
+
+type PidFile struct {
+	dir string
+	f   *os.File
+}
+
+func NewPidFile(dir string) *PidFile {
+	return &PidFile{
+		dir: dir,
+	}
+}
+
+func (p *PidFile) Lock() error {
+	// create pid file
+	f, err := os.OpenFile(p.dir, os.O_WRONLY|os.O_CREATE, os.FileMode(defs.FILE_MODE_ONLY_ROOT))
+	if err != nil {
+		zlog.Errorf(defs.CREATE_PID_FILE, "create daemon pid file", "open or create pid file err:%v", err)
+		os.Exit(defs.EXIT_CODE_2)
+	}
+
+	// try lock pid file
+	err = syscall.Flock(int(f.Fd()), syscall.LOCK_EX|syscall.LOCK_NB)
+	if err != nil {
+		zlog.Errorf(defs.CREATE_PID_FILE, "cannot flock pid file", "err:%v", err)
+		os.Exit(defs.EXIT_CODE_2)
+	}
+
+	// update pid fie content
+	err = os.Truncate(p.dir, 0)
+	if err != nil {
+		zlog.Errorf(defs.CLEAN_PID_FILE, "clean pid file content", "err:%v", err)
+		os.Exit(defs.EXIT_CODE_2)
+	}
+
+	_, err = fmt.Fprintf(f, "%d", os.Getpid())
+	if err != nil {
+		zlog.Errorf(defs.WRITE_PID_FILE, "update pid file content", "write pid[%d] to file error: %v", os.Getpid(), err)
+		os.Exit(defs.EXIT_CODE_2)
+	}
+	p.f = f
+	return nil
+}
+
+func (p *PidFile) Unlock() error {
+	defer p.f.Close()
+	return syscall.Flock(int(p.f.Fd()), syscall.LOCK_UN)
+}
+

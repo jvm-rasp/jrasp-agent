@@ -41,6 +41,8 @@ public class HttpAlgorithm extends ModuleLifecycleAdapter implements Module, Alg
 
     private volatile Integer scanListAction = 0;
 
+    private volatile Integer urlSpecialStringAction = 0;
+
     /**
      * ip 黑名单
      */
@@ -82,6 +84,10 @@ public class HttpAlgorithm extends ModuleLifecycleAdapter implements Module, Alg
             "zgrab", "goby", "xray"
     ));
 
+    // 解决特殊字符串绕过问题
+    private String[] urlSpecialString = new String[]{";"};
+
+
     @Override
     public void loadCompleted() {
         algorithmManager.register(this);
@@ -92,10 +98,12 @@ public class HttpAlgorithm extends ModuleLifecycleAdapter implements Module, Alg
         this.ipBlackListAction = ParamSupported.getParameter(configMaps, "ip_black_list_action", Integer.class, ipBlackListAction);
         this.urlBlackListAction = ParamSupported.getParameter(configMaps, "url_black_list_action", Integer.class, urlBlackListAction);
         this.scanListAction = ParamSupported.getParameter(configMaps, "scan_list_action", Integer.class, scanListAction);
+        this.urlSpecialStringAction = ParamSupported.getParameter(configMaps, "url_special_string_action", Integer.class, urlSpecialStringAction);
         this.ipBlackSet = ParamSupported.getParameter(configMaps, "ip_black_list", Set.class, ipBlackSet);
         this.urlBlackSet = ParamSupported.getParameter(configMaps, "url_black_set", Set.class, urlBlackSet);
         this.scanUrlSet = ParamSupported.getParameter(configMaps, "scan_url_set", Set.class, scanUrlSet);
         this.scanHeadersOrBody = ParamSupported.getParameter(configMaps, "scan_header_set", Set.class, scanHeadersOrBody);
+        this.urlSpecialString = ParamSupported.getParameter(configMaps, "url_special_string", String[].class, urlSpecialString);
         return true;
     }
 
@@ -123,9 +131,21 @@ public class HttpAlgorithm extends ModuleLifecycleAdapter implements Module, Alg
                 }
             }
 
+            // url 特殊字符
+            String requestURL = context.getRequestURL();
+            for (int i = 0; i < urlSpecialString.length; i++) {
+                if (requestURL.contains(urlSpecialString[i])) {
+                    boolean canBlock = urlSpecialStringAction == 1;
+                    AttackInfo attackInfo = new AttackInfo(context, metaInfo, urlSpecialString[i], canBlock, "URL特殊字符串", getDescribe(), "url: " + requestURL, 80);
+                    logger.attack(attackInfo);
+                    if (canBlock) {
+                        ProcessController.throwsImmediatelyAndSendResponse(attackInfo, raspConfig, new RuntimeException("hit url special string: " + requestURL));
+                    }
+                }
+            }
+
             // 扫描器url特征
             if (scanListAction > -1) {
-                String requestURL = context.getRequestURL();
                 for (String key : scanUrlSet) {
                     if (requestURL.contains(key)) {
                         boolean canBlock = scanListAction == 1;
@@ -152,14 +172,13 @@ public class HttpAlgorithm extends ModuleLifecycleAdapter implements Module, Alg
 
             // 禁用 url
             if (urlBlackListAction > -1) {
-                String contextRequestURL = context.getRequestURL();
                 for (String url : urlBlackSet) {
-                    if (contextRequestURL.contains(url)) {
+                    if (requestURL.contains(url)) {
                         boolean canBlock = urlBlackListAction == 1;
-                        AttackInfo attackInfo = new AttackInfo(context, metaInfo, contextRequestURL, canBlock, "黑名单URL", getDescribe(), "block url: " + url, 50);
+                        AttackInfo attackInfo = new AttackInfo(context, metaInfo, requestURL, canBlock, "黑名单URL", getDescribe(), "block url: " + url, 50);
                         logger.attack(attackInfo);
                         if (canBlock) {
-                            ProcessController.throwsImmediatelyAndSendResponse(attackInfo, raspConfig, new RuntimeException("hit black url: " + contextRequestURL));
+                            ProcessController.throwsImmediatelyAndSendResponse(attackInfo, raspConfig, new RuntimeException("hit black url: " + requestURL));
                         }
                     }
                 }

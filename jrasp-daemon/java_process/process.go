@@ -137,6 +137,8 @@ func (jp *JavaProcess) CheckContainer() {
 	return
 }
 
+var CONTAINER_FEATURES = []string{"/docker", "/kubepods"}
+
 func isProcessInContainer(pid int32) bool {
 	procPath := fmt.Sprintf("/proc/%d", pid)
 	cgroupPath := filepath.Join(procPath, "cgroup")
@@ -144,11 +146,11 @@ func isProcessInContainer(pid int32) bool {
 	if err != nil {
 		return false
 	}
-
-	if strings.Contains(string(cgroupData), "/docker/") ||
-		strings.Contains(string(cgroupData), "/kubepods/") {
-		return true
+	cgroupContent := string(cgroupData)
+	for _, v := range CONTAINER_FEATURES {
+		if strings.Contains(cgroupContent, v) {
+			return true
+		}
 	}
-
 	return false
 }

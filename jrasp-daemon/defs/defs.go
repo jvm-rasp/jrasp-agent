@@ -68,13 +68,17 @@ const (
 	COMMAND_RESPONSE    int = START_LOG_ID + 43
 )
 
-const DAEMON_PID_FILE = "pid"
-
-const EXIT_CODE_2 = 2
-
-const FILE_MODE_ONLY_ROOT = 0600
-
 var Sig = make(chan os.Signal, 1)
 
-// PERF_DATA_FILE_PREFIX The file name prefix for JVM PerfData shared memory files.
-const PERF_DATA_FILE_PREFIX = "hsperfdata_"
+const (
+	DAEMON_PID_FILE     = "pid"
+	EXIT_CODE_2         = 2
+	FILE_MODE_ONLY_ROOT = 0600
+	// PERF_DATA_FILE_PREFIX The file name prefix for JVM PerfData shared memory files.
+	PERF_DATA_FILE_PREFIX        = "hsperfdata_"
+	ATTACH_JAVA_PID              = ".java_pid%d"
+	LINUX_PROC_ROOT              = "/proc/%d/root"
+	LIB_DIR               string = "lib"
+	MODULE_DIR            string = "module"
+	JRASP_TOKEN_FILE             = ".jrasp.token"
+)

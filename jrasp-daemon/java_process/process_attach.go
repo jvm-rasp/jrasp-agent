@@ -13,15 +13,6 @@ import (
 	"strings"
 )
 
-// 与Java进程通过attach方式通信
-
-const (
-	ATTACH_JAVA_PID        = ".java_pid%d"
-	LINUX_PROC_ROOT        = "/proc/%d/root"
-	libDir          string = "lib"
-	moduleDir       string = "module"
-)
-
 // 执行attach
 func (jp *JavaProcess) Attach() error {
 	// 执行attach并检查java_pid文件
@@ -79,7 +70,7 @@ func (jp *JavaProcess) execCmd() error {
 }
 
 func (jp *JavaProcess) GetInContainerPidByHostPid() (string, error) {
-	containerTmpPath := filepath.Join(fmt.Sprintf(LINUX_PROC_ROOT, jp.JavaPid), "tmp")
+	containerTmpPath := filepath.Join(fmt.Sprintf(defs.LINUX_PROC_ROOT, jp.JavaPid), "tmp")
 	tmpFiles, err := os.ReadDir(containerTmpPath)
 	if err != nil {
 		zlog.Warnf(defs.ATTACH_READ_TOKEN, "ReadDir tmpFiles error", "err:%v", err)
@@ -106,7 +97,7 @@ func (jp *JavaProcess) GetInContainerPidByHostPid() (string, error) {
 
 func (jp *JavaProcess) CopyJar2Proc() error {
 	containerRootPath := filepath.Join("/proc", fmt.Sprintf("%d", jp.JavaPid), "root")
-	libPath := filepath.Join(jp.env.InstallDir, libDir)
+	libPath := filepath.Join(jp.env.InstallDir, defs.LIB_DIR)
 	containerLibPath := filepath.Join(containerRootPath, libPath)
 	err := utils.CreateDir(containerLibPath)
 	if err != nil {
@@ -132,7 +123,7 @@ func (jp *JavaProcess) CopyJar2Proc() error {
 	}
 
 	// module
-	modulePath := filepath.Join(jp.env.InstallDir, moduleDir)
+	modulePath := filepath.Join(jp.env.InstallDir, defs.MODULE_DIR)
 	containerModulePath := filepath.Join(containerRootPath, modulePath)
 	err = utils.CreateDir(containerModulePath)
 	if err != nil {
@@ -158,9 +149,9 @@ func (jp *JavaProcess) CopyJar2Proc() error {
 func (jp *JavaProcess) CheckAttachStatus() bool {
 	var sockfile string
 	if jp.IsContainer {
-		sockfile = filepath.Join(fmt.Sprintf(LINUX_PROC_ROOT, jp.JavaPid), os.TempDir(), fmt.Sprintf(ATTACH_JAVA_PID, jp.JavaPid))
+		sockfile = filepath.Join(fmt.Sprintf(defs.LINUX_PROC_ROOT, jp.JavaPid), os.TempDir(), fmt.Sprintf(defs.ATTACH_JAVA_PID, jp.JavaPid))
 	} else {
-		sockfile = filepath.Join(os.TempDir(), fmt.Sprintf(ATTACH_JAVA_PID, jp.JavaPid))
+		sockfile = filepath.Join(os.TempDir(), fmt.Sprintf(defs.ATTACH_JAVA_PID, jp.JavaPid))
 	}
 	return utils.PathExists(sockfile)
 }

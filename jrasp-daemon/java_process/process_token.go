@@ -10,13 +10,11 @@ import (
 	"path/filepath"
 )
 
-const JRASP_TOKEN_FILE = ".jrasp.token"
-
 // ReadTokenFile token文件读取、解析
 // 兼容容器文件读取
 func (jp *JavaProcess) ReadTokenFile() bool {
 	tokenFilePath := jp.getTokenFilePath()
-	fileContent, err := jp.readFileContent(tokenFilePath)
+	fileContent, err := readFileContent(tokenFilePath)
 	if err != nil {
 		return false
 	}
@@ -25,13 +23,14 @@ func (jp *JavaProcess) ReadTokenFile() bool {
 
 func (jp *JavaProcess) getTokenFilePath() string {
 	if jp.IsContainer {
-		return filepath.Join(fmt.Sprintf(LINUX_PROC_ROOT, jp.JavaPid),
-			jp.env.InstallDir, "run", fmt.Sprintf("%d", jp.InContainerPid), JRASP_TOKEN_FILE)
+		// TODO bug
+		return filepath.Join(fmt.Sprintf(defs.LINUX_PROC_ROOT, jp.JavaPid),
+			jp.env.InstallDir, "run", fmt.Sprintf("%d", jp.InContainerPid), defs.JRASP_TOKEN_FILE)
 	}
-	return filepath.Join(jp.env.InstallDir, "run", fmt.Sprintf("%d", jp.JavaPid), JRASP_TOKEN_FILE)
+	return filepath.Join(jp.env.InstallDir, "run", fmt.Sprintf("%d", jp.JavaPid), defs.JRASP_TOKEN_FILE)
 }
 
-func (jp *JavaProcess) readFileContent(filePath string) (string, error) {
+func readFileContent(filePath string) (string, error) {
 	if utils.PathExists(filePath) {
 		fileContent, err := os.ReadFile(filePath)
 		if err != nil {
@@ -57,7 +56,7 @@ func (jp *JavaProcess) initInjectInfo(jraspInfo string) bool {
 	jp.ProcessId = tokens[3]
 	jp.RaspVersion = tokens[4]
 
-	zlog.Infof(defs.ATTACH_READ_TOKEN, "[ip:port:processId:raspVersion]",
+	zlog.Infof(defs.ATTACH_READ_TOKEN, "[jrasp token]",
 		"ip: %s, port: %s, processId: %s, raspVersion: %s",
 		jp.ServerIp, jp.ServerPort, jp.ProcessId, jp.RaspVersion)
 	return true

@@ -1,7 +1,6 @@
 package environ
 
 import (
-	"errors"
 	"fmt"
 	"jrasp-daemon/defs"
 	"jrasp-daemon/utils"
@@ -164,80 +163,16 @@ func writeHostNameToFile(hostFile string, hostName string) error {
 	return os.WriteFile(hostFile, []byte(hostName), HOST_NAME_PERM)
 }
 
-func isContainer() bool {
-	return utils.PathExists("/.dockerenv")
-}
-
-func getExternalIP() (string, error) {
-	ifaces, err := net.Interfaces()
-	if err != nil {
-		return "", err
-	}
-	for _, iface := range ifaces {
-		if iface.Flags&net.FlagUp == 0 {
-			continue // interface down
-		}
-		if iface.Flags&net.FlagLoopback != 0 {
-			continue // loopback interface
-		}
-		addrs, err := iface.Addrs()
-		if err != nil {
-			return "", err
-		}
-		for _, addr := range addrs {
-			var ip net.IP
-			switch v := addr.(type) {
-			case *net.IPNet:
-				ip = v.IP
-			case *net.IPAddr:
-				ip = v.IP
-			}
-			if ip == nil || ip.IsLoopback() {
-				continue
-			}
-			ip = ip.To4()
-			if ip == nil {
-				continue // not an ipv4 address
-			}
-			return ip.String(), nil
-		}
-	}
-	return "", errors.New("are you connected to the network?")
-}
-
 func GetDefaultIp() (string, error) {
 	conn, err := net.Dial("udp", "114.114.114.114:53")
 	if err != nil {
+		// TODO 断网情况启动失败处理
 		return "", err
 	}
 	defer conn.Close()
 	localAddr := conn.LocalAddr().(*net.UDPAddr)
 	ip := strings.Split(localAddr.IP.String(), ":")[0]
 	return ip, nil
-}
-
-func GetDefaultIface() (*net.Interface, error) {
-	defaultIP, err := GetDefaultIp()
-	if err != nil {
-		return nil, err
-	}
-	ifaces, err := net.Interfaces()
-	if err != nil {
-		return nil, err
-	}
-	for _, item := range ifaces {
-		addrs, err := item.Addrs()
-		if err != nil {
-			return nil, err
-		}
-		for _, addr := range addrs {
-			ip := addr.(*net.IPNet)
-			if ip.IP.String() == defaultIP {
-				return &item, nil
-			}
-		}
-	}
-	return nil, errors.New("not found default ifaces")
 }
 
 func GetInstallDisk(path string) (free uint64, err error) {

@@ -80,7 +80,7 @@ func (a *AgentConn) WriteConn() {
 					message := kvMap["message"]
 					commandType := kvMap["type"]
 					if code == "200" {
-						zlog.Infof(defs.COMMAND_RESPONSE, "command exec success", "code: %s, command: %s, response: %s",
+						zlog.Debugf(defs.COMMAND_RESPONSE, "command exec success", "code: %s, command: %s, response: %s",
 							code, commandType, message)
 					} else {
 						zlog.Errorf(defs.COMMAND_RESPONSE, "command exec error", "code: %s, command: %s, response: %s",

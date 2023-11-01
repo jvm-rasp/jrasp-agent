@@ -40,9 +40,8 @@ type Config struct {
 	PprofPort   int  `json:"pprofPort"`
 
 	// 进程扫描定时器配置
-	LogReportTicker       uint32 `json:"logReportTicker"`
-	ScanTicker            uint32 `json:"scanTicker"`
-	RebootTicker          uint32 `json:"rebootTicker"`
+	LogReportTicker       uint32 `json:"logReportTicker"`       // 定时全量上报进程，单位小时
+	JavaProcessExitTicker uint32 `json:"javaProcessExitTicker"` // 进程退出扫描定时器，单位秒
 	JavaProcessScanTicker uint32 `json:"javaProcessScanTicker"`
 	PidExistsTicker       uint32 `json:"pidExistsTicker"`
 	ProcessInjectTicker   uint32 `json:"processInjectTicker"`
@@ -164,7 +163,8 @@ func setDefaultValue(vp *viper.Viper) {
 	vp.SetDefault("EnableDeleyExit", false)
 	vp.SetDefault("EnableResourceCheck", false)
 
-	vp.SetDefault("LogReportTicker", 6)
+	vp.SetDefault("JavaProcessExitTicker", 10)
+	vp.SetDefault("LogReportTicker", 3)
 	vp.SetDefault("ScanTicker", 30)
 	vp.SetDefault("RebootTicker", 7*24*60)
 	vp.SetDefault("PidExistsTicker", 10)

@@ -22,36 +22,28 @@ type Watch struct {
 	cfg     *userconfig.Config
 	selfPid int32 // jrasp-daemon进程自身pid
 
-	scanTicker                  *time.Ticker          // 注入定时器
-	RebootTicker                *time.Ticker          // 定时器重启功能
-	JavaProcessScanTicker       *time.Ticker          // 识别Java进程定时器
-	PidExistsTicker             *time.Ticker          // 进程存活检测定时器
-	LogReportTicker             *time.Ticker          // 进程信息定时上报
-	HeartBeatReportTicker       *time.Ticker          // 心跳定时器
-	ProcessSyncMap              sync.Map              // 保存所有的Java进程
-	JavaProcessSyncMap          sync.Map              // 保存监听的java进程
-	JavaProcessHandleChan       chan *process.Process // java 进程处理chan
-	JavaPidHandleChan           chan int32            // java 进程处理chan
-	JavaProcessDeleteHandleChan chan int32            // java 进程退出处理chan
+	JavaProcessScanTicker *time.Ticker // 识别Java进程定时器
+	LogReportTicker       *time.Ticker // 进程信息定时上报
+	JavaProcessExitTicker *time.Ticker // 进程退出定时上报
+	HeartBeatReportTicker *time.Ticker // 心跳定时器
+	ProcessSyncMap        sync.Map     // 保存所有进程
+	JavaProcessSyncMap    sync.Map     // 保存监听的java进程
+	JavaPidHandleChan     chan int32   // java 进程处理chan
 
 	ctx context.Context
 }
 
 func NewWatch(cfg *userconfig.Config, env *environ.Environ, ctx context.Context) *Watch {
 	w := &Watch{
-		env:                         env,
-		cfg:                         cfg,
-		selfPid:                     int32(os.Getpid()),
-		LogReportTicker:             time.NewTicker(time.Hour * time.Duration(cfg.LogReportTicker)),
-		scanTicker:                  time.NewTicker(time.Second * time.Duration(cfg.ScanTicker)),
-		JavaProcessScanTicker:       time.NewTicker(time.Second * time.Duration(cfg.JavaProcessScanTicker)),
-		PidExistsTicker:             time.NewTicker(time.Second * time.Duration(cfg.PidExistsTicker)),
-		HeartBeatReportTicker:       time.NewTicker(time.Minute * time.Duration(cfg.HeartBeatReportTicker)),
-		RebootTicker:                time.NewTicker(time.Minute * time.Duration(cfg.RebootTicker)),
-		JavaProcessHandleChan:       make(chan *process.Process, 500),
-		JavaPidHandleChan:           make(chan int32, 500),
-		JavaProcessDeleteHandleChan: make(chan int32, 500),
-		ctx:                         ctx,
+		env:                   env,
+		cfg:                   cfg,
+		selfPid:               int32(os.Getpid()),
+		JavaProcessExitTicker: time.NewTicker(time.Second * time.Duration(cfg.JavaProcessExitTicker)),
+		LogReportTicker:       time.NewTicker(time.Hour * time.Duration(cfg.LogReportTicker)),
+		JavaProcessScanTicker: time.NewTicker(time.Second * time.Duration(cfg.JavaProcessScanTicker)),
+		HeartBeatReportTicker: time.NewTicker(time.Minute * time.Duration(cfg.HeartBeatReportTicker)),
+		JavaPidHandleChan:     make(chan int32, 500),
+		ctx:                   ctx,
 	}
 	return w
 }
@@ -66,11 +58,6 @@ func (w *Watch) DoAttach() {
 				zlog.Errorf(defs.WATCH_DEFAULT, "chan shutdown", "java process handler chan closed")
 			}
 			go w.InjectJavaProcess(p)
-		case p, ok := <-w.JavaProcessDeleteHandleChan:
-			if !ok {
-				zlog.Errorf(defs.WATCH_DEFAULT, "chan shutdown", "java process handler chan closed")
-			}
-			w.removeExitedJavaProcess(p)
 		}
 	}
 }

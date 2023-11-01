@@ -46,11 +46,11 @@ public class UpdateModuleConfigHandler implements PacketHandler {
                 String parameters = moduleAndValue[1].trim();
                 CoreModule coreModule = coreModuleManager.get(moduleName);
                 if (coreModule == null) {
-                    return CommandResponse.clientError("coreModule is null," + moduleName, getType());
+                    return CommandResponse.clientError(moduleName + " not found", getType());
                 }
                 Module module = coreModule.getModule();
                 if (module == null) {
-                    return CommandResponse.clientError("module is null," + moduleName, getType());
+                    return CommandResponse.clientError(moduleName + " not found", getType());
                 }
                 String[] kvArray = parameters.split(";");
                 Map<String, String> parametersMap = new HashMap<String, String>();

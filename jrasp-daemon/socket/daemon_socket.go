@@ -11,12 +11,14 @@ import (
 // DaemonSocket daemon 与agent 通信的socket
 // daemon 端作为 server端，java agent 作为 client 端
 type DaemonSocket struct {
-	Port int
+	Port             int
+	AgentMessageChan chan string
 }
 
 func NewDaemonSocket(port int) *DaemonSocket {
 	return &DaemonSocket{
-		Port: port,
+		Port:             port,
+		AgentMessageChan: make(chan string, 2000),
 	}
 }
 
@@ -39,6 +41,7 @@ func (d *DaemonSocket) Start(ctx context.Context) {
 			IsRegister:        false,
 			AgentCommandChan:  make(chan Package, 10),
 			AgentResponseChan: make(chan AgentMessage, 10),
+			AgentMessageChan:  d.AgentMessageChan,
 			ctx:               ctx,
 		}
 

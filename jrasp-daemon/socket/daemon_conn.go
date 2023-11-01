@@ -18,10 +18,8 @@ import (
 	"time"
 )
 
-// 接收所有的 agent 的消息
-var AgentMessageChan = make(chan string, 2000)
-
 // 管理连接的conn
+// todo 需要优化
 var SocketConns sync.Map
 
 type AgentConn struct {
@@ -31,6 +29,7 @@ type AgentConn struct {
 	AgentCommandChan  chan Package      // 发给agent的命令
 	AgentResponseChan chan AgentMessage // 接受agent的返回
 	ctx               context.Context
+	AgentMessageChan  chan string
 }
 
 type AgentMessage struct {
@@ -139,7 +138,7 @@ func (a *AgentConn) ReadConn() {
 		}
 
 		// 写入日志传输通道
-		AgentMessageChan <- string(p.Body)
+		a.AgentMessageChan <- string(p.Body)
 	}
 }
 

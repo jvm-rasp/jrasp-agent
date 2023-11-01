@@ -6,7 +6,6 @@ import (
 	"io/ioutil"
 	"jrasp-daemon/defs"
 	"jrasp-daemon/environ"
-	"jrasp-daemon/socket"
 	"jrasp-daemon/userconfig"
 	"jrasp-daemon/zlog"
 	"math/rand"
@@ -49,7 +48,7 @@ func WatchRemoteConfig(cfg *userconfig.Config, env *environ.Environ) {
 
 			//go heartbeat(conn)
 
-			go reportAgentLogToAdmin(conn)
+			//go reportAgentLogToAdmin(conn)
 
 			for {
 				messageType, message, err := conn.ReadMessage()
@@ -88,13 +87,13 @@ func writeConfigToFile(installDir string, data []byte) {
 }
 
 // 发往管理控制台
-func reportAgentLogToAdmin(conn *websocket.Conn) {
-	for {
-		select {
-		case msg := <-socket.AgentMessageChan:
-			conn.WriteMessage(websocket.BinaryMessage, []byte(msg))
-		}
-		//限速，避免将server打挂
-		time.Sleep(time.Millisecond * 100)
-	}
-}
+//func reportAgentLogToAdmin(conn *websocket.Conn) {
+//	for {
+//		select {
+//		case msg := <-socket.AgentMessageChan:
+//			conn.WriteMessage(websocket.BinaryMessage, []byte(msg))
+//		}
+//		//限速，避免将server打挂
+//		time.Sleep(time.Millisecond * 100)
+//	}
+//}

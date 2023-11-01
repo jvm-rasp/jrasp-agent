@@ -74,10 +74,8 @@ public class ModuleJarClassLoader extends RoutingURLClassLoader {
 
         // got ProtectionDomain[] from URLClassLoader's acc
         final AccessControlContext acc = unCaughtGetClassDeclaredJavaFieldValue(URLClassLoader.class, "acc", this);
-        final ProtectionDomain[] protectionDomainArray = unCaughtInvokeMethod(
-                unCaughtGetClassDeclaredJavaMethod(AccessControlContext.class, "getContext"),
-                acc
-        );
+        // 通过反射字段获取值，增加jdk兼容性
+        final ProtectionDomain[] protectionDomainArray = unCaughtGetClassDeclaredJavaFieldValue(AccessControlContext.class, "context", acc);
 
         // remove ProtectionDomain which loader is ModuleJarClassLoader
         final Set<ProtectionDomain> cleanProtectionDomainSet = new LinkedHashSet<ProtectionDomain>();

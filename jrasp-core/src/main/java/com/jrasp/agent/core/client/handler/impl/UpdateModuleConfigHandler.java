@@ -6,14 +6,13 @@ import com.jrasp.agent.core.client.handler.CommandResponse;
 import com.jrasp.agent.core.client.handler.PacketHandler;
 import com.jrasp.agent.core.manager.DefaultCoreModuleManager;
 import com.jrasp.agent.core.client.packet.PacketType;
+import com.jrasp.agent.core.newlog.LogUtil;
 import com.jrasp.agent.core.util.string.RaspStringUtils;
 
 import java.lang.reflect.Method;
 import java.net.URLDecoder;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import static com.jrasp.agent.core.client.packet.PacketType.MODULE_CONFIG;
 
@@ -21,8 +20,6 @@ import static com.jrasp.agent.core.client.packet.PacketType.MODULE_CONFIG;
  * @author jrasp
  */
 public class UpdateModuleConfigHandler implements PacketHandler {
-
-    private static final Logger LOGGER = Logger.getLogger(UpdateModuleConfigHandler.class.getName());
 
     private final DefaultCoreModuleManager coreModuleManager;
 
@@ -38,7 +35,7 @@ public class UpdateModuleConfigHandler implements PacketHandler {
     @Override
     public CommandResponse run(String data) throws Throwable {
         // 模块名称:k1=v1;k2=v2;k2=v21,v22,v23;
-        LOGGER.log(Level.CONFIG, "data:{0}", data);
+        LogUtil.info("module config: " + data);
         if (RaspStringUtils.isNotBlank(data)) {
             String[] moduleAndValue = data.split(":", 2);
             if (moduleAndValue.length == 2) {

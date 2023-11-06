@@ -6,6 +6,7 @@ import com.jrasp.agent.api.event.Event;
 import com.jrasp.agent.api.event.InvokeEvent;
 import com.jrasp.agent.api.listener.EventListener;
 import com.jrasp.agent.core.classloader.BusinessClassLoaderHolder;
+import com.jrasp.agent.core.newlog.LogUtil;
 import com.jrasp.agent.core.util.ObjectIDs;
 import com.jrasp.agent.core.util.SandboxProtector;
 
@@ -14,8 +15,6 @@ import java.com.jrasp.agent.bridge110.SpyHandler;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import static java.com.jrasp.agent.bridge110.Spy.Ret.newInstanceForNone;
 import static java.com.jrasp.agent.bridge110.Spy.Ret.newInstanceForThrows;
@@ -26,8 +25,6 @@ import static java.com.jrasp.agent.bridge110.Spy.Ret.newInstanceForThrows;
  * @author luanjia@taobao.com
  */
 public class EventListenerHandler implements SpyHandler {
-
-    private final static Logger logger = Logger.getLogger(EventListenerHandler.class.getName());
 
     private final static EventListenerHandler singleton = new EventListenerHandler();
 
@@ -60,7 +57,6 @@ public class EventListenerHandler implements SpyHandler {
     public void frozen(int listenerId) {
         final EventProcessor processor = mappingOfEventProcessor.remove(listenerId);
         if (null == processor) {
-            logger.log(Level.FINE, "ignore frozen listener={0}, because not found.", listenerId);
             return;
         }
         // processor.clean();
@@ -98,9 +94,7 @@ public class EventListenerHandler implements SpyHandler {
                 case RETURN_IMMEDIATELY: {
                     // 如果已经禁止后续返回任何事件了，则不进行后续的操作
                     if (pce.isIgnoreProcessEvent()) {
-                        logger.log(Level.FINE, "on-event: event|{0}|{1}|{2}|{3}, ignore immediately-return-event, isIgnored.",
-                                new Object[]{event.type, processId, invokeId, listenerId}
-                        );
+
                     } else {
                         // 补偿立即返回事件
                         compensateProcessControlEvent(pce, processor, process, event);
@@ -118,13 +112,7 @@ public class EventListenerHandler implements SpyHandler {
                     final Throwable throwable = (Throwable) pce.getRespond();
                     // 如果已经禁止后续返回任何事件了，则不进行后续的操作
                     if (pce.isIgnoreProcessEvent()) {
-                        logger.log(Level.FINE, "on-event: event|{0}|{1}|{2}|{3}, ignore immediately-throws-event, isIgnored.",
-                                new Object[]{event.type,
-                                        processId,
-                                        invokeId,
-                                        listenerId
-                                }
-                        );
+
                     } else {
                         // 如果是在BEFORE中立即抛出，则后续不会再有THROWS事件产生
                         // 这里需要主动对齐堆栈
@@ -151,7 +139,7 @@ public class EventListenerHandler implements SpyHandler {
         } catch (Throwable throwable) {
             // BEFORE处理异常,打日志,并通知下游不需要进行处理
             // TODO 这里是模块bug 日志
-            logger.log(Level.WARNING, "[BUG] module bug ", throwable);
+            LogUtil.warning("[BUG] module bug ", throwable);
         }
         // 默认返回不进行任何流程变更
         return newInstanceForNone();
@@ -184,16 +172,8 @@ public class EventListenerHandler implements SpyHandler {
         }
 
         try {
-            logger.log(Level.FINE, "compensate-event: event|{0}|{1}|{2}|{3} when ori-event:{4}",
-                    new Object[]{compensateEvent.type,
-                            iEvent.processId,
-                            iEvent.invokeId,
-                            processor.listenerId,
-                            event.type}
-            );
             processor.listener.onEvent(compensateEvent);
         } catch (Throwable cause) {
-            logger.log(Level.WARNING, "compensate-event: event|" + compensateEvent.type + "|" + iEvent.processId + "|" + iEvent.invokeId + "|" + processor.listenerId + " when ori-event:" + event.type + " occur error.", cause);
         } finally {
             process.getEventFactory().returnEvent(compensateEvent);
         }
@@ -214,7 +194,6 @@ public class EventListenerHandler implements SpyHandler {
 
         // 在守护区内产生的事件不需要响应
         if (SandboxProtector.instance.isInProtecting()) {
-            logger.log(Level.FINE, "listener={0} is in protecting, ignore processing before-event", listenerId);
             return newInstanceForNone();
         }
 
@@ -223,7 +202,6 @@ public class EventListenerHandler implements SpyHandler {
 
         // 如果尚未注册,则直接返回,不做任何处理
         if (null == processor) {
-            logger.log(Level.FINE, "listener={0} is not activated, ignore processing before-event.", listenerId);
             return newInstanceForNone();
         }
 
@@ -232,7 +210,6 @@ public class EventListenerHandler implements SpyHandler {
 
         // 如果当前处理ID被忽略，则立即返回
         if (process.isIgnoreProcess()) {
-            logger.log(Level.FINE, "listener={0} is marked ignore process!", listenerId);
             return newInstanceForNone();
         }
 
@@ -291,7 +268,6 @@ public class EventListenerHandler implements SpyHandler {
 
         // 在守护区内产生的事件不需要响应
         if (SandboxProtector.instance.isInProtecting()) {
-            logger.log(Level.FINE, "listener={0} is in protecting, ignore processing {1}-event", new Object[]{listenerId, isReturn ? "return" : "throws"});
             return newInstanceForNone();
         }
 
@@ -299,7 +275,6 @@ public class EventListenerHandler implements SpyHandler {
 
         // 如果尚未注册,则直接返回,不做任何处理
         if (null == wrap) {
-            logger.log(Level.FINE, "listener={0} is not activated, ignore processing return-event|throws-event.", listenerId);
             return newInstanceForNone();
         }
 
@@ -337,9 +312,7 @@ public class EventListenerHandler implements SpyHandler {
         // 如果PID==IID说明已经到栈顶，此时需要核对堆栈是否为空
         // 如果不为空需要输出日志进行告警
         if (checkProcessStack(processId, invokeId, process.isEmptyStack())) {
-            logger.log(Level.INFO, "ERROR process-stack. pid={0};iid={1};listener={2};",
-                    new Object[]{processId, invokeId, listenerId}
-            );
+
         }
 
         final Event event = isReturn

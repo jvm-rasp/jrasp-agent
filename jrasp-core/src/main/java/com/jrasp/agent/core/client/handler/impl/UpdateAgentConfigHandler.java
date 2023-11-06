@@ -4,12 +4,11 @@ import com.jrasp.agent.core.client.handler.CommandResponse;
 import com.jrasp.agent.core.client.handler.PacketHandler;
 import com.jrasp.agent.core.manager.RaspConfigImpl;
 import com.jrasp.agent.core.client.packet.PacketType;
+import com.jrasp.agent.core.newlog.LogUtil;
 import com.jrasp.agent.core.util.string.RaspStringUtils;
 
 import java.lang.reflect.Field;
 import java.net.URLDecoder;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import static com.jrasp.agent.core.client.packet.PacketType.AGENT_CONFIG;
 
@@ -18,8 +17,6 @@ import static com.jrasp.agent.core.client.packet.PacketType.AGENT_CONFIG;
  * 更新全局参数
  */
 public class UpdateAgentConfigHandler implements PacketHandler {
-
-    private static final Logger LOGGER = Logger.getLogger(UpdateAgentConfigHandler.class.getName());
 
     public UpdateAgentConfigHandler() {
     }
@@ -32,7 +29,7 @@ public class UpdateAgentConfigHandler implements PacketHandler {
     @Override
     public CommandResponse run(String config) throws Throwable {
         // k1=v1;k2=v2;k2=v21,v22,v23;
-        LOGGER.log(Level.INFO, "agent config:{0}", config);
+        LogUtil.info("agent config: " + config);
         if (RaspStringUtils.isNotBlank(config)) {
             String[] kAndvArrays = config.split(";");
             Class<?> clazz = RaspConfigImpl.getInstance().getClass();
@@ -55,7 +52,7 @@ public class UpdateAgentConfigHandler implements PacketHandler {
             }
             return CommandResponse.ok("success", getType());
         }
-        return CommandResponse.clientError("parameters is blank",getType());
+        return CommandResponse.clientError("parameters is blank", getType());
     }
 
     // TODO 目前仅支持boolean、int、String

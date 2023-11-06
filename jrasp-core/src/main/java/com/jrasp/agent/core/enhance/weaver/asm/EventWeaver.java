@@ -3,6 +3,7 @@ package com.jrasp.agent.core.enhance.weaver.asm;
 import com.jrasp.agent.api.matcher.ClassMatcher;
 import com.jrasp.agent.api.matcher.MethodMatcher;
 import com.jrasp.agent.core.enhance.weaver.CodeLock;
+import com.jrasp.agent.core.newlog.LogUtil;
 import com.jrasp.agent.core.util.ObjectIDs;
 import org.objectweb.asm.*;
 import org.objectweb.asm.commons.AdviceAdapter;
@@ -10,8 +11,6 @@ import org.objectweb.asm.commons.JSRInlinerAdapter;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import static com.jrasp.agent.core.util.string.RaspStringUtils.toInternalClassName;
 import static com.jrasp.agent.core.util.string.RaspStringUtils.toJavaClassName;
@@ -23,8 +22,6 @@ import static com.jrasp.agent.core.util.string.RaspStringUtils.toJavaClassName;
 public class EventWeaver extends ClassVisitor implements Opcodes, AsmTypes, AsmMethods {
 
     public final static String NATIVE_PREFIX = "$$JRASP$$";
-
-    private final static Logger logger = Logger.getLogger(EventWeaver.class.getName());
 
     private final int targetClassLoaderObjectID;
     private final String namespace;
@@ -61,7 +58,7 @@ public class EventWeaver extends ClassVisitor implements Opcodes, AsmTypes, AsmM
         }
 
         methodMatcher.setHook(true);
-        logger.log(Level.CONFIG, "hook method {0} ", methodMatcher.desc());
+        LogUtil.info("hook method: " + methodMatcher.desc());
 
         // 匹配命中，获取listenerId
         final int listenerId = ObjectIDs.instance.identity(methodMatcher.getAdviceListener());

@@ -1,5 +1,6 @@
 package com.jrasp.agent.core.classloader;
 
+import com.jrasp.agent.core.newlog.LogUtil;
 import com.jrasp.agent.core.util.encrypt.EncryptUtil;
 import com.jrasp.agent.core.util.string.RaspStringUtils;
 
@@ -11,8 +12,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Enumeration;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * 可路由的URLClassLoader
@@ -25,7 +24,6 @@ public class RoutingURLClassLoader extends URLClassLoader {
      */
     private final static String DECRYPT_PACKAGE = "com.jrasp.agent.module.";
 
-    private final static Logger logger = Logger.getLogger(RoutingURLClassLoader.class.getName());
     private final ClassLoadingLock classLoadingLock = new ClassLoadingLock();
     private final Routing[] routingArray;
     private final String decryptKey;
@@ -132,7 +130,7 @@ public class RoutingURLClassLoader extends URLClassLoader {
                 return defineClass(name, data, 0, data.length);
             }
         } catch (Exception e) {
-            logger.log(Level.WARNING, "decrypt class: " + name + ", error: " + e.getMessage());
+            LogUtil.warning("decrypt class: " + name, e);
         } finally {
             if (bis != null) {
                 try {
@@ -180,7 +178,7 @@ public class RoutingURLClassLoader extends URLClassLoader {
                         return true;
                     }
                 } catch (Throwable cause) {
-                    logger.log(Level.WARNING, "routing " + javaClassName + " failed, regex-express=" + regexExpress + ".", cause);
+                    LogUtil.warning("routing " + javaClassName + " failed, regex-express=" + regexExpress + ".", cause);
                 }
             }
             return false;

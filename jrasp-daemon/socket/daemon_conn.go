@@ -136,7 +136,7 @@ func (a *AgentConn) ReadConn() {
 					"processId: %s, remote addr: %s", processId, a.GetConn().RemoteAddr().String())
 			}
 		}
-
+		fmt.Println(string(p.Body))
 		// 写入日志传输通道
 		a.AgentMessageChan <- string(p.Body)
 	}

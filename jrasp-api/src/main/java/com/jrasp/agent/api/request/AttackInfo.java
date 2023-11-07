@@ -219,4 +219,5 @@ public class AttackInfo {
                 ", level=" + level +
                 '}';
     }
+
 }

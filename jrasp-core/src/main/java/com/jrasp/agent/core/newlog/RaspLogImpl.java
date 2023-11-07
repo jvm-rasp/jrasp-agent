@@ -2,6 +2,7 @@ package com.jrasp.agent.core.newlog;
 
 import com.jrasp.agent.api.log.RaspLog;
 import com.jrasp.agent.api.request.AttackInfo;
+import com.jrasp.agent.core.json.JSONObject;
 
 import java.util.concurrent.BlockingQueue;
 
@@ -31,7 +32,9 @@ public class RaspLogImpl implements RaspLog {
      */
     @Override
     public void attack(AttackInfo attackInfo) {
-        publish(Level.ATTACK, DEFAULT_LOG_ID, attackInfo.toJSON());
+        // TODO 基本对象
+        JSONObject object = new JSONObject(attackInfo);
+        publish(Level.ATTACK, DEFAULT_LOG_ID, object.toString());
     }
 
     @Override
@@ -93,8 +96,8 @@ public class RaspLogImpl implements RaspLog {
     private boolean publish(Level level, int logId, String message, Throwable t) {
         String msg = LogFormatter.format(level, logId, message, processId, t);
         /*
-         * put()方法是如果队列如果满，阻塞当前线程挂起
-         * offer()方法是队列满的话就会返回false
+         * put: 队列满，阻塞当前线程
+         * offer:队列满，返回false
          */
         return queue.offer(msg);
     }

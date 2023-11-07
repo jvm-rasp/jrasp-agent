@@ -51,8 +51,6 @@ public class Context {
     // 字段10
     private Map<String, String[]> parameters;
 
-    private Map<String, String[]> decryptParameters;
-
     // 字段11
     private Map<String, String> header;
 

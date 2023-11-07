@@ -1,5 +1,7 @@
 package com.jrasp.agent.core.newlog;
 
+import com.jrasp.agent.core.json.JSONObject;
+
 public class LogRecord {
     private String topic;
     private Level level;
@@ -115,18 +117,17 @@ public class LogRecord {
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder("{");
-        sb.append("\"msg\":\"").append(msg).append('\"');
-        sb.append(",\"hostName\":\"").append(hostName).append('\"');
-        sb.append(",\"pid\":").append(pid);
-        sb.append(",\"thread\":\"").append(thread).append('\"');
-        sb.append(",\"processId\":\"").append(processId).append('\"');
-        sb.append(",\"ts\":\"").append(ts).append('\"');
-        sb.append(",\"logId\":").append(logId);
-        sb.append(",\"level\":\"").append(level.toString()).append('\"');
-        sb.append(",\"topic\":\"").append(topic).append('\"');
-        sb.append(",\"stackTrace\":\"").append(stackTrace).append('\"');
-        sb.append('}');
-        return sb.toString();
+        JSONObject object = new JSONObject();
+        object.put("msg",msg);
+        object.put("hostName",hostName);
+        object.put("pid",pid);
+        object.put("thread",thread);
+        object.put("processId",processId);
+        object.put("ts",ts);
+        object.put("logId",logId);
+        object.put("level",level);
+        object.put("topic",topic);
+        object.put("stackTrace",stackTrace);
+        return object.toString();
     }
 }

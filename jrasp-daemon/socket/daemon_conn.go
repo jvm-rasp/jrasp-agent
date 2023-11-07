@@ -1,14 +1,13 @@
 package socket
 
 import (
-	"bufio"
-	"bytes"
 	"context"
 	"encoding/binary"
 	"encoding/json"
 	"fmt"
 	"jrasp-daemon/defs"
 	"jrasp-daemon/userconfig"
+	"jrasp-daemon/utils"
 	"jrasp-daemon/zlog"
 	"net"
 	"net/url"
@@ -30,6 +29,7 @@ type AgentConn struct {
 	AgentResponseChan chan AgentMessage // 接受agent的返回
 	ctx               context.Context
 	AgentMessageChan  chan string
+	ReadBuf           *utils.Buffer
 }
 
 type AgentMessage struct {
@@ -101,27 +101,41 @@ func (a *AgentConn) WriteConn() {
 
 // 接收消息
 func (a *AgentConn) ReadConn() {
-	scanner := initScanner(a.conn)
-	// 读取消息
-	for scanner.Scan() {
-		// 消息体
-		p := new(Package)
-		err := p.Unpack(bytes.NewReader(scanner.Bytes()))
-		if err != nil {
-			// _ = a.conn.Close()
+	for {
+		// type
+		d, e := a.ReadBuf.ReadNext(1)
+		if e != nil {
+			return
+		}
+		t := d[0]
+
+		// body size
+		d, e = a.ReadBuf.ReadNext(4)
+		if e != nil {
+			return
+		}
+		l := binary.BigEndian.Uint32(d)
+
+		// body
+		d, e = a.ReadBuf.ReadNext(int(l))
+		if e != nil {
 			return
 		}
 
+		packet := new(Package)
+		packet.Body = d
+		packet.BodySize = l
+		packet.Type = t
+
 		// 日志
 		var agentMessage AgentMessage
-		err = json.Unmarshal(p.Body, &agentMessage)
+		err := json.Unmarshal(packet.Body, &agentMessage)
 		if err != nil {
-			fmt.Printf("json: %s\n", string(p.Body))
 			return
 		}
 
 		// 命令返回的消息，写入单独的高优先通道
-		if p.Type == COMMAND_RESPONSE {
+		if packet.Type == COMMAND_RESPONSE {
 			a.AgentResponseChan <- agentMessage
 		}
 
@@ -136,9 +150,9 @@ func (a *AgentConn) ReadConn() {
 					"processId: %s, remote addr: %s", processId, a.GetConn().RemoteAddr().String())
 			}
 		}
-		fmt.Println(string(p.Body))
+		fmt.Println(string(packet.Body))
 		// 写入日志传输通道
-		a.AgentMessageChan <- string(p.Body)
+		a.AgentMessageChan <- string(packet.Body)
 	}
 }
 
@@ -189,33 +203,11 @@ func (d *AgentConn) UpdateAgentConfig(m map[string]interface{}) {
 // SendMessge2Conn 往指定连接发送消息
 func (a *AgentConn) SendAgentMessge(t byte, message string) {
 	pkg := &Package{
-		Magic:     MagicBytes,
-		Version:   PROTOCOL_VERSION,
 		Type:      t,
-		BodySize:  int32(len(message)),
-		TimeStamp: time.Now().Unix(),
-		Signature: EmptySignature,
+		BodySize:  uint32(len(message)),
 		Body:      []byte((message)),
 	}
 	a.AgentCommandChan <- *pkg
-}
-
-func initScanner(conn net.Conn) *bufio.Scanner {
-	scanner := bufio.NewScanner(conn)
-	// 分割
-	scanner.Split(func(data []byte, atEOF bool) (advance int, token []byte, err error) {
-		if !atEOF && string(data[0:3]) == string(MagicBytes[:]) {
-			if len(data) > 5 {
-				length := int32(0)
-				binary.Read(bytes.NewReader(data[5:9]), binary.BigEndian, &length)
-				if int(length)+145 <= len(data) {
-					return 145 + int(length), data[:145+int(length)], nil
-				}
-			}
-		}
-		return
-	})
-	return scanner
 }
 
 // 更改字符串形式，便于java agent 解析

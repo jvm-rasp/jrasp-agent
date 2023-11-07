@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"jrasp-daemon/defs"
+	"jrasp-daemon/utils"
 	"jrasp-daemon/zlog"
 	"net"
 )
@@ -42,6 +43,7 @@ func (d *DaemonSocket) Start(ctx context.Context) {
 			AgentCommandChan:  make(chan Package, 10),
 			AgentResponseChan: make(chan AgentMessage, 10),
 			AgentMessageChan:  d.AgentMessageChan,
+			ReadBuf:           utils.NewBuffer(conn),
 			ctx:               ctx,
 		}
 

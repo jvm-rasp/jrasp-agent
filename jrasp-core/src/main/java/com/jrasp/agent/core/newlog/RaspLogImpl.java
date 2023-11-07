@@ -2,6 +2,7 @@ package com.jrasp.agent.core.newlog;
 
 import com.jrasp.agent.api.log.RaspLog;
 import com.jrasp.agent.api.request.AttackInfo;
+import com.jrasp.agent.api.request.Context;
 import com.jrasp.agent.core.json.JSONObject;
 
 import java.util.concurrent.BlockingQueue;
@@ -32,8 +33,33 @@ public class RaspLogImpl implements RaspLog {
      */
     @Override
     public void attack(AttackInfo attackInfo) {
-        // TODO 基本对象
-        JSONObject object = new JSONObject(attackInfo);
+        Context context = attackInfo.getContext();
+        JSONObject contextObject = new JSONObject();
+        contextObject.put("method", context.getMethod());
+        contextObject.put("protocol", context.getProtocol());
+        contextObject.put("localAddr", context.getLocalAddr());
+        contextObject.put("remoteHost", context.getRemoteHost());
+        contextObject.put("requestURL", context.getRequestURL());
+        contextObject.put("requestURI", context.getRequestURI());
+        contextObject.put("contentType", context.getContentType());
+        contextObject.put("contentLength", context.getContentLength());
+        contextObject.put("characterEncoding", context.getCharacterEncoding());
+        contextObject.put("header", context.getHeader());
+        contextObject.put("queryString", context.getQueryString());
+        contextObject.put("marks", context.getMarks());
+        contextObject.put("body", context.getBody());
+        String contextString = contextObject.toString();
+        JSONObject object = new JSONObject();
+        object.put("context", contextString);
+        object.put("metaInfo", attackInfo.getMetaInfo());
+        object.put("stackTrace", attackInfo.getStackTrace());
+        object.put("payload", attackInfo.getPayload());
+        object.put("isBlocked", attackInfo.isBlocked());
+        object.put("attackType", attackInfo.getAttackType());
+        object.put("attackTime", System.currentTimeMillis());
+        object.put("algorithm", attackInfo.getAlgorithm());
+        object.put("extend", attackInfo.getExtend());
+        object.put("level", attackInfo.getLevel());
         publish(Level.ATTACK, DEFAULT_LOG_ID, object.toString());
     }
 

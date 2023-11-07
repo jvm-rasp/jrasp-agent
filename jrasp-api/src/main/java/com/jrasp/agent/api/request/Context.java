@@ -438,6 +438,7 @@ public class Context {
 //        return isInSQLContext;
 //    }
 
+    @Deprecated
     public String toJSON() {
         final StringBuilder sb = new StringBuilder("{");
         sb.append("\"method\":\"")

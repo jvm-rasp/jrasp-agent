@@ -163,8 +163,19 @@ public class AttackInfo {
         this.extend = extend;
     }
 
+    public String getMetaInfo() {
+        return metaInfo;
+    }
+
+    public void setMetaInfo(String metaInfo) {
+        this.metaInfo = metaInfo;
+    }
+
     public String getAlgorithm() {
         return algorithm;
+    }
+    public void setAlgorithm(String algorithm) {
+        this.algorithm = algorithm;
     }
 
     /**

@@ -12,6 +12,7 @@ import com.jrasp.agent.api.log.RaspLog;
 import com.jrasp.agent.api.request.AttackInfo;
 import com.jrasp.agent.api.request.Context;
 import com.jrasp.agent.api.util.ParamSupported;
+import com.jrasp.agent.api.util.StringUtils;
 import org.kohsuke.MetaInfServices;
 
 import java.util.Map;
@@ -48,6 +49,9 @@ public class MemoryShellAlgorithm extends ModuleLifecycleAdapter implements Modu
 
     @Override
     public void check(Context context, Object... parameters) throws Exception {
+        if (isWhiteList(context)) {
+            return;
+        }
         boolean enableBlock = memoryShellAction == 1;
         String message = "发现疑似内存马注入";
         AttackInfo attackInfo = new AttackInfo(
@@ -68,5 +72,17 @@ public class MemoryShellAlgorithm extends ModuleLifecycleAdapter implements Modu
     @Override
     public String getDescribe() {
         return "内存马注入攻击检测算法";
+    }
+
+    @Override
+    public void loadCompleted() {
+        algorithmManager.register(this);
+    }
+
+    private boolean isWhiteList(Context context) {
+        return context != null
+                && StringUtils.isBlank(context.getMethod())
+                && StringUtils.isBlank(context.getRequestURI())
+                && StringUtils.isBlank(context.getRequestURL());
     }
 }

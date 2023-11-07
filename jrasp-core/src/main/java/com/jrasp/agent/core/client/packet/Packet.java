@@ -5,37 +5,34 @@ package com.jrasp.agent.core.client.packet;
  */
 public class Packet {
 
-    private PacketHead packetHead;
+    private int bodySize;
+
+    private PacketType type;
 
     private String data;
 
     public Packet() {
     }
 
-    public Packet(PacketType packetType, String data) {
-        packetHead = new PacketHead(packetType);
-        this.data = data;
-    }
-
-    public Packet(PacketHead packetHead, String data) {
-        this.packetHead = packetHead;
+    public Packet(PacketType type, String data) {
+        this.type = type;
         this.data = data;
     }
 
     public int getBodySize() {
-        return packetHead.getBodySize();
+        return bodySize;
+    }
+
+    public void setBodySize(int bodySize) {
+        this.bodySize = bodySize;
     }
 
     public PacketType getType() {
-        return packetHead.getType();
+        return type;
     }
 
-    public PacketHead getPacketHead() {
-        return packetHead;
-    }
-
-    public void setPacketHead(PacketHead packetHead) {
-        this.packetHead = packetHead;
+    public void setType(PacketType type) {
+        this.type = type;
     }
 
     public String getData() {
@@ -45,5 +42,4 @@ public class Packet {
     public void setData(String data) {
         this.data = data;
     }
-
 }

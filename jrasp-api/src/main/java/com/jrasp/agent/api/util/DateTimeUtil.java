@@ -1,21 +1,21 @@
 package com.jrasp.agent.api.util;
 
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.TimeZone;
 
 public class DateTimeUtil {
 
-    private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-
     public static String timestamp2DateTime(long timestamp) {
-        Instant instant;
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        formatter.setTimeZone(TimeZone.getTimeZone("GMT+8"));
+        Date date;
         if (String.valueOf(timestamp).length() == 13) {
-            instant = Instant.ofEpochMilli(timestamp);
+            date = new Date(timestamp);
         } else {
-            instant = Instant.ofEpochSecond(timestamp);
+            date = new Date(timestamp * 1000);
         }
-        return formatter.format(LocalDateTime.ofInstant(instant, ZoneOffset.ofHours(8)));
+        return formatter.format(date);
     }
 }

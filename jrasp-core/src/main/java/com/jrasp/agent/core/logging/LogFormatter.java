@@ -1,5 +1,7 @@
 package com.jrasp.agent.core.logging;
 
+import com.jrasp.agent.core.util.IpUtil;
+
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.Writer;
@@ -21,6 +23,9 @@ public class LogFormatter extends Formatter {
 
     private static String hostname = "";
 
+    private static final String ip = IpUtil.getlocalIp(true);
+    ;
+
     @Override
     public String format(LogRecord record) {
         StringBuilder sb = new StringBuilder();
@@ -38,6 +43,10 @@ public class LogFormatter extends Formatter {
         // hostname
         sb.append(' ');
         sb.append(getHostname());
+
+        // ip
+        sb.append(' ');
+        sb.append(ip);
 
         // Thread
         sb.append(' ');
@@ -92,12 +101,13 @@ public class LogFormatter extends Formatter {
             try {
                 InetAddress inetadd = InetAddress.getLocalHost();
                 if (inetadd != null) {
-                    return inetadd.getHostName();
+                    hostname = inetadd.getHostName();
                 }
             } catch (Exception e) {
-                return "UNKNOWN";
+                hostname = "UNKNOWN";
             }
         }
         return hostname;
     }
+
 }

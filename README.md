@@ -89,7 +89,7 @@ It should be noted that macOs/windows is only for development and testing.
 
 ## 06 Wechart
 
-wx：sear2022
+wx：XL1870011370
 
 ## 07 Official website
 

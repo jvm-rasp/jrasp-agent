@@ -95,7 +95,7 @@ bash packages_darwin.sh
 
 ## 06 技术交流群
 
-加微信：sear2022
+加微信：XL1870011370
 
 ## 07 官网
 

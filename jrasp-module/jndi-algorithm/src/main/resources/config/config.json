@@ -2,7 +2,7 @@
   "moduleName": "jndi-algorithm",
   "parameters": {
     "jndi_action": 0,
-    "jndi_protocol_list": ["ladp://", "rmi://"],
+    "jndi_protocol_list": ["ldap://", "rmi://", "dns://"],
     "jndi_danger_stack_list": [
       "java.beans.XMLDecoder.readObject",
       "com.caucho.hessian.io.HessianInput.readObject",

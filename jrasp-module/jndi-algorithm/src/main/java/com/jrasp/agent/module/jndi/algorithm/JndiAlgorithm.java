@@ -34,7 +34,7 @@ public class JndiAlgorithm extends ModuleLifecycleAdapter implements Module, Alg
     private volatile Integer jndiAction = 0;
 
     // log4j漏洞可以通过${jndi:dns://2.3mcg.callback.red/a}这个payload触发dnslog
-    private volatile String[] jndiProtocolList = new String[]{"ladp://", "rmi://", "dns://"};
+    private volatile String[] jndiProtocolList = new String[]{"ldap://", "rmi://", "dns://"};
 
     private volatile Set<String> jndiDangerStackSet = new HashSet<String>(Arrays.asList(
             "java.beans.XMLDecoder.readObject",

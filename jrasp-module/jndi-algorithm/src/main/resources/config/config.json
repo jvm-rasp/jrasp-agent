@@ -1,5 +1,8 @@
 {
   "moduleName": "jndi-algorithm",
+  "cn_map": {
+    "jndi_action": "拦截JNDI注入攻击"
+  },
   "parameters": {
     "jndi_action": 0,
     "jndi_protocol_list": ["ldap://", "rmi://", "dns://"],

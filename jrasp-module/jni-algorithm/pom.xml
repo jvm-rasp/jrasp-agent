@@ -6,7 +6,7 @@
     <parent>
         <artifactId>jrasp-module</artifactId>
         <groupId>com.jrasp.agent</groupId>
-        <version>1.1.4</version>
+        <version>1.1.5</version>
     </parent>
 
     <artifactId>jni-algorithm</artifactId>

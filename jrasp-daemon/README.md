@@ -1,7 +1,6 @@
 # jrasp-daemon
 
 ## 关于 jrasp-daemon
-
 `jrasp-daemon` 是一个用户态的程序，主要是用来与Java Agent通信，对安全模块的生命周期进行控制，包括自身更新、安全 module 包更新、安全策略更新等。
 
 jrasp-daemon 基于`Golang`构建。
@@ -44,12 +43,6 @@ windows系统下编译：
 ```java
 .\build.bat
 ```
-
-## 集群配置 (单机版本可以忽略)
-
-### 依赖 nacos 配置中心
-
-nacos配置中心版本 `2.0.3`
 
 ### 配置守护进程(必需)
 

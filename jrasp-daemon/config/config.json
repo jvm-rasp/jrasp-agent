@@ -1,7 +1,8 @@
 {
   "agentMode": "dynamic",
-  "version": "1.1.4",
+  "version": "1.1.5",
   "configId": 1,
+  "remoteHosts": ["ws://localhost:8088/rasp-admin"],
   "enableMdns": false,
   "moduleAutoUpdate": false,
   "logPath": "../logs",

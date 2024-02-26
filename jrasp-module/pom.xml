@@ -5,7 +5,7 @@
     <parent>
         <artifactId>jrasp-agent</artifactId>
         <groupId>com.jrasp.agent</groupId>
-        <version>1.1.4</version>
+        <version>1.1.5</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -47,7 +47,7 @@
         <dependency>
             <groupId>com.jrasp.agent</groupId>
             <artifactId>jrasp-maven</artifactId>
-            <version>1.1.4</version>
+            <version>1.1.5</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -98,7 +98,7 @@
             <plugin>
                 <groupId>com.jrasp.agent</groupId>
                 <artifactId>jrasp-encrypt</artifactId>
-                <version>1.1.4</version>
+                <version>1.1.5</version>
                 <configuration>
                     <decryptKeyFile>${project.basedir}/../../bin/DECRYPT_KEY.txt</decryptKeyFile>
                     <packages>com.jrasp.agent.module</packages>

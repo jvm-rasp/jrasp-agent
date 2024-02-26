@@ -1,5 +1,16 @@
 # 版本迭代
 
+## 1.1.5  【2024-02-26】
+> 1.1.5 主要以修复bug为主
+### Bugfix
++ [agent] agent日志中增加ip
++ [agent] 修复jdk兼容性问题
++ [module] jndi bug 修复
++ [module] 内存马bug修复
++ [module] 默认启用反序列化
++ [module] spel开关类型不匹配bug修复
++ [daemon] 解决daemon日志写入/var/log/messages问题
+
 ## 1.1.4  【2023-10-26】
 ### Enhancement
 + [module] 增加自定义的响应头X-Protected-By：JRASP

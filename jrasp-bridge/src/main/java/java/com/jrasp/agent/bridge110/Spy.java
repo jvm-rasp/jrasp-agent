@@ -9,6 +9,14 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 public class Spy {
 
+    private static final String CLOSE_CALLER_CLASS = "com.jrasp.agent.core.server.socket.handler.impl.UninstallPacketHandler";
+    private static final String INIT_CALLER_CLASS = "com.jrasp.agent.core.server.socket.SocketServer";
+
+    static {
+        // 禁止对Spy关键字段反射
+        setReflectFilter(Spy.class, new String[]{"namespaceSpyHandlerMap", "selfCallBarrier"}, new String[]{"init", "clean"});
+    }
+
     /**
      * 控制Spy是否在发生异常时主动对外抛出
      * T:主动对外抛出，会中断方法
@@ -38,6 +46,7 @@ public class Spy {
      */
     public static void init(final String namespace,
                             final SpyHandler spyHandler) {
+        checkCaller(INIT_CALLER_CLASS);
         namespaceSpyHandlerMap.putIfAbsent(namespace, spyHandler);
     }
 
@@ -47,6 +56,7 @@ public class Spy {
      * @param namespace 命名空间
      */
     public synchronized static void clean(final String namespace) {
+        checkCaller(CLOSE_CALLER_CLASS);
         namespaceSpyHandlerMap.remove(namespace);
         // 如果是最后的一个命名空间，则需要重新清理Node中所持有的Thread
         if (namespaceSpyHandlerMap.isEmpty()) {
@@ -154,6 +164,39 @@ public class Spy {
             return Ret.RET_NONE;
         } finally {
             selfCallBarrier.exit(thread, node);
+        }
+    }
+
+    /**
+     * @param clazz
+     * @param fields
+     * @param methods
+     * @see sun.reflect.Reflection#filterFields(Class, java.lang.reflect.Field[])
+     * @see sun.reflect.Reflection#filterMethods(Class, java.lang.reflect.Method[])
+     */
+    public static void setReflectFilter(Class<?> clazz, String[] fields, String[] methods) {
+        try {
+            Class<?> reflectionClass = Class.forName("sun.reflect.Reflection", true, null);
+            java.lang.reflect.Method registerFieldsToFilterMethod = reflectionClass.getMethod("registerFieldsToFilter", Class.class, String[].class);
+            java.lang.reflect.Method registerMethodsToFilterMethod = reflectionClass.getMethod("registerMethodsToFilter", Class.class, String[].class);
+            registerFieldsToFilterMethod.invoke(null, clazz, fields);
+            registerMethodsToFilterMethod.invoke(null, clazz, methods);
+        } catch (Exception e) {
+            // ignore
+            // JDK9以上不允许跨包的反射
+        }
+    }
+
+    private static void checkCaller(String callClass) {
+        Thread currentThread = Thread.currentThread();
+        if (currentThread != null) {
+            StackTraceElement[] stackTrace = currentThread.getStackTrace();
+            for (StackTraceElement stackTraceElement : stackTrace) {
+                if (callClass.equals(stackTraceElement.getClassName())) {
+                    return;
+                }
+            }
+            throw new SecurityException("this method is not allowed to invoke. ");
         }
     }
 

@@ -15,6 +15,8 @@ import java.util.regex.Pattern;
  */
 public class AgentLauncher {
 
+    private static final String CLOSE_CALLER_CLASS = "com.jrasp.agent.core.server.socket.handler.impl.UninstallPacketHandler";
+
     private static String getSandboxCoreJarPath(String sandboxHome, String coreVersion) {
         return sandboxHome + File.separatorChar + "lib" + File.separator + "jrasp-core-" + coreVersion + ".jar";
     }
@@ -93,6 +95,7 @@ public class AgentLauncher {
      */
     @SuppressWarnings("unused")
     public static synchronized void uninstall(final String namespace) throws Throwable {
+        checkCaller(CLOSE_CALLER_CLASS);
         final RaspClassLoader sandboxClassLoader = sandboxClassLoaderMap.get(namespace);
         if (null == sandboxClassLoader) {
             return;
@@ -278,6 +281,19 @@ public class AgentLauncher {
         featureMap.put(KEY_LAUNCH_MODE, LAUNCH_MODE);
         // 其他参数透传给jrasp-core
         return featureMap;
+    }
+
+    private static void checkCaller(String callClass) {
+        Thread currentThread = Thread.currentThread();
+        if (currentThread != null) {
+            StackTraceElement[] stackTrace = currentThread.getStackTrace();
+            for (StackTraceElement stackTraceElement : stackTrace) {
+                if (callClass.equals(stackTraceElement.getClassName())) {
+                    return;
+                }
+            }
+            throw new SecurityException("this method is not allowed to invoke. ");
+        }
     }
 
 }

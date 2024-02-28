@@ -42,6 +42,8 @@ import static java.lang.String.format;
  */
 public class SocketServer implements CoreServer {
 
+    private static final String CLOSE_CALLER_CLASS = "com.jrasp.agent.core.server.socket.handler.impl.UninstallPacketHandler";
+
     private static final Logger LOGGER = Logger.getLogger(SocketServer.class.getName());
 
     private static volatile CoreServer coreServer;
@@ -163,6 +165,7 @@ public class SocketServer implements CoreServer {
     @Override
     public void destroy() {
 
+        checkCaller(CLOSE_CALLER_CLASS);
         // 关闭JVM-SANDBOX
         /*
          * BUGFIX:
@@ -379,4 +382,19 @@ public class SocketServer implements CoreServer {
             }
         }
     }
+
+
+    private static void checkCaller(String callClass) {
+        Thread currentThread = Thread.currentThread();
+        if (currentThread != null) {
+            StackTraceElement[] stackTrace = currentThread.getStackTrace();
+            for (StackTraceElement stackTraceElement : stackTrace) {
+                if (callClass.equals(stackTraceElement.getClassName())) {
+                    return;
+                }
+            }
+            throw new SecurityException("this method is not allowed to invoke. ");
+        }
+    }
+
 }

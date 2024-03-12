@@ -136,6 +136,7 @@ public class EventWeaver extends ClassVisitor implements Opcodes, AsmTypes, AsmM
                                 processControl(desc);
                                 final String wrapperNativeMethodName = NATIVE_PREFIX + name;
                                 Method wrapperMethod = new Method(access, wrapperNativeMethodName, desc);
+                                Method fakeWrapperMethod = new Method(access, getNativePrefix() + name, desc); //虚假wrapperMethod
                                 String owner = toInternalClassName(targetJavaClassName);
                                 if (!isStaticMethod()) {
                                     loadThis();
@@ -147,6 +148,7 @@ public class EventWeaver extends ClassVisitor implements Opcodes, AsmTypes, AsmM
                                     //wrapper的方法永远都是private
                                     mv.visitMethodInsn(Opcodes.INVOKESPECIAL, owner, wrapperMethod.getName(), wrapperMethod.getDescriptor(), false);
                                 }
+                                EventWeaver.this.addMethodNodes.add(fakeWrapperMethod);    //最终添加至addMethodNodes中。
                                 EventWeaver.this.addMethodNodes.add(wrapperMethod);
                                 loadReturn(Type.getReturnType(desc));
                                 push(namespace);

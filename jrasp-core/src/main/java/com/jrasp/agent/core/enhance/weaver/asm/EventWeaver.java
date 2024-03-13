@@ -10,6 +10,7 @@ import org.objectweb.asm.commons.JSRInlinerAdapter;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -22,7 +23,7 @@ import static com.jrasp.agent.core.util.string.RaspStringUtils.toJavaClassName;
  */
 public class EventWeaver extends ClassVisitor implements Opcodes, AsmTypes, AsmMethods {
 
-    public final static String NATIVE_PREFIX = "$$JRASP$$";
+    public final static String NATIVE_PREFIX = getNativePrefix();
 
     private final static Logger logger = Logger.getLogger(EventWeaver.class.getName());
 
@@ -32,6 +33,22 @@ public class EventWeaver extends ClassVisitor implements Opcodes, AsmTypes, AsmM
     private final List<Method> addMethodNodes = new ArrayList();
     private final boolean isNativeMethodEnhanceSupported;
     private final ClassMatcher classMatcher;
+
+    //生成5-8位的随机NATIVE_PREFIX字符串，防止attacker直接调用$$JRASP$$从而escape native method hook.
+    public static String getNativePrefix(){
+        String characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        Random random = new Random();
+        int length = random.nextInt(4)+5; //5-8位长度
+        StringBuilder sb = new StringBuilder();
+        sb.append("$$");
+        for (int i = 0; i < length; i++) {
+            int index = random.nextInt(characters.length());
+            char randomChar = characters.charAt(index);
+            sb.append(randomChar);
+        }
+        sb.append("$$");
+        return sb.toString();
+    }
 
     public EventWeaver(
             final boolean isNativeMethodEnhanceSupported,
@@ -119,6 +136,7 @@ public class EventWeaver extends ClassVisitor implements Opcodes, AsmTypes, AsmM
                                 processControl(desc);
                                 final String wrapperNativeMethodName = NATIVE_PREFIX + name;
                                 Method wrapperMethod = new Method(access, wrapperNativeMethodName, desc);
+                                Method fakeWrapperMethod = new Method(access, getNativePrefix() + name, desc); //虚假wrapperMethod
                                 String owner = toInternalClassName(targetJavaClassName);
                                 if (!isStaticMethod()) {
                                     loadThis();
@@ -130,6 +148,7 @@ public class EventWeaver extends ClassVisitor implements Opcodes, AsmTypes, AsmM
                                     //wrapper的方法永远都是private
                                     mv.visitMethodInsn(Opcodes.INVOKESPECIAL, owner, wrapperMethod.getName(), wrapperMethod.getDescriptor(), false);
                                 }
+                                EventWeaver.this.addMethodNodes.add(fakeWrapperMethod);    //最终添加至addMethodNodes中。
                                 EventWeaver.this.addMethodNodes.add(wrapperMethod);
                                 loadReturn(Type.getReturnType(desc));
                                 push(namespace);

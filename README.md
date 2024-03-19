@@ -68,6 +68,8 @@ under development:
 
 + jdk6+
 
+jdk11+ `--add-opens=java.base/java.lang=ALL-UNNAMED`
+
 ## 03 Install (centos)
 
 [how to install](https://www.jrasp.com/guide/install/v1.1.2/jrasp-agent.html)

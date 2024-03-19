@@ -65,7 +65,7 @@ jrasp-agent 的安全模块
 
 ### 支持的jdk版本
 + jdk6+
-（jdk17以上需要修改jvm参数）
+jdk11+增加jvm参数 --add-opens=java.base/java.lang=ALL-UNNAMED
 
 ## 03 快速使用
 

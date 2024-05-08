@@ -74,7 +74,11 @@ public class EventWeaver extends ClassVisitor implements Opcodes, AsmTypes, AsmM
     public MethodVisitor visitMethod(final int access, final String name, final String desc, final String signature, final String[] exceptions) {
         MethodMatcher methodMatcher = isMatchedBehavior(name + desc);
         if (null == methodMatcher) {
-            return super.visitMethod(access, name, desc, signature, exceptions);
+            // 忽略方法的参数描述符号
+            methodMatcher = isMatchedBehavior(name);
+            if (null == methodMatcher) {
+                return super.visitMethod(access, name, desc, signature, exceptions);
+            }
         }
 
         methodMatcher.setHook(true);

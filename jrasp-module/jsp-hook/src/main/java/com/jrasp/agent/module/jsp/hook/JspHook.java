@@ -40,8 +40,8 @@ public class JspHook implements Module, LoadCompleted {
                 // tomcat servlet/jakarta api
                 // jetty/weblogic 也使用 org.apache.jasper
                 // https://tomcat.apache.org/tomcat-9.0-doc/api/org/apache/jasper/runtime/HttpJspBase.html#service(javax.servlet.http.HttpServletRequest,javax.servlet.http.HttpServletResponse)
-                // https://tomcat.apache.org/tomcat-11.0-doc/api/org/apache/jasper/runtime/HttpJspBase.html#service(jakarta.servlet.http.HttpServletRequest,jakarta.servlet.http.HttpServletResponse)
-                .onClass(new ClassMatcher("org/apache/jasper/runtime/HttpJspPage")
+                // https://tomcat.apache.org/tomcat-11.0-doc/api/org/apache/jasper/runtime/HttpJspBase.html#service(jakarta.servlet.http.HttpServletRequest,jakarta.servlet.http.HttpServletResponse) 
+                .onClass(new ClassMatcher("org/apache/jasper/runtime/HttpJspBase")
                         .onMethod("service(Ljavax/servlet/http/HttpServletRequest;Ljavax/servlet/http/HttpServletResponse;)V"
                                 , new HttpJspPageServiceListener())
                         .onMethod("service(Ljakarta/servlet/http/HttpServletRequest;Ljakarta/servlet/http/HttpServletResponse;)V"

@@ -91,7 +91,7 @@ It should be noted that macOs/windows is only for development and testing.
 
 ## 06 Wechart
 
-wx：XL1870011370
+wx：hycsxs
 
 ## 07 Official website
 
@@ -108,4 +108,4 @@ If you are using it, please contact us and add it here.
 
 ## 10 Copyright Information
 
-GPL3.0（You can learn and use in your own projects, but commercialization must be authorized)
+GPL3.0（You can learn and use in your own projects, other actions must be authorized)

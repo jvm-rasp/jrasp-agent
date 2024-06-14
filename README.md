@@ -74,22 +74,15 @@ jdk11+ `--add-opens=java.base/java.lang=ALL-UNNAMED`
 
 [how to install](https://www.jrasp.com/guide/install/v1.1.2/jrasp-agent.html)
 
-## 04 develop & Compilation (can be skipped, use the release package)
+## 04 develop & Compilation (Source code only available from partners)
 
-+ jdk 1.8
-+ golang 1.19
-+ maven 3.8.5
-
-Enter the jrsap-agent/bin directory and execute the corresponding environment script.
-
-It should be noted that macOs/windows is only for development and testing.
-
+Due to the high number of installations of this product, based on product safety considerations, no longer open source code, partners can provide jrasp basic framework source code
 
 ## 05 Version record
 
 [RELEASE](CHANGELOG.md)
 
-## 06 Wechart
+## 06 Wechat
 
 wx：hycsxs
 

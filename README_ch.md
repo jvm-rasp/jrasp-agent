@@ -71,24 +71,10 @@ jdk11+增加jvm参数 --add-opens=java.base/java.lang=ALL-UNNAMED
 
 参考官网安装文档：[最新版本安装](https://www.jrasp.com/guide/install/v1.1.2/jrasp-agent.html)
 
-## 04 开发/编译  （可以跳过，使用release包）
+## 04 开发/编译  （仅合作伙伴提供源码）
 
-+ jdk 1.8 
-+ golang 1.19
-+ maven 3.8.5 
+由于本产品安装数量较多，基于产品安全考虑，不再公开源码，合作伙伴可提供jrasp基础框架源码
 
-您可以在macos/linux/windows系统上编译该项目，编译的系统必须与运行系统一致（即windows上编译仅限于windows运行）。
-
-进入到 jrsap-agent/bin 目录下, 执行对应环境脚本即可。需要说明的是 macos/windows 仅供开发测试。
-
-+ linux
-```shell
-bash packages_linux.sh
-```
-+ macos
-```shell
-bash packages_darwin.sh
-```
 ## 05 版本记录
 
 [RELEASE](CHANGELOG.md)
